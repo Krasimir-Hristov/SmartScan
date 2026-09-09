@@ -217,3 +217,18 @@ export const FadeInCard: React.FC<{ children: React.ReactNode; index?: number }>
 - **Пълна забрана за `fetch` вътре в `useEffect`**.
 - All client-side queries use `useQuery` with structured query keys: `['space', slug]`.
 - Mutations use `useMutation` with optimistic UI updates for instant feedback.
+
+---
+
+## 8. Internationalization (next-intl 8-Locale Standard)
+
+The platform supports 8 key tourism markets with automatic English fallback:
+```typescript
+// src/i18n/config.ts
+export const locales = ['en', 'bg', 'tr', 'es', 'fr', 'it', 'de', 'el'] as const;
+export type Locale = (typeof locales)[number];
+export const defaultLocale: Locale = 'en';
+```
+- **Language Switcher in Navbar:** Must be present in the header of the landing page and dashboard.
+- **Graceful Fallback:** Any unsupported visitor language (e.g. `ja`, `ar`, `pl`) seamlessly falls back to `defaultLocale` (`'en'`).
+
