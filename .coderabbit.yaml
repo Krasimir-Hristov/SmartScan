@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+tone_instructions: "You are a Principal AI Reviewer for the SmartScan multi-tenant production platform. Be assertive, precise, and uncompromising on security, multi-tenancy, architecture, and code cleanliness."
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_filters:
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!**/uv.lock"
+    - "!**/.venv/**"
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+
+  path_instructions:
+    # 1. Strict No-Middleware Policy
+    - path: "**/middleware.ts"
+      instructions: |
+        CRITICAL BLOCKER: The project enforces a Strict No-Middleware Policy (mitigating CVE-2025-29927).
+        Creating or using `middleware.ts` is strictly forbidden. Request changes immediately and instruct the developer to route proxy logic through `src/lib/proxy.ts`.
+
+    # 2. Frontend Engineering & React 19 Standards
+    - path: "frontend/src/**/*.{ts,tsx}"
+      instructions: |
+        Enforce the following frontend engineering standards strictly:
+        - React Components: MUST be defined using typed arrow functions (`const MyComponent: React.FC<Props> = ...`). Flag any usage of the `function` keyword for React components.
+        - Helpers & DAL: Pure utility functions and Data Access Layer queries should use standard named functions (`export function helper()`).
+        - Desktop cursor-pointer: Every `<button>`, clickable card, or custom click target MUST explicitly contain the `cursor-pointer` utility class (and `disabled:cursor-not-allowed`). Flag any interactive button missing `cursor-pointer`.
+        - Strict TypeScript: The use of `any` is strictly FORBIDDEN. Flag any instance of `any`.
+        - Data Fetching: Flag any `fetch` calls inside `useEffect`. TanStack Query or Server Components must be used.
+        - Tailwind CSS v4: Enforce `bg-linear-to-*` and `bg-linear-<angle>`. Flag legacy `bg-gradient-to-*` syntax.
+        - Next.js 16 App Router: In page components, `params` and `searchParams` are Promises. Verify they are awaited (`const { slug } = await params;`).
+        - Mobile Ergonomics: Verify dynamic viewport height `100dvh` is used instead of `100vh`.
+
+    # 3. Backend Engineering & FastAPI Standards
+    - path: "backend/app/**/*.py"
+      instructions: |
+        Enforce the following backend engineering standards strictly:
+        - 3-Tier Architecture: Routers (`router.py`) MUST NOT contain business logic, OpenAI/OpenRouter calls, or direct database queries. Flag business logic in routers.
+        - Strict Typing: Pydantic v2 schemas must be used for all inputs and outputs. Flag unvalidated dictionaries or `Any` types.
+        - Guest Voice Ban (MVP Cost Guardrail): Text-to-Speech (TTS) or voice generation for guests is strictly prohibited in MVP. Flag any TTS audio calls intended for guests.
+        - Prompt Injection Defense: Ensure user inputs are sanitized with regex tag stripping before passing to LLMs, and RAG vector context is strictly isolated within `<property_context>` XML tags.
+        - Rate Limiting: Verify SlowAPI rate limit decorators are present on public endpoints (`/api/py/concierge/chat`, `/api/py/voice/ingest`).
+
+    # 4. Multi-Tenancy & Database Security (Absolute Top Priority)
+    - path: "**/*.{py,ts,tsx,sql}"
+      instructions: |
+        CRITICAL SECURITY AUDIT (Multi-Tenancy Isolation):
+        - Every database query, Supabase call, or vector search touching spaces or knowledge chunks MUST contain a mandatory filter on `space_id` (e.g., `WHERE space_id = :space_id` or `.eq('space_id', spaceId)`).
+        - Flag any query that could potentially leak cross-tenant data across different properties.
+        - Flag any hardcoded API keys, especially `SUPABASE_SECRET_KEY` or `OPENROUTER_API_KEY`.
+
+chat:
+  auto_reply: true
