@@ -220,15 +220,16 @@ export const FadeInCard: React.FC<{ children: React.ReactNode; index?: number }>
 
 ---
 
-## 8. Internationalization (next-intl 8-Locale Standard)
+## 8. Internationalization (next-intl 10-Locale Standard)
 
-The platform supports 8 key tourism markets with automatic English fallback:
+The platform supports 10 key tourism markets with automatic English fallback:
 ```typescript
 // src/i18n/config.ts
-export const locales = ['en', 'bg', 'tr', 'es', 'fr', 'it', 'de', 'el'] as const;
+export const locales = ['en', 'bg', 'ro', 'el', 'ru', 'tr', 'de', 'es', 'it', 'fr'] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = 'en';
 ```
+
 - **Language Switcher in Navbar:** Must be present in the header of the landing page and dashboard.
 - **Graceful Fallback:** Any unsupported visitor language (e.g. `ja`, `ar`, `pl`) seamlessly falls back to `defaultLocale` (`'en'`).
 
