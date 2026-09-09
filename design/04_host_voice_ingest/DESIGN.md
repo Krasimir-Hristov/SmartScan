@@ -7,8 +7,13 @@
 
 ---
 
-## Visual Preview
-![Host Voice Ingest Modal](voice_ingest.png)
+## Visual Previews
+
+### 1. Desktop Modal View (1440px)
+![Host Voice Ingest Modal Desktop](voice_ingest.png)
+
+### 2. Mobile Bottom Sheet View (390px)
+![Host Voice Ingest Mobile](voice_ingest_mobile.png)
 
 ---
 

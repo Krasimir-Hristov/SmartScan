@@ -7,8 +7,13 @@
 
 ---
 
-## Visual Preview (Refined v2)
-![Refined Guest Digital Concierge Screen](guest_stay_clean_v2.png)
+## Visual Previews
+
+### 1. Mobile PWA View (390px — Primary Guest View)
+![Guest Digital Concierge Mobile](guest_stay.png)
+
+### 2. Desktop & Tablet Landscape View (1440px)
+![Guest Digital Concierge Desktop](guest_stay_desktop.png)
 
 ---
 
