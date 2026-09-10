@@ -112,6 +112,15 @@ Use the new Tailwind v4 `bg-linear-to-*` and `bg-linear-<angle>` syntax instead 
 <!-- ГРЕШНО (v3): bg-gradient-to-b, bg-gradient-to-r -->
 ```
 
+### C. Tailwind v4 Fractional Scale Syntax (No Arbitrary Pixels for Multiples of 4)
+Tailwind CSS v4 natively supports fractional scale values on the 4px grid. Never use arbitrary pixel bracket syntax (`[...px]`) when the value is divisible by or maps to a fractional multiple of 4:
+- `650px` (650 / 4 = 162.5) ➔ **`w-162.5`** (NOT `w-[650px]`)
+- `350px` (350 / 4 = 87.5) ➔ **`h-87.5`** (NOT `h-[350px]`)
+- `26px` (26 / 4 = 6.5) ➔ **`w-6.5`** (NOT `w-[26px]`)
+- `30px` (30 / 4 = 7.5) ➔ **`h-7.5`** (NOT `h-[30px]`)
+
+Arbitrary bracket notation (`[...]`) must be strictly reserved for complex CSS expressions (e.g. `w-[calc(100%-2rem)]`, `min-h-[44px]`, or `pb-[env(safe-area-inset-bottom)]`).
+
 ---
 
 ## 4. Mobile-First Responsive Engineering
