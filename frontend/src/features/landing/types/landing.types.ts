@@ -23,14 +23,6 @@ export interface FeatureItem {
   isWide?: boolean;
 }
 
-export interface TestimonialItem {
-  quote: string;
-  author: string;
-  property: string;
-  location: string;
-  rating: number;
-}
-
 export interface PricingPlan {
   name: string;
   tag: string;

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
@@ -17,6 +18,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onOpenDemo,
 }) => {
+  const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -42,7 +44,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setIsLoading(false);
       }
     } catch {
-      setErrorMessage('Unable to connect to authentication service. Please try again.');
+      setErrorMessage(t('error'));
       setIsLoading(false);
     }
   };
@@ -51,8 +53,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Welcome to SmartScan Stay"
-      description="Sign in with your Google account to manage your properties or start your 14-day free trial."
+      title={t('title')}
+      description={t('desc')}
     >
       <div className="flex flex-col gap-5 pt-2">
         {errorMessage && (
@@ -67,7 +69,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          aria-label="Continue with Google Account"
+          aria-label={t('continueGoogle')}
           className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl font-semibold text-sm text-zinc-950 bg-white hover:bg-zinc-100 active:scale-[0.98] transition-all cursor-pointer shadow-md disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isLoading ? (
@@ -92,14 +94,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               />
             </svg>
           )}
-          <span>{isLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
+          <span>{isLoading ? t('connecting') : t('continueGoogle')}</span>
         </button>
 
         {/* Divider */}
         <div className="relative flex items-center justify-center">
           <div className="border-t border-zinc-800 w-full" />
-          <span className="bg-zinc-950 px-3 text-[11px] uppercase tracking-wider text-zinc-500">
-            or explore
+          <span className="bg-zinc-950 px-3 text-[11px] uppercase tracking-wider text-zinc-500 font-mono">
+            {t('orExplore')}
           </span>
         </div>
 
@@ -112,22 +114,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onClose();
             onOpenDemo();
           }}
-          aria-label="Experience Live Guest Concierge"
-          className="border-emerald-500/20 hover:border-emerald-500/40 text-emerald-300"
+          aria-label={t('launchDemo')}
+          className="border-emerald-500/20 hover:border-emerald-500/40 text-emerald-300 cursor-pointer"
         >
           <QrCode className="w-4 h-4 mr-1 text-emerald-400" />
-          <span>Launch Live Guest Concierge Demo</span>
+          <span>{t('launchDemo')}</span>
         </Button>
 
         {/* Guarantee details */}
-        <div className="pt-3 border-t border-zinc-900 flex flex-col gap-2 text-xs text-zinc-400">
+        <div className="pt-3 border-t border-zinc-900 flex flex-col gap-2 text-xs text-zinc-400 font-sans">
           <div className="flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>14 days unlimited access · No credit card required</span>
+            <span>{t('trialGuarantee')}</span>
           </div>
           <div className="flex items-center gap-2">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Secure authentication via Supabase Auth</span>
+            <span>{t('secureAuth')}</span>
           </div>
         </div>
       </div>
