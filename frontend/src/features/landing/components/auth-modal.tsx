@@ -101,7 +101,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="relative flex items-center justify-center">
           <div className="border-t border-zinc-800 w-full" />
           <span className="bg-zinc-950 px-3 text-[11px] uppercase tracking-wider text-zinc-500 font-mono">
-            or explore
+            {t('orExplore')}
           </span>
         </div>
 
@@ -114,22 +114,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onClose();
             onOpenDemo();
           }}
-          aria-label="Launch Live Guest Concierge Demo"
-          className="border-emerald-500/20 hover:border-emerald-500/40 text-emerald-300"
+          aria-label={t('launchDemo')}
+          className="border-emerald-500/20 hover:border-emerald-500/40 text-emerald-300 cursor-pointer"
         >
           <QrCode className="w-4 h-4 mr-1 text-emerald-400" />
-          <span>Launch Live Guest Concierge Demo</span>
+          <span>{t('launchDemo')}</span>
         </Button>
 
         {/* Guarantee details */}
         <div className="pt-3 border-t border-zinc-900 flex flex-col gap-2 text-xs text-zinc-400 font-sans">
           <div className="flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>14 days unlimited access · No credit card required</span>
+            <span>{t('trialGuarantee')}</span>
           </div>
           <div className="flex items-center gap-2">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Secure authentication via Supabase Auth</span>
+            <span>{t('secureAuth')}</span>
           </div>
         </div>
       </div>

@@ -42,6 +42,7 @@ reviews:
         - Localization (next-intl): The project uses cookie-based `NEXT_LOCALE` without `middleware.ts` or `[locale]` subfolder routing.
         - Data Fetching: Flag any `fetch` calls inside `useEffect`. TanStack Query or Server Components must be used.
         - Tailwind CSS v4: Enforce `bg-linear-to-*` and `bg-linear-<angle>`. Flag legacy `bg-gradient-to-*` syntax.
+        - No Automated Unit Tests for UI / Landing Page: Do NOT suggest, request, or require unit tests for frontend UI components or landing page mockups. Unit testing is reserved strictly for critical backend security/isolation logic (Steps 4 & 5) and full E2E testing prior to production deployment (Step 10).
         - Next.js 16 App Router: In page components, `params` and `searchParams` are Promises. Verify they are awaited (`const { slug } = await params;`).
         - Mobile Ergonomics: Verify dynamic viewport height `100dvh` is used instead of `100vh`.
 

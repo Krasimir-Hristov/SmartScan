@@ -10,7 +10,12 @@ import { ShieldCheck, Zap, Globe, MessageSquareWarning, ArrowUpRight, Phone, Che
  * Renders a real SVG flag via flag-icons CSS (imported in globals.css).
  * Works on Windows unlike emoji flags.
  */
-const FlagChip = ({ countryCode, code }: { countryCode: string; code: string }) => (
+interface FlagChipProps {
+  countryCode: string;
+  code: string;
+}
+
+const FlagChip: React.FC<FlagChipProps> = ({ countryCode, code }) => (
   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200">
     <span
       className={`fi fi-${countryCode} rounded-[2px] shrink-0`}

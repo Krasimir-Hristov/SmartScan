@@ -92,9 +92,9 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
           <LanguageSwitcher align="right" variant="ghost" />
           <button
             type="button"
-            aria-label={isMobileNavOpen ? 'Close mobile menu' : 'Open mobile menu'}
+            aria-label={isMobileNavOpen ? t('closeMenu') : t('openMenu')}
             onClick={() => setIsMobileNavOpen((v) => !v)}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 cursor-pointer"
+            className="p-2 rounded-xl text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 cursor-pointer disabled:cursor-not-allowed"
           >
             {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -103,7 +103,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
 
       {/* Mobile Drawer Menu */}
       {isMobileNavOpen && (
-        <div className="sm:hidden border-b border-zinc-800 bg-zinc-950 px-4 py-5 animate-in slide-in-from-top-2 duration-200">
+        <div className="sm:hidden border-b border-zinc-800 bg-zinc-950 px-4 py-5 transition-all duration-200">
           <div className="flex flex-col gap-4">
             <nav className="flex flex-col gap-3" aria-label="Mobile Navigation">
               {navItems.map((item) => (

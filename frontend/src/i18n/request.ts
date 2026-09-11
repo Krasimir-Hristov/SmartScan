@@ -4,24 +4,36 @@ import { locales, defaultLocale, type LocaleCode } from '@/lib/i18n/config';
 
 /**
  * Detects the best-matching locale from the Accept-Language header.
- * Parses the q-weighted list and matches against the supported locales.
+ * Parses the q-weighted list, filters out q=0, sorts by descending q,
+ * and matches against the supported locales.
  */
 const detectLocaleFromHeader = (acceptLanguage: string | null): LocaleCode => {
   if (!acceptLanguage) return defaultLocale;
 
   const supported = locales.map((l) => l.code);
 
-  // Parse Accept-Language: "de-DE,de;q=0.9,en;q=0.8"
-  const preferred = acceptLanguage
+  // Parse Accept-Language: "fr-CH, fr;q=0.9, en;q=0.8, de;q=0"
+  const parsed = acceptLanguage
     .split(',')
     .map((part) => {
-      const [langQ] = part.trim().split(';');
-      return langQ.split('-')[0].toLowerCase(); // "de-DE" → "de"
-    });
+      const [rawLang, ...params] = part.trim().split(';');
+      const lang = rawLang.split('-')[0].toLowerCase();
+      let q = 1.0;
+      for (const param of params) {
+        const [key, val] = param.trim().split('=');
+        if (key === 'q') {
+          const parsedQ = parseFloat(val);
+          if (!isNaN(parsedQ)) q = parsedQ;
+        }
+      }
+      return { lang, q };
+    })
+    .filter((item) => item.q > 0)
+    .sort((a, b) => b.q - a.q);
 
-  for (const lang of preferred) {
-    if (supported.includes(lang as LocaleCode)) {
-      return lang as LocaleCode;
+  for (const item of parsed) {
+    if (supported.includes(item.lang as LocaleCode)) {
+      return item.lang as LocaleCode;
     }
   }
 

@@ -67,7 +67,7 @@ export const LandingPage: React.FC = () => {
               <QrCode className="w-14 h-14 animate-pulse" />
             </div>
             <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-zinc-950 font-mono">
-              <Sparkles className="w-3 h-3" /> DEMO PROPERTY
+              <Sparkles className="w-3 h-3" /> {tDemo('demoBadge')}
             </span>
           </div>
 

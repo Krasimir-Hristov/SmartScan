@@ -5,7 +5,9 @@
     "showcase": "Showcase",
     "pricing": "Pricing",
     "signIn": "Sign in with Google",
-    "languageSelect": "Select Language"
+    "languageSelect": "Select Language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "hero": {
     "pill": "⚡ NEXT-GEN HOSPITALITY AI · 50+ LANGUAGES DETECTED",
@@ -61,14 +63,25 @@
     "step1Title": "Speak Your Notes",
     "step1Desc": "Record 60-second voice notes walking through your property. AI transcribes, cleans and structures them into knowledge cards.",
     "step1Footer": "Auto-cleans filler words",
+    "step1Transcribing": "Transcribing:",
+    "step1MemoText": "\"The hot water heater booster switch is inside the laundry cabinet...\"",
     "step2Badge": "STEP 02 · PRINT PLAQUE",
     "step2Title": "Print Acrylic Plaque",
     "step2Desc": "Download ready-to-print luxury acrylic or wood stand templates (300+ DPI PDF). Place them on nightstands or kitchen counters.",
     "step2Footer": "Fits standard acrylic stands",
+    "step2Template": "A5 / A6 Stand Template",
+    "step2Bleed": "Precision Bleed & Crop Marks (CMYK Ready)",
+    "step2Vector": "300 DPI Vector PDF",
     "step3Badge": "STEP 03 · GUEST SCAN",
     "step3Title": "Instant Guest PWA",
     "step3Desc": "Guests scan and get instant answers in their native language. Zero app download, zero account creation, zero barrier.",
-    "step3Footer": "Zero host calls at 2 AM"
+    "step3Footer": "Zero host calls at 2 AM",
+    "step3Scanned": "Guest Scanned QR",
+    "step3Load": "⚡ 0.8s load",
+    "step3Wifi": "Wi-Fi Credentials",
+    "step3Copy": "1-Tap Copy",
+    "step3Lang": "Native Language",
+    "step3Auto": "Auto-detected"
   },
   "features": {
     "badge": "PURPOSE-BUILT",
@@ -133,13 +146,18 @@
     "desc": "Sign in with your Google account to manage your properties or start your 14-day free trial.",
     "continueGoogle": "Continue with Google",
     "connecting": "Connecting to Google...",
-    "error": "Unable to connect to authentication service. Please try again."
+    "error": "Unable to connect to authentication service. Please try again.",
+    "orExplore": "or explore",
+    "launchDemo": "Launch Live Guest Concierge Demo",
+    "trialGuarantee": "14 days unlimited access · No credit card required",
+    "secureAuth": "Secure authentication via Supabase Auth"
   },
   "demo": {
     "title": "Live Guest Experience Demo",
     "desc": "Experience SmartScan Stay exactly as a guest sees it when scanning an on-site QR stand.",
     "openGuest": "Open Mobile Guest View",
     "property": "Villa 1904 Sanctuary · Mykonos",
-    "subtitle": "Zero app install. Tap below to launch the simulated mobile guest experience in a new tab."
+    "subtitle": "Zero app install. Tap below to launch the simulated mobile guest experience in a new tab.",
+    "demoBadge": "DEMO PROPERTY"
   }
 }

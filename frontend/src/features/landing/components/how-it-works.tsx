@@ -75,8 +75,8 @@ export const HowItWorks: React.FC = () => {
                   <span className="font-mono text-[11px] text-zinc-400">00:42 / 01:00</span>
                 </div>
                 <div className="rounded-lg bg-zinc-950 p-2.5 border border-zinc-800/80 text-[11px] text-zinc-300">
-                  <span className="text-emerald-400 font-semibold">Transcribing: </span>
-                  &quot;The hot water heater booster switch is inside the laundry cabinet...&quot;
+                  <span className="text-emerald-400 font-semibold">{t('step1Transcribing')} </span>
+                  {t('step1MemoText')}
                 </div>
               </div>
             </div>
@@ -104,18 +104,18 @@ export const HowItWorks: React.FC = () => {
                 {t('step2Desc')}
               </p>
 
-              {/* PDF Plaque Graphic — UI element, stays in EN */}
+              {/* PDF Plaque Graphic */}
               <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 flex flex-col items-center text-center">
                 <div className="w-full h-28 rounded-xl bg-zinc-950 border border-emerald-500/30 flex flex-col items-center justify-center p-3 relative overflow-hidden">
                   <div className="flex items-center gap-2 text-xs font-bold text-white mb-1">
                     <FileCheck className="w-4 h-4 text-emerald-400" />
-                    <span>A5 / A6 Stand Template</span>
+                    <span>{t('step2Template')}</span>
                   </div>
                   <span className="text-[10px] text-zinc-400">
-                    Precision Bleed &amp; Crop Marks (CMYK Ready)
+                    {t('step2Bleed')}
                   </span>
-                  <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-[10px] text-emerald-300">
-                    300 DPI Vector PDF
+                  <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-[10px] text-emerald-300 font-mono">
+                    {t('step2Vector')}
                   </div>
                 </div>
               </div>
@@ -144,20 +144,20 @@ export const HowItWorks: React.FC = () => {
                 {t('step3Desc')}
               </p>
 
-              {/* Guest Scan Graphic — UI element, stays in EN */}
+              {/* Guest Scan Graphic */}
               <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4">
                 <div className="flex items-center justify-between text-xs font-semibold text-white mb-2 pb-2 border-b border-zinc-800">
-                  <span>Guest Scanned QR</span>
-                  <span className="text-emerald-400">⚡ 0.8s load</span>
+                  <span>{t('step3Scanned')}</span>
+                  <span className="text-emerald-400 font-mono">{t('step3Load')}</span>
                 </div>
                 <div className="flex flex-col gap-1.5 text-[11px] text-zinc-300">
                   <div className="flex items-center justify-between bg-zinc-950 p-2 rounded-lg border border-zinc-800">
-                    <span>Wi-Fi Credentials</span>
-                    <span className="text-emerald-400 font-medium">1-Tap Copy</span>
+                    <span>{t('step3Wifi')}</span>
+                    <span className="text-emerald-400 font-medium">{t('step3Copy')}</span>
                   </div>
                   <div className="flex items-center justify-between bg-zinc-950 p-2 rounded-lg border border-zinc-800">
-                    <span>Native Language</span>
-                    <span className="text-emerald-400 font-medium">Auto-detected</span>
+                    <span>{t('step3Lang')}</span>
+                    <span className="text-emerald-400 font-medium">{t('step3Auto')}</span>
                   </div>
                 </div>
               </div>

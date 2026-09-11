@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { locales } from '@/lib/i18n/config';
@@ -14,16 +14,18 @@ interface LanguageSwitcherProps {
   variant?: 'ghost' | 'outlined';
 }
 
+interface FlagIconProps {
+  countryCode: string;
+  size?: 'sm' | 'md';
+}
+
 /**
  * Renders a flag using the flag-icons CSS library (fi fi-{countryCode}).
  * This renders an actual SVG sprite — works on Windows unlike emoji flags.
  */
-const FlagIcon = ({
+const FlagIcon: React.FC<FlagIconProps> = ({
   countryCode,
   size = 'sm',
-}: {
-  countryCode: string;
-  size?: 'sm' | 'md';
 }) => {
   const dimensions =
     size === 'md'
@@ -44,6 +46,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   variant = 'ghost',
 }) => {
   const currentLocale = useLocale();
+  const tNav = useTranslations('nav');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
@@ -81,15 +84,15 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
   const triggerClass =
     variant === 'outlined'
-      ? 'inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono font-medium text-zinc-300 bg-[#18181b] hover:bg-zinc-800 border border-white/10 hover:border-emerald-500/40 cursor-pointer transition-all duration-200'
-      : 'inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-zinc-300 hover:text-white hover:bg-white/5 cursor-pointer transition-all duration-200';
+      ? 'inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono font-medium text-zinc-300 bg-[#18181b] hover:bg-zinc-800 border border-white/10 hover:border-emerald-500/40 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200'
+      : 'inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-zinc-300 hover:text-white hover:bg-white/5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200';
 
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Trigger button — shows flag + locale code */}
       <button
         type="button"
-        aria-label={`Select language. Currently: ${current.label}`}
+        aria-label={`${tNav('languageSelect')}. ${current.label}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         onClick={() => setIsOpen((v) => !v)}
@@ -108,13 +111,13 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       {isOpen && (
         <div
           role="listbox"
-          aria-label="Language options"
+          aria-label={tNav('languageSelect')}
           className={`absolute mt-2 w-52 rounded-2xl overflow-hidden bg-zinc-950/95 backdrop-blur-xl border border-emerald-500/15 shadow-2xl shadow-black/60 py-1.5 z-200 ${align === 'right' ? 'right-0' : 'left-0'}`}
           style={{ animation: 'fadeScaleIn 0.15s ease-out' }}
         >
           <div className="px-3 pt-2 pb-2 border-b border-white/5">
-            <p className="text-[10px] uppercase font-mono font-semibold text-zinc-600 tracking-widest">
-              10 Tourism Markets
+            <p className="text-[10px] uppercase font-mono font-semibold text-zinc-500 tracking-widest">
+              {tNav('languageSelect')}
             </p>
           </div>
 
@@ -128,14 +131,15 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                     role="option"
                     aria-selected={isActive}
                     onClick={() => handleSelect(loc.code)}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left cursor-pointer transition-colors duration-150 ${
+                    disabled={isPending}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left cursor-pointer disabled:cursor-not-allowed transition-colors duration-150 ${
                       isActive
                         ? 'text-emerald-300 bg-emerald-950/40'
                         : 'text-zinc-300 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <span className="flex items-center gap-3 font-sans">
-                      {/* Real SVG flag via flag-icons — works on Windows */}
+                      {/* Real SVG flag via flag-icons */}
                       <FlagIcon countryCode={loc.countryCode} size="md" />
                       <span className="font-medium">{loc.label}</span>
                     </span>
