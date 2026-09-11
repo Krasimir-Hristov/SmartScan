@@ -1,14 +1,32 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Space_Grotesk, Manrope, JetBrains_Mono } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+// ─── Design System Fonts ──────────────────────────────────────────────────────
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const manrope = Manrope({
+  subsets: ['latin', 'cyrillic'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-sans',
   display: 'swap',
 });
 
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+// ─── SEO Metadata ─────────────────────────────────────────────────────────────
 export const metadata: Metadata = {
   title: 'SmartScan Stay | 24/7 Polyglot AI Concierge for Luxury Vacation Rentals',
   description:
@@ -29,15 +47,27 @@ export const metadata: Metadata = {
   },
 };
 
+// ─── Root Layout ──────────────────────────────────────────────────────────────
 interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
+const RootLayout = async ({ children }: RootLayoutProps) => {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
+  const fontClasses = [
+    spaceGrotesk.variable,
+    manrope.variable,
+    jetBrainsMono.variable,
+  ].join(' ');
+
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} dark h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans bg-[#080b0a] text-zinc-100">
-        {children}
+    <html lang={locale} className={`${fontClasses} dark h-full antialiased`}>
+      <body className="min-h-full flex flex-col font-sans bg-[#09090b] text-zinc-100">
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

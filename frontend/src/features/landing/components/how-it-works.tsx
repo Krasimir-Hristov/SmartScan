@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Mic, Printer, Smartphone, Play, Pause, FileCheck, CheckCircle2 } from 'lucide-react';
 
 export const HowItWorks: React.FC = () => {
+  const t = useTranslations('howItWorks');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   return (
@@ -17,41 +19,40 @@ export const HowItWorks: React.FC = () => {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
           <Badge variant="emerald" className="mb-3 uppercase tracking-wider text-[11px]">
-            STREAMLINED WORKFLOW
+            {t('badge')}
           </Badge>
           <h2
             id="how-it-works-heading"
-            className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight"
+            className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight"
           >
-            How SmartScan Stay Elevates Your Property
+            {t('title')}
           </h2>
-          <p className="mt-4 text-base text-zinc-400">
-            Replace 30-page laminated binders with verified neural intelligence and precision stay kits that wow every guest.
+          <p className="mt-4 text-base text-zinc-400 font-sans">
+            {t('subtitle')}
           </p>
         </div>
 
         {/* 3 Step Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* STEP 1 */}
+
+          {/* STEP 1 — Voice Ingest */}
           <div className="flex flex-col justify-between rounded-3xl bg-zinc-950/80 border border-emerald-500/20 p-6 sm:p-7 shadow-xl hover:border-emerald-500/40 transition-all">
             <div>
-              {/* Step Header */}
               <div className="flex items-center justify-between mb-4">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Mic className="w-5 h-5" />
                 </span>
-                <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                  STEP 01 · INGESTION
+                <span className="font-mono text-xs font-bold tracking-wider text-emerald-400 uppercase">
+                  {t('step1Badge')}
                 </span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-2">Speak Your Notes</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Record 60-second voice notes walking through your property. AI transcribes, cleans
-                and structures them into knowledge cards.
+              <h3 className="font-display text-xl font-bold text-white mb-2">{t('step1Title')}</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed mb-6 font-sans">
+                {t('step1Desc')}
               </p>
 
-              {/* Simulated Voice Memo Card */}
+              {/* Simulated Voice Memo Card — UI element, stays in EN */}
               <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <button
@@ -63,20 +64,16 @@ export const HowItWorks: React.FC = () => {
                     {isPlayingAudio ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                   </button>
                   <div className="flex items-center gap-1.5 h-6">
-                    {/* Simulated Waveform bars */}
                     {[12, 24, 18, 28, 14, 22, 16, 26, 10, 20, 28, 15, 25, 18, 24].map((h, i) => (
                       <span
                         key={i}
-                        className={`w-1 rounded-full bg-emerald-400/80 transition-all ${
-                          isPlayingAudio ? 'animate-pulse' : ''
-                        }`}
+                        className={`w-1 rounded-full bg-emerald-400/80 transition-all ${isPlayingAudio ? 'animate-pulse' : ''}`}
                         style={{ height: `${h}px` }}
                       />
                     ))}
                   </div>
-                  <span className="text-[11px] font-mono text-zinc-400">00:42 / 01:00</span>
+                  <span className="font-mono text-[11px] text-zinc-400">00:42 / 01:00</span>
                 </div>
-
                 <div className="rounded-lg bg-zinc-950 p-2.5 border border-zinc-800/80 text-[11px] text-zinc-300">
                   <span className="text-emerald-400 font-semibold">Transcribing: </span>
                   &quot;The hot water heater booster switch is inside the laundry cabinet...&quot;
@@ -86,30 +83,28 @@ export const HowItWorks: React.FC = () => {
 
             <div className="mt-6 pt-4 border-t border-zinc-900/80 flex items-center gap-2 text-xs text-emerald-400 font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Auto-cleans filler words</span>
+              <span>{t('step1Footer')}</span>
             </div>
           </div>
 
-          {/* STEP 2 */}
+          {/* STEP 2 — Print Plaque */}
           <div className="flex flex-col justify-between rounded-3xl bg-zinc-950/80 border border-emerald-500/20 p-6 sm:p-7 shadow-xl hover:border-emerald-500/40 transition-all">
             <div>
-              {/* Step Header */}
               <div className="flex items-center justify-between mb-4">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/40">
                   <Printer className="w-5 h-5" />
                 </span>
-                <span className="text-xs font-bold tracking-wider text-teal-400 uppercase">
-                  STEP 02 · PRINT PLAQUE
+                <span className="font-mono text-xs font-bold tracking-wider text-teal-400 uppercase">
+                  {t('step2Badge')}
                 </span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-2">Print Acrylic Plaque</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Download ready-to-print luxury acrylic or wood stand templates (300+ DPI PDF). Place
-                them on nightstands or kitchen counters.
+              <h3 className="font-display text-xl font-bold text-white mb-2">{t('step2Title')}</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed mb-6 font-sans">
+                {t('step2Desc')}
               </p>
 
-              {/* Plaque Graphic */}
+              {/* PDF Plaque Graphic — UI element, stays in EN */}
               <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 flex flex-col items-center text-center">
                 <div className="w-full h-28 rounded-xl bg-zinc-950 border border-emerald-500/30 flex flex-col items-center justify-center p-3 relative overflow-hidden">
                   <div className="flex items-center gap-2 text-xs font-bold text-white mb-1">
@@ -117,7 +112,7 @@ export const HowItWorks: React.FC = () => {
                     <span>A5 / A6 Stand Template</span>
                   </div>
                   <span className="text-[10px] text-zinc-400">
-                    Precision Bleed & Crop Marks (CMYK Ready)
+                    Precision Bleed &amp; Crop Marks (CMYK Ready)
                   </span>
                   <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-[10px] text-emerald-300">
                     300 DPI Vector PDF
@@ -128,30 +123,28 @@ export const HowItWorks: React.FC = () => {
 
             <div className="mt-6 pt-4 border-t border-zinc-900/80 flex items-center gap-2 text-xs text-teal-400 font-medium">
               <CheckCircle2 className="w-4 h-4 text-teal-400" />
-              <span>Fits standard acrylic stands</span>
+              <span>{t('step2Footer')}</span>
             </div>
           </div>
 
-          {/* STEP 3 */}
+          {/* STEP 3 — Guest Scan */}
           <div className="flex flex-col justify-between rounded-3xl bg-zinc-950/80 border border-emerald-500/20 p-6 sm:p-7 shadow-xl hover:border-emerald-500/40 transition-all">
             <div>
-              {/* Step Header */}
               <div className="flex items-center justify-between mb-4">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Smartphone className="w-5 h-5" />
                 </span>
-                <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                  STEP 03 · GUEST DELIGHT
+                <span className="font-mono text-xs font-bold tracking-wider text-emerald-400 uppercase">
+                  {t('step3Badge')}
                 </span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-2">Instant Guest Delight</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Guests scan and get instant answers in their language. No app download, no account
-                creation, no barrier to entry.
+              <h3 className="font-display text-xl font-bold text-white mb-2">{t('step3Title')}</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed mb-6 font-sans">
+                {t('step3Desc')}
               </p>
 
-              {/* Guest Delight Graphic */}
+              {/* Guest Scan Graphic — UI element, stays in EN */}
               <div className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4">
                 <div className="flex items-center justify-between text-xs font-semibold text-white mb-2 pb-2 border-b border-zinc-800">
                   <span>Guest Scanned QR</span>
@@ -172,9 +165,10 @@ export const HowItWorks: React.FC = () => {
 
             <div className="mt-6 pt-4 border-t border-zinc-900/80 flex items-center gap-2 text-xs text-emerald-400 font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Zero host calls at 2 AM</span>
+              <span>{t('step3Footer')}</span>
             </div>
           </div>
+
         </div>
       </div>
     </section>

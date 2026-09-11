@@ -4,6 +4,5 @@ export type {
   MetricItem,
   WorkflowStep,
   FeatureItem,
-  TestimonialItem,
   PricingPlan,
 } from './types/landing.types';

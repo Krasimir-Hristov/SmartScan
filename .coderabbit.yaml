@@ -37,6 +37,9 @@ reviews:
         - Helpers & DAL: Pure utility functions and Data Access Layer queries should use standard named functions (`export function helper()`).
         - Desktop cursor-pointer: Every `<button>`, clickable card, or custom click target MUST explicitly contain the `cursor-pointer` utility class (and `disabled:cursor-not-allowed`). Flag any interactive button missing `cursor-pointer`.
         - Strict TypeScript: The use of `any` is strictly FORBIDDEN. Flag any instance of `any`.
+        - Modular Architecture: Feature code must be isolated in `src/features/{feature-name}/` and exported only through `index.ts`.
+        - File Length Limit: If a component or file exceeds 300 lines, flag it for refactoring into smaller modular subcomponents.
+        - Localization (next-intl): The project uses cookie-based `NEXT_LOCALE` without `middleware.ts` or `[locale]` subfolder routing.
         - Data Fetching: Flag any `fetch` calls inside `useEffect`. TanStack Query or Server Components must be used.
         - Tailwind CSS v4: Enforce `bg-linear-to-*` and `bg-linear-<angle>`. Flag legacy `bg-gradient-to-*` syntax.
         - Next.js 16 App Router: In page components, `params` and `searchParams` are Promises. Verify they are awaited (`const { slug } = await params;`).
