@@ -5,7 +5,9 @@
     "showcase": "Beispiele",
     "pricing": "Preise",
     "signIn": "Mit Google anmelden",
-    "languageSelect": "Sprache auswählen"
+    "languageSelect": "Sprache auswählen",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
   },
   "hero": {
     "pill": "⚡ KI DER NÄCHSTEN GENERATION · 50+ SPRACHEN ERKANNT",
@@ -61,14 +63,25 @@
     "step1Title": "Sprich deine Notizen",
     "step1Desc": "Nimm 60-Sekunden-Sprachnotizen auf, während du durch das Objekt gehst. KI transkribiert, bereinigt und strukturiert sie zu Wissenskarten.",
     "step1Footer": "Bereinigt Füllwörter automatisch",
+    "step1Transcribing": "Transkription:",
+    "step1MemoText": "\"Der Schalter für den Warmwasserboiler befindet sich im Wäscheschrank...\"",
     "step2Badge": "SCHRITT 02 · PLAKETTE DRUCKEN",
     "step2Title": "Acrylplakette drucken",
     "step2Desc": "Lade druckfertige Luxus-Acryl- oder Holzständer-Vorlagen (300+ DPI PDF) herunter. Platziere sie auf Nachttischen oder Küchentresen.",
     "step2Footer": "Passend für Standard-Acrylständer",
+    "step2Template": "A5 / A6 Aufsteller-Vorlage",
+    "step2Bleed": "Präzise Beschnitt- und Schnittmarken (CMYK-bereit)",
+    "step2Vector": "300 DPI Vektor-PDF",
     "step3Badge": "SCHRITT 03 · GAST SCANNT",
     "step3Title": "Sofortige Gast-PWA",
     "step3Desc": "Gäste scannen und erhalten sofortige Antworten in ihrer Muttersprache. Kein App-Download, keine Kontoerstellung, keine Hürden.",
-    "step3Footer": "Keine Gastgeber-Anrufe um 2 Uhr nachts"
+    "step3Footer": "Keine Gastgeber-Anrufe um 2 Uhr nachts",
+    "step3Scanned": "Gast hat QR-Code gescannt",
+    "step3Load": "⚡ 0,8s Ladezeit",
+    "step3Wifi": "WLAN-Zugangsdaten",
+    "step3Copy": "1-Klick-Kopie",
+    "step3Lang": "Muttersprache",
+    "step3Auto": "Automatisch erkannt"
   },
   "features": {
     "badge": "ZWECKGEBAUT",
@@ -133,13 +146,18 @@
     "desc": "Melde dich mit deinem Google-Konto an, um deine Objekte zu verwalten oder starte deine kostenlose 14-Tage-Testversion.",
     "continueGoogle": "Mit Google fortfahren",
     "connecting": "Verbindung mit Google...",
-    "error": "Verbindung zum Authentifizierungsdienst nicht möglich. Bitte versuche es erneut."
+    "error": "Verbindung zum Authentifizierungsdienst nicht möglich. Bitte versuche es erneut.",
+    "orExplore": "oder entdecken",
+    "launchDemo": "Live-Gäste-Demo starten",
+    "trialGuarantee": "14 Tage unbegrenzter Zugriff · Keine Kreditkarte erforderlich",
+    "secureAuth": "Sichere Authentifizierung über Supabase Auth"
   },
   "demo": {
     "title": "Live-Demo des Gasterlebnisses",
     "desc": "Erlebe SmartScan Stay genau wie ein Gast beim Scannen des QR-Ständers vor Ort.",
     "openGuest": "Mobile Gast-Ansicht öffnen",
     "property": "Villa 1904 Sanctuary · Mykonos",
-    "subtitle": "Kein App-Download. Tippe unten, um das simulierte mobile Gasterlebnis in einem neuen Tab zu starten."
+    "subtitle": "Kein App-Download. Tippe unten, um das simulierte mobile Gasterlebnis in einem neuen Tab zu starten.",
+    "demoBadge": "DEMO-OBJEKT"
   }
 }

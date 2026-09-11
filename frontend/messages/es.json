@@ -5,7 +5,9 @@
     "showcase": "Ejemplos",
     "pricing": "Precios",
     "signIn": "Iniciar sesión con Google",
-    "languageSelect": "Seleccionar idioma"
+    "languageSelect": "Seleccionar idioma",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
   },
   "hero": {
     "pill": "⚡ IA HOTELERA DE NUEVA GENERACIÓN · 50+ IDIOMAS DETECTADOS",
@@ -61,14 +63,25 @@
     "step1Title": "Dicta tus notas",
     "step1Desc": "Graba notas de voz de 60 segundos mientras recorres tu propiedad. La IA las transcribe, limpia y estructura en tarjetas de conocimiento.",
     "step1Footer": "Limpia automáticamente las muletillas",
+    "step1Transcribing": "Transcribiendo:",
+    "step1MemoText": "«El interruptor del calentador de agua está dentro del armario del lavadero...»",
     "step2Badge": "PASO 02 · IMPRIMIR PLACA",
     "step2Title": "Imprime la placa de acrílico",
     "step2Desc": "Descarga plantillas listas para imprimir en acrílico de lujo o soporte de madera (PDF 300+ DPI). Colócalas en mesillas o encimeras.",
     "step2Footer": "Compatible con soportes de acrílico estándar",
+    "step2Template": "Plantilla de soporte A5 / A6",
+    "step2Bleed": "Marcas de corte y sangrado de precisión (CMYK Ready)",
+    "step2Vector": "PDF vectorial de 300 DPI",
     "step3Badge": "PASO 03 · ESCANEO DEL HUÉSPED",
     "step3Title": "PWA instantánea para huéspedes",
     "step3Desc": "Los huéspedes escanean y obtienen respuestas inmediatas en su idioma nativo. Sin descarga, sin registro, sin barreras.",
-    "step3Footer": "Cero llamadas al anfitrión a las 2 de la madrugada"
+    "step3Footer": "Cero llamadas al anfitrión a las 2 de la madrugada",
+    "step3Scanned": "Huésped escaneó el QR",
+    "step3Load": "⚡ Carga en 0,8 s",
+    "step3Wifi": "Credenciales Wi-Fi",
+    "step3Copy": "Copia con 1 toque",
+    "step3Lang": "Idioma nativo",
+    "step3Auto": "Detectado automáticamente"
   },
   "features": {
     "badge": "DISEÑADO PARA EL USO",
@@ -133,13 +146,18 @@
     "desc": "Inicia sesión con tu cuenta de Google para gestionar tus propiedades o comenzar tu prueba gratuita de 14 días.",
     "continueGoogle": "Continuar con Google",
     "connecting": "Conectando con Google...",
-    "error": "No se puede conectar con el servicio de autenticación. Por favor, inténtalo de nuevo."
+    "error": "No se puede conectar con el servicio de autenticación. Por favor, inténtalo de nuevo.",
+    "orExplore": "o explorar",
+    "launchDemo": "Iniciar demo en vivo para huéspedes",
+    "trialGuarantee": "14 días de acceso ilimitado · No se requiere tarjeta de crédito",
+    "secureAuth": "Autenticación segura mediante Supabase Auth"
   },
   "demo": {
     "title": "Demo en vivo de la experiencia del huésped",
     "desc": "Experimenta SmartScan Stay exactamente como lo ve un huésped al escanear el QR in situ.",
     "openGuest": "Abrir vista móvil del huésped",
     "property": "Villa 1904 Sanctuary · Mykonos",
-    "subtitle": "Sin instalación de app. Toca abajo para lanzar la experiencia móvil simulada del huésped en una nueva pestaña."
+    "subtitle": "Sin instalación de app. Toca abajo para lanzar la experiencia móvil simulada del huésped en una nueva pestaña.",
+    "demoBadge": "PROPIEDAD DE DEMO"
   }
 }

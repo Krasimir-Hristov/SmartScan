@@ -5,7 +5,9 @@
     "showcase": "Exemple",
     "pricing": "Prețuri",
     "signIn": "Autentifică-te cu Google",
-    "languageSelect": "Selectează limba"
+    "languageSelect": "Selectează limba",
+    "openMenu": "Deschide meniul",
+    "closeMenu": "Închide meniul"
   },
   "hero": {
     "pill": "⚡ AI HOTELIER DE NOUĂ GENERAȚIE · 50+ LIMBI DETECTATE",
@@ -61,14 +63,25 @@
     "step1Title": "Dictează-ți notițele",
     "step1Desc": "Înregistrează note vocale de 60 de secunde în timp ce faci turul proprietății. IA le transcrie, le curăță și le structurează în fișe de cunoaștere.",
     "step1Footer": "Curăță automat cuvintele de umplutură",
+    "step1Transcribing": "Transcriere:",
+    "step1MemoText": "„Comutatorul pentru boilerul de apă caldă este în dulapul din spălătorie...”",
     "step2Badge": "PASUL 02 · PRINTARE PLACĂ",
     "step2Title": "Printează placa din acrilic",
     "step2Desc": "Descarcă șabloane gata de printat din acrilic de lux sau suport din lemn (PDF 300+ DPI). Plasează-le pe noptiere sau blaturi de bucătărie.",
     "step2Footer": "Compatibil cu suporturi standard din acrilic",
+    "step2Template": "Șablon suport A5 / A6",
+    "step2Bleed": "Margini de tăiere și semne de potrivire (CMYK Ready)",
+    "step2Vector": "PDF vectorial 300 DPI",
     "step3Badge": "PASUL 03 · SCANARE OASPETE",
     "step3Title": "PWA instant pentru oaspeți",
     "step3Desc": "Oaspeții scanează și primesc răspunsuri imediate în limba lor maternă. Fără descărcare, fără cont, fără bariere.",
-    "step3Footer": "Zero apeluri la gazdă la 2 noaptea"
+    "step3Footer": "Zero apeluri la gazdă la 2 noaptea",
+    "step3Scanned": "Oaspetele a scanat codul QR",
+    "step3Load": "⚡ încărcare 0,8s",
+    "step3Wifi": "Date acces Wi-Fi",
+    "step3Copy": "Copiere cu 1 atingere",
+    "step3Lang": "Limbă maternă",
+    "step3Auto": "Detectat automat"
   },
   "features": {
     "badge": "PROIECTAT PENTRU UTILIZARE",
@@ -133,13 +146,18 @@
     "desc": "Autentifică-te cu contul Google pentru a-ți gestiona proprietățile sau pentru a începe proba gratuită de 14 zile.",
     "continueGoogle": "Continuă cu Google",
     "connecting": "Conectare la Google...",
-    "error": "Nu se poate conecta la serviciul de autentificare. Te rugăm să încerci din nou."
+    "error": "Nu se poate conecta la serviciul de autentificare. Te rugăm să încerci din nou.",
+    "orExplore": "sau explorați",
+    "launchDemo": "Lansează demo live pentru oaspeți",
+    "trialGuarantee": "14 zile acces nelimitat · Nu este necesar un card de credit",
+    "secureAuth": "Autentificare securizată prin Supabase Auth"
   },
   "demo": {
     "title": "Demo live experiență oaspete",
     "desc": "Trăiește SmartScan Stay exact ca un oaspete care scanează QR-ul la fața locului.",
     "openGuest": "Deschide vizualizarea mobilă a oaspetelui",
     "property": "Villa 1904 Sanctuary · Mykonos",
-    "subtitle": "Fără instalare de aplicație. Apasă mai jos pentru a lansa experiența mobilă simulată a oaspetelui într-o filă nouă."
+    "subtitle": "Fără instalare de aplicație. Apasă mai jos pentru a lansa experiența mobilă simulată a oaspetelui într-o filă nouă.",
+    "demoBadge": "PROPRIETATE DEMO"
   }
 }

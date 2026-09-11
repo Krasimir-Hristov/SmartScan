@@ -5,7 +5,9 @@
     "showcase": "Exemples",
     "pricing": "Tarifs",
     "signIn": "Se connecter avec Google",
-    "languageSelect": "Choisir la langue"
+    "languageSelect": "Choisir la langue",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
   },
   "hero": {
     "pill": "⚡ IA HÔTELIÈRE NOUVELLE GÉNÉRATION · 50+ LANGUES DÉTECTÉES",
@@ -61,14 +63,25 @@
     "step1Title": "Dictez vos notes",
     "step1Desc": "Enregistrez des notes vocales de 60 secondes en visitant votre propriété. L'IA les transcrit, les nettoie et les structure en fiches de connaissance.",
     "step1Footer": "Nettoie automatiquement les mots de remplissage",
+    "step1Transcribing": "Transcription :",
+    "step1MemoText": "« L'interrupteur du chauffe-eau se trouve dans le placard de la buanderie... »",
     "step2Badge": "ÉTAPE 02 · IMPRIMER LA PLAQUE",
     "step2Title": "Imprimer la plaque en acrylique",
     "step2Desc": "Téléchargez des modèles prêts à imprimer en acrylique luxueux ou en support bois (PDF 300+ DPI). Placez-les sur les tables de nuit ou les comptoirs de cuisine.",
     "step2Footer": "Compatible avec les supports acryliques standards",
+    "step2Template": "Modèle de présentoir A5 / A6",
+    "step2Bleed": "Repères de coupe et fonds perdus de précision (CMYK Ready)",
+    "step2Vector": "PDF vectoriel 300 DPI",
     "step3Badge": "ÉTAPE 03 · SCAN CLIENT",
     "step3Title": "PWA client instantanée",
     "step3Desc": "Les clients scannent et obtiennent des réponses immédiates dans leur langue maternelle. Sans téléchargement, sans création de compte, sans barrière.",
-    "step3Footer": "Zéro appel à 2h du matin"
+    "step3Footer": "Zéro appel à 2h du matin",
+    "step3Scanned": "Le voyageur a scanné le QR",
+    "step3Load": "⚡ Chargement en 0,8 s",
+    "step3Wifi": "Identifiants Wi-Fi",
+    "step3Copy": "Copie en 1 clic",
+    "step3Lang": "Langue maternelle",
+    "step3Auto": "Détection automatique"
   },
   "features": {
     "badge": "CONÇU POUR L'USAGE",
@@ -133,13 +146,18 @@
     "desc": "Connectez-vous avec votre compte Google pour gérer vos propriétés ou commencer votre essai gratuit de 14 jours.",
     "continueGoogle": "Continuer avec Google",
     "connecting": "Connexion à Google...",
-    "error": "Impossible de se connecter au service d'authentification. Veuillez réessayer."
+    "error": "Impossible de se connecter au service d'authentification. Veuillez réessayer.",
+    "orExplore": "ou découvrir",
+    "launchDemo": "Lancer la démo voyageur en direct",
+    "trialGuarantee": "14 jours d'accès illimité · Aucune carte bancaire requise",
+    "secureAuth": "Authentification sécurisée via Supabase Auth"
   },
   "demo": {
     "title": "Démo de l'expérience client en direct",
     "desc": "Vivez SmartScan Stay exactement comme un client lors du scan du QR sur place.",
     "openGuest": "Ouvrir la vue client mobile",
     "property": "Villa 1904 Sanctuary · Mykonos",
-    "subtitle": "Sans installation d'application. Appuyez ci-dessous pour lancer l'expérience client mobile simulée dans un nouvel onglet."
+    "subtitle": "Sans installation d'application. Appuyez ci-dessous pour lancer l'expérience client mobile simulée dans un nouvel onglet.",
+    "demoBadge": "LOGEMENT DE DÉMO"
   }
 }

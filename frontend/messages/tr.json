@@ -5,7 +5,9 @@
     "showcase": "Örnekler",
     "pricing": "Fiyatlar",
     "signIn": "Google ile Giriş Yap",
-    "languageSelect": "Dil Seç"
+    "languageSelect": "Dil Seç",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat"
   },
   "hero": {
     "pill": "⚡ YENİ NESİL MİSAFİRPERVERLİK AI · 50+ DİL ALGILANDI",
@@ -61,14 +63,25 @@
     "step1Title": "Notlarınızı Söyleyin",
     "step1Desc": "Mülkünüzde gezerken 60 saniyelik sesli notlar kaydedin. AI bunları transkrip eder, temizler ve bilgi kartlarına yapılandırır.",
     "step1Footer": "Dolgu kelimelerini otomatik temizler",
+    "step1Transcribing": "Deşifre ediliyor:",
+    "step1MemoText": "\"Su ısıtıcı güç anahtarı çamaşır dolabının içindedir...\"",
     "step2Badge": "ADIM 02 · PLAKET BASKISI",
     "step2Title": "Akrilik Plaket Bas",
     "step2Desc": "Lüks akrilik veya ahşap stand şablonlarını (300+ DPI PDF) indirin ve komodinlere veya mutfak tezgahlarına yerleştirin.",
     "step2Footer": "Standart akrilik standlarla uyumlu",
+    "step2Template": "A5 / A6 Stand Şablonu",
+    "step2Bleed": "Hassas Taşma Payı ve Kesim İşaretleri (CMYK Hazır)",
+    "step2Vector": "300 DPI Vektör PDF",
     "step3Badge": "ADIM 03 · MİSAFİR TARAMASI",
     "step3Title": "Anlık Misafir PWA",
     "step3Desc": "Misafirler tarar ve anadillerinde anında yanıt alır. Uygulama indirmesi yok, hesap oluşturma yok, engel yok.",
-    "step3Footer": "Gece 2'de sıfır ev sahibi araması"
+    "step3Footer": "Gece 2'de sıfır ev sahibi araması",
+    "step3Scanned": "Misafir QR'ı Taradı",
+    "step3Load": "⚡ 0.8 sn yükleme",
+    "step3Wifi": "Wi-Fi Giriş Bilgileri",
+    "step3Copy": "1 Dokunuşla Kopyala",
+    "step3Lang": "Ana Dil",
+    "step3Auto": "Otomatik Algılandı"
   },
   "features": {
     "badge": "AMACA ÖZEL",
@@ -133,13 +146,18 @@
     "desc": "Mülklerinizi yönetmek veya 14 günlük ücretsiz denemenizi başlatmak için Google hesabınızla giriş yapın.",
     "continueGoogle": "Google ile Devam Et",
     "connecting": "Google'a bağlanılıyor...",
-    "error": "Kimlik doğrulama hizmetine bağlanılamıyor. Lütfen tekrar deneyin."
+    "error": "Kimlik doğrulama hizmetine bağlanılamıyor. Lütfen tekrar deneyin.",
+    "orExplore": "veya keşfedin",
+    "launchDemo": "Canlı Misafir Konsiyerj Demosunu Başlat",
+    "trialGuarantee": "14 gün sınırsız erişim · Kredi kartı gerekmez",
+    "secureAuth": "Supabase Auth ile güvenli kimlik doğrulama"
   },
   "demo": {
     "title": "Canlı Misafir Deneyimi Demosu",
     "desc": "SmartScan Stay'i yerinde QR taraması yapan bir misafir gibi tam olarak deneyimleyin.",
     "openGuest": "Mobil Misafir Görünümünü Aç",
     "property": "Villa 1904 Sanctuary · Mykonos",
-    "subtitle": "Uygulama kurulumu yok. Yeni sekmede simüle edilmiş mobil misafir deneyimini başlatmak için aşağıya tıklayın."
+    "subtitle": "Uygulama kurulumu yok. Yeni sekmede simüle edilmiş mobil misafir deneyimini başlatmak için aşağıya tıklayın.",
+    "demoBadge": "DEMO MÜLK"
   }
 }
