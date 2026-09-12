@@ -27,7 +27,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onOpenAuth }) =>
   return (
     <section
       id="pricing"
-      className="py-16 md:py-24 relative overflow-hidden"
+      className="py-16 md:py-24 relative overflow-hidden scroll-mt-24"
       aria-labelledby="pricing-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

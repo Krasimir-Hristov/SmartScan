@@ -20,7 +20,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   return (
     <section
       id="overview"
-      className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden"
+      className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden scroll-mt-24"
       aria-labelledby="hero-heading"
     >
       {/* Background ambient glow */}

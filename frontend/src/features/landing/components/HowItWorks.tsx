@@ -12,7 +12,7 @@ export const HowItWorks: React.FC = () => {
   return (
     <section
       id="how-it-works"
-      className="py-16 md:py-24 relative overflow-hidden"
+      className="py-16 md:py-24 relative overflow-hidden scroll-mt-24"
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

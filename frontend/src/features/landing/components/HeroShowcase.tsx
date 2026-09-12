@@ -13,7 +13,7 @@ export const HeroShowcase: React.FC<HeroShowcaseProps> = ({
   onOpenDemo,
 }) => {
   return (
-    <section id="showcase" className="py-8 md:py-14" aria-label="Interactive Showcase">
+    <section id="showcase" className="py-8 md:py-14 scroll-mt-24" aria-label="Interactive Showcase">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           {/* Left Card: Luxury Physical Acrylic Plaque */}
