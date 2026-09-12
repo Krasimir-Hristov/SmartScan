@@ -214,6 +214,7 @@ backend/app/
   - Защитата на `/dashboard` се управлява на ниво Server Components чрез Data Access Layer (DAL) и сесия от `@supabase/ssr`.
 - **React 19 Standards**:
   - Компонентите ЗАДЪЛЖИТЕЛНО се дефинират като стрелкови функции: `const MyComponent: React.FC<Props> = () => { ... }`. Забранена е думата `function`.
+  - **Именуване на файлове (PascalCase)**: Всички файлове с визуални React компоненти ЗАДЪЛЖИТЕЛНО се именуват в **PascalCase** (напр. `LandingHero.tsx`, `LandingNavbar.tsx`, `LanguageSwitcher.tsx`, `AuthCard.tsx`). Забранено е използването на kebab-case за файлове на React компоненти. Не-компонентните помощни файлове остават в camelCase/kebab-case (напр. `actions.ts`, `client.ts`, `request.ts`), а специалните файлове на Next.js App Router (`layout.tsx`, `page.tsx`, `loading.tsx`, `error.tsx`, `route.ts`) остават с малки букви според изискванията на Next.js.
   - Забранено е използването на тип `any`. Използват се стриктни интерфейси или `unknown` с Type Guards.
 - **State & Data Fetching**:
   - **TanStack Query (React Query)** управлява целия клиентски стейт и кеш.

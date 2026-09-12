@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badge';
 import { locales } from '@/lib/i18n/config';
 import { ShieldCheck, Zap, Globe, MessageSquareWarning, ArrowUpRight, Phone, CheckCircle2, Check } from 'lucide-react';
 

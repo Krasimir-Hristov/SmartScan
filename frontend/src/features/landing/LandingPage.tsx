@@ -2,17 +2,17 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { LandingNavbar } from './components/landing-navbar';
-import { LandingHero } from './components/landing-hero';
-import { HeroShowcase } from './components/hero-showcase';
-import { StatsRibbon } from './components/stats-ribbon';
-import { HowItWorks } from './components/how-it-works';
-import { FeaturesGrid } from './components/features-grid';
-import { PricingSection } from './components/pricing-section';
-import { LandingFooter } from './components/landing-footer';
-import { AuthModal } from './components/auth-modal';
-import { Dialog } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { LandingNavbar } from './components/LandingNavbar';
+import { LandingHero } from './components/LandingHero';
+import { HeroShowcase } from './components/HeroShowcase';
+import { StatsRibbon } from './components/StatsRibbon';
+import { HowItWorks } from './components/HowItWorks';
+import { FeaturesGrid } from './components/FeaturesGrid';
+import { PricingSection } from './components/PricingSection';
+import { LandingFooter } from './components/LandingFooter';
+import { AuthModal } from './components/AuthModal';
+import { Dialog } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/Button';
 import { QrCode, ExternalLink, Sparkles } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {

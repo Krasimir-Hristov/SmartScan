@@ -1,4 +1,4 @@
-export { LandingPage } from './landing-page';
+export { LandingPage } from './LandingPage';
 export type {
   NavItem,
   MetricItem,

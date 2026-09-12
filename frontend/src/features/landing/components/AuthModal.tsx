@@ -2,21 +2,18 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Dialog } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/Dialog';
 import { createClient } from '@/lib/supabase/client';
-import { Sparkles, Shield, QrCode, AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenDemo: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  onOpenDemo,
 }) => {
   const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +53,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       title={t('title')}
       description={t('desc')}
     >
-      <div className="flex flex-col gap-5 pt-2">
+      <div className="flex flex-col gap-4 pt-2">
         {errorMessage && (
           <div className="flex items-center gap-2 rounded-xl bg-red-950/80 border border-red-500/30 p-3 text-xs text-red-300">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
@@ -96,42 +93,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
           <span>{isLoading ? t('connecting') : t('continueGoogle')}</span>
         </button>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <div className="border-t border-zinc-800 w-full" />
-          <span className="bg-zinc-950 px-3 text-[11px] uppercase tracking-wider text-zinc-500 font-mono">
-            {t('orExplore')}
-          </span>
-        </div>
-
-        {/* Secondary Guest Demo Action */}
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onClick={() => {
-            onClose();
-            onOpenDemo();
-          }}
-          aria-label={t('launchDemo')}
-          className="border-emerald-500/20 hover:border-emerald-500/40 text-emerald-300 cursor-pointer"
-        >
-          <QrCode className="w-4 h-4 mr-1 text-emerald-400" />
-          <span>{t('launchDemo')}</span>
-        </Button>
-
-        {/* Guarantee details */}
-        <div className="pt-3 border-t border-zinc-900 flex flex-col gap-2 text-xs text-zinc-400 font-sans">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{t('trialGuarantee')}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{t('secureAuth')}</span>
-          </div>
-        </div>
       </div>
     </Dialog>
   );

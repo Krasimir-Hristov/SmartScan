@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { Button } from '@/components/ui/Button';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { Menu, X, Sparkles, QrCode } from 'lucide-react';
 
 export interface LandingNavbarProps {

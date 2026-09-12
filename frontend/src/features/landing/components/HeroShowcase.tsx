@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { PlaqueMockup } from './plaque-mockup';
-import { MobileMockup } from './mobile-mockup';
+import { PlaqueMockup } from './PlaqueMockup';
+import { MobileMockup } from './MobileMockup';
 
 export interface HeroShowcaseProps {
   onOpenAuth: () => void;
