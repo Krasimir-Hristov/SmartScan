@@ -1,215 +1,149 @@
 ---
-name: supabase-pgvector
-description: Production standard for Supabase integration, pgvector HNSW semantic search, RLS multi-tenant policies, and @supabase/ssr in Next.js 16+ & FastAPI.
+name: supabase
+description: "Use when doing ANY task involving Supabase. Triggers: Supabase products (Database, Auth, Edge Functions, Realtime, Storage, Vectors, Cron, Queues); client libraries and SSR integrations (supabase-js, @supabase/ssr) in Next.js, React, SvelteKit, Astro, Remix; auth issues (login, logout, sessions, JWT, cookies, getSession, getUser, getClaims, RLS); Supabase CLI or MCP server; schema changes, migrations, declarative schemas, security audits, Postgres extensions (pg_graphql, pg_cron, pg_vector); debugging and troubleshooting errors or unexpected behavior on Supabase projects (HTTP errors, Postgres errors, RLS surprises, permission denied, schema cache issues, timeouts, Edge Function crashes, Realtime drops, Storage failures) and reading or querying logs (Logs Explorer, ClickHouse)."
+metadata:
+  author: supabase
+  version: "0.1.2"
 ---
 
-# Supabase & pgvector Master Skill
+# Supabase
 
-This skill defines the authoritative patterns, database schemas, and client configurations for Supabase across the frontend (Next.js 16) and backend (FastAPI), strictly verified via official documentation and Context7.
+## Core Principles
 
----
+**1. Supabase changes frequently — verify against changelog and current docs before implementing.**
+Do not rely on training data for Supabase features. Function signatures, config.toml settings, and API conventions change between versions.
 
-## 1. Environment Keys & Variables (Bleeding-Edge Standard)
+First, fetch `https://supabase.com/changelog.md` (a lightweight summary index — not a heavy pull), scan for `breaking-change` tags relevant to your task, and follow the linked page for any that apply. Then look up the relevant topic using the documentation access methods below.
 
-> [!IMPORTANT]
-> **Zero Legacy Keys:** Do not use `anon_key` or `service_role_key`. Always use the modern `publishable` and `secret` API key formats.
+**2. Verify your work.**
+After implementing any fix, run a test query to confirm the change works. A fix without verification is incomplete.
 
-```env
-# Frontend (.env.local)
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sbp_...
+**3. Recover from errors, don't loop.**
+If an approach fails after 2-3 attempts, stop and reconsider. Try a different method, check documentation, inspect the error more carefully, and review relevant logs when available. Supabase issues are not always solved by retrying the same command, and the answer is not always in the logs, but logs are often worth checking before proceeding.
 
-# Backend (.env)
-SUPABASE_URL=https://<your-project>.supabase.co
-SUPABASE_SECRET_KEY=sbs_...
+**4. Exposing tables to the Data API:** Depending on the user's [Data API settings](https://supabase.com/dashboard/project/<ref>/integrations/data_api/settings), newly created tables may not be automatically exposed via the Data (REST) API. If this is the case, `anon` and `authenticated` roles will need to be explicitly granted access.
+
+> Note that this is separate from RLS, which controls which _rows_ are visible once a table is accessible, not whether the table is accessible at all.
+
+When a user reports a SQL-created table is unexpectedly inaccessible, check their Data API settings and whether the roles have been granted access via explicit `GRANT` SQL. When granting public (`anon`/`authenticated`) access, always enable RLS too. See [Exposing a Table to the Data API](https://supabase.com/docs/guides/api/securing-your-api.md) for the full setup workflow.
+
+**5. RLS in exposed schemas.**
+Enable RLS on every table in any exposed schema, which includes `public` by default. This is critical in Supabase because tables in exposed schemas can be reachable through the Data API when the `anon`/`authenticated` roles have access (see [Exposing a Table to the Data API](https://supabase.com/docs/guides/api/securing-your-api.md)). For private schemas, prefer RLS as defense in depth. After enabling RLS, create policies that match the actual access model rather than defaulting every table to the same `auth.uid()` pattern.
+
+**6. Security checklist.**
+When working on any Supabase task that touches auth, RLS, views, storage, or user data, run through this checklist. These are Supabase-specific security traps that silently create vulnerabilities:
+
+- **Auth and session security**
+  - **Never use `user_metadata` claims in JWT-based authorization decisions.** In Supabase, `raw_user_meta_data` is user-editable and can appear in `auth.jwt()`, so it is unsafe for RLS policies or any other authorization logic. Store authorization data in `raw_app_meta_data` / `app_metadata` instead.
+  - **Deleting a user does not invalidate existing access tokens.** Sign out or revoke sessions first, keep JWT expiry short for sensitive apps, and for strict guarantees validate `session_id` against `auth.sessions` on sensitive operations.
+  - **If you use `app_metadata` or `auth.jwt()` for authorization, remember JWT claims are not always fresh until the user's token is refreshed.**
+
+- **API key and client exposure**
+  - **Never expose the `service_role` or secret key in public clients.** Prefer publishable keys for frontend code. Legacy `anon` keys are only for compatibility. In Next.js, any `NEXT_PUBLIC_` env var is sent to the browser.
+
+- **RLS, views, and privileged database code**
+  - **Views bypass RLS by default.** In Postgres 15 and above, use `CREATE VIEW ... WITH (security_invoker = true)`. In older versions of Postgres, protect your views by revoking access from the `anon` and `authenticated` roles, or by putting them in an unexposed schema.
+  - **UPDATE requires a SELECT policy.** In Postgres RLS, an UPDATE needs to first SELECT the row. Without a SELECT policy, updates silently return 0 rows — no error, just no change.
+  - **`auth.role()` is deprecated — use the `TO` clause instead.** Supabase has deprecated `auth.role()` in favour of specifying the target role directly on the policy with `TO authenticated` or `TO anon`. Beyond deprecation, `auth.role() = 'authenticated'` breaks silently when anonymous sign-ins are enabled, because anonymous users carry the `authenticated` Postgres role and pass the check regardless of whether the user is genuinely signed in.
+    ```sql
+    -- Deprecated (do not use)
+    create policy "example" on table_name for select
+    using ( auth.role() = 'authenticated' );
+    ```
+  - **`TO authenticated` alone is authentication without authorization (BOLA / IDOR).** Using `TO authenticated` only checks the role — it does not restrict which rows a user can access. The correct pattern combines `TO authenticated` with an ownership predicate in `USING`:
+    ```sql
+    create policy "example" on table_name for select
+    to authenticated
+    using ( (select auth.uid()) = user_id );
+    ```
+  - **UPDATE policies require both `USING` and `WITH CHECK`.** Without `WITH CHECK`, a user can reassign a row's `user_id` to another user:
+    ```sql
+    create policy "example" on table_name for update
+    to authenticated
+    using ( (select auth.uid()) = user_id )
+    with check ( (select auth.uid()) = user_id );
+    ```
+  - **`SECURITY DEFINER` functions bypass RLS.** A `SECURITY DEFINER` function runs with its creator's privileges — typically a role with `bypassrls` (e.g., `postgres`). Never add `SECURITY DEFINER` to resolve a permission error; it silently removes access control without fixing the underlying cause. Prefer `SECURITY INVOKER`.
+  - **`SECURITY DEFINER` functions in `public` are callable by all roles.** Postgres grants `EXECUTE` to `PUBLIC` by default for every new function, so any `SECURITY DEFINER` function in `public` is a public API endpoint callable by `anon` and `authenticated` (which inherit from `PUBLIC`) without any additional grant. When `SECURITY DEFINER` is genuinely needed (e.g., bypassing RLS on an internal lookup table), keep the function in a non-exposed schema, always include an `auth.uid()` check in the function body, and run `supabase db advisors` after making changes.
+
+- **Storage access control**
+  - **Storage upsert requires INSERT + SELECT + UPDATE.** Granting only INSERT allows new uploads but file replacement (upsert) silently fails. You need all three.
+
+- **Dependency and supply-chain security**
+  - **Always pin package versions and commit lockfiles** when installing Supabase packages (`supabase-js`, `@supabase/ssr`, `supabase-py`, etc.). See the [npm security guide](https://supabase.com/docs/guides/security/npm-security.md) for the full checklist.
+
+For any security concern not covered above, fetch the Supabase product security index: `https://supabase.com/docs/guides/security/product-security.md`
+
+## Supabase CLI
+
+Always discover commands via `--help` — never guess. The CLI structure changes between versions.
+
+```bash
+supabase --help                    # All top-level commands
+supabase <group> --help            # Subcommands (e.g., supabase db --help)
+supabase <group> <command> --help  # Flags for a specific command
 ```
 
----
+**Supabase CLI Known gotchas:**
 
-## 2. Multi-Tenant Database Schema (DDL)
+- `supabase db query` requires **CLI v2.79.0+** → use MCP `execute_sql` or `psql` as fallback
+- `supabase db advisors` requires **CLI v2.81.3+** → use MCP `get_advisors` as fallback
+- In imperative migration projects, create new hand-authored migration files with `supabase migration new <name>` first. Never invent a migration filename or rely on memory for the expected format. Declarative schema projects generate migrations from `supabase/schemas/`; see "Making and Committing Schema Changes" below.
 
-### A. Extensions & Spaces Table
-```sql
--- Enable pgvector extension
-create extension if not exists vector;
+**Version check and upgrade:** Run `supabase --version` to check. For CLI changelogs and version-specific features, consult the [CLI documentation](https://supabase.com/docs/reference/cli/introduction) or [GitHub releases](https://github.com/supabase/cli/releases).
 
--- Universal multi-tenant Spaces table
-create table if not exists spaces (
-  id uuid primary key default gen_random_uuid(),
-  host_id uuid not null references auth.users(id) on delete cascade,
-  name text not null,
-  slug text unique not null,
-  space_type text not null default 'stay' check (space_type in ('stay', 'menu', 'real_estate', 'auto', 'insurance')),
-  wifi_ssid text,
-  wifi_password text,
-  address text,
-  contact_phone text,
-  whatsapp_number text,
-  check_in_instructions text,
-  check_out_instructions text,
-  metadata jsonb default '{}'::jsonb,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
+## Supabase MCP Server
 
--- Index for instant slug lookups by guests
-create index if not exists idx_spaces_slug on spaces(slug);
-create index if not exists idx_spaces_host_id on spaces(host_id);
-```
+For setup instructions, server URL, and configuration, see the [MCP setup guide](https://supabase.com/docs/guides/getting-started/mcp).
 
-### B. Knowledge Chunks with HNSW Vector Index
-```sql
-create table if not exists knowledge_chunks (
-  id bigint generated always as identity primary key,
-  space_id uuid not null references spaces(id) on delete cascade,
-  content text not null,
-  embedding vector(1536), -- Matches text-embedding-3-small or Gemini text-embedding-004
-  metadata jsonb default '{}'::jsonb,
-  created_at timestamptz default now()
-);
+**Troubleshooting connection issues** — follow these steps in order:
 
--- Index for strict multi-tenant filtering
-create index if not exists idx_knowledge_chunks_space_id on knowledge_chunks(space_id);
+1. **Check if the server is reachable:**
+   `curl -so /dev/null -w "%{http_code}" https://mcp.supabase.com/mcp`
+   A `401` is expected (no token) and means the server is up. Timeout or "connection refused" means it may be down.
 
--- HNSW Vector Index for low-latency cosine distance search
-create index if not exists idx_knowledge_chunks_hnsw 
-on knowledge_chunks 
-using hnsw (embedding vector_cosine_ops);
-```
+2. **Check `.mcp.json` configuration:**
+   Verify the project root has a valid `.mcp.json` with the correct server URL. If missing, create one pointing to `https://mcp.supabase.com/mcp`.
 
----
+3. **Authenticate the MCP server:**
+   If the server is reachable and `.mcp.json` is correct but tools aren't visible, the user needs to authenticate. The Supabase MCP server uses OAuth 2.1 — tell the user to trigger the auth flow in their agent, complete it in the browser, and reload the session.
 
-## 3. High-Performance Multi-Tenant RAG Function (RPC)
+## Supabase Documentation
 
-```sql
-create or replace function match_space_knowledge (
-  query_embedding vector(1536),
-  filter_space_id uuid,
-  match_threshold float default 0.6,
-  match_count int default 3
-)
-returns table (
-  id bigint,
-  content text,
-  similarity float,
-  metadata jsonb
-)
-language sql stable
-as $$
-  select
-    knowledge_chunks.id,
-    knowledge_chunks.content,
-    1 - (knowledge_chunks.embedding <=> query_embedding) as similarity,
-    knowledge_chunks.metadata
-  from knowledge_chunks
-  where knowledge_chunks.space_id = filter_space_id
-    and (knowledge_chunks.embedding <=> query_embedding) < (1 - match_threshold)
-  order by knowledge_chunks.embedding <=> query_embedding
-  limit match_count;
-$$;
-```
+Before implementing any Supabase feature, find the relevant documentation. Use these methods in priority order:
 
----
+1. **MCP `search_docs` tool** (preferred — returns relevant snippets directly)
+2. **Fetch docs pages as markdown** — any docs page can be fetched by appending `.md` to the URL path.
+3. **Web search** for Supabase-specific topics when you don't know which page to look at.
 
-## 4. Row Level Security (RLS) Policies
+## Making and Committing Schema Changes
 
-```sql
--- 1. Spaces Security
-alter table spaces enable row level security;
+First decide which schema workflow the project uses.
 
--- Hosts can CRUD only their own spaces
-create policy "Hosts manage their own spaces"
-on spaces for all to authenticated
-using ((select auth.uid()) = host_id)
-with check ((select auth.uid()) = host_id);
+### Option A: Declarative schemas
 
--- Guests can read spaces public profile by slug (read-only)
-create policy "Guests can view space by slug"
-on spaces for select to anon, authenticated
-using (true);
+Use this when `supabase/schemas/` exists or `config.toml` sets `schema_paths`. Edit the desired schema state in those files, then generate and review the migration. Do not start by hand-writing a migration. See the [Declarative database schemas guide](https://supabase.com/docs/guides/local-development/declarative-database-schemas).
 
--- 2. Knowledge Chunks Security
-alter table knowledge_chunks enable row level security;
+### Option B: Imperative migrations
 
--- Hosts can CRUD knowledge for their spaces
-create policy "Hosts manage knowledge for their spaces"
-on knowledge_chunks for all to authenticated
-using (
-  space_id in (select id from spaces where host_id = (select auth.uid()))
-)
-with check (
-  space_id in (select id from spaces where host_id = (select auth.uid()))
-);
-```
+Use this when the project does not use declarative schemas.
 
----
+**To make schema changes, use `execute_sql` (MCP) or `supabase db query` (CLI).** These run SQL directly on the database without creating migration history entries, so you can iterate freely and generate a clean migration when ready.
 
-## 5. Next.js 16 (@supabase/ssr) Client Implementations
+Do NOT use `apply_migration` to change a local database schema — it writes a migration history entry on every call, which means you can't iterate, and `supabase db diff` / `supabase db pull` will produce empty or conflicting diffs. If you use it, you'll be stuck with whatever SQL you passed on the first try.
 
-### A. Browser Client (`src/lib/supabase/client.ts`)
-```typescript
-import { createBrowserClient } from '@supabase/ssr';
+**When ready to commit** your changes to a migration file:
 
-export const createClient = () => {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  );
-};
-```
+1. **Run advisors** → `supabase db advisors` (CLI v2.81.3+) or MCP `get_advisors`. Fix any issues.
+2. **Review the Security Checklist above** if your changes involve views, functions, triggers, or storage.
+3. **Generate the migration** → `supabase db pull <descriptive-name> --local --yes`
+4. **Verify** → `supabase migration list --local`
 
-### B. Server Component / Action Client (`src/lib/supabase/server.ts`)
-```typescript
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+## Debugging
 
-export const createClient = async () => {
-  const cookieStore = await cookies();
+When you get an error on a Supabase-related request, for example an error code from the Supabase REST API, Postgres database, or PostgREST, an empty result, getting blocked by RLS unexpectedly, or an error from a Supabase service like Auth, Realtime, Edge Functions, or Storage, you **must** fetch Supabase's [Monitoring and Debugging](https://supabase.com/docs/guides/monitoring-and-debugging.md) documentation before diagnosing or proposing a fix, rather than working from memory. The same docs also cover performance optimizations, such as slow queries and missing indexes.
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have proxy/refresh middleware.
-          }
-        },
-      },
-    }
-  );
-};
-```
+## Reference Guides
 
----
-
-## 6. Python FastAPI Backend Client (`backend/app/core/database.py`)
-
-```python
-from supabase import create_client, Client
-from app.core.config import settings
-
-def get_supabase_client() -> Client:
-    """Returns an authenticated Supabase client using secret key for backend tasks."""
-    return create_client(
-        supabase_url=settings.SUPABASE_URL,
-        supabase_key=settings.SUPABASE_SECRET_KEY,
-    )
-```
-
----
-
-## 7. Anti-Patterns & Strict Prohibitions
-- ❌ **Никога** не правете векторно търсене без филтъра `space_id = filter_space_id`.
-- ❌ **Никога** не използвайте `anon_key` или `service_role_key` (остарели).
-- ❌ **Никога** не излагайте `SUPABASE_SECRET_KEY` на клиента (в браузъра).
-- ❌ **Никога** не ползвайте IVFFlat индекс за векторни знания в SmartScan — използвайте **HNSW** (`using hnsw (embedding vector_cosine_ops)`).
+- **Skill Feedback** → [references/skill-feedback.md](references/skill-feedback.md)
+  **MUST read when** the user reports that this skill gave incorrect guidance or is missing information.
