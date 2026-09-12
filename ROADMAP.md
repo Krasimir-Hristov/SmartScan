@@ -9,7 +9,7 @@
 | Етап | Модул | Статус | Последна проверка |
 | :--- | :--- | :--- | :--- |
 | **Стъпка 1** | Landing Page & Дизайн система | 🟢 Завършена | 11.09.2026 |
-| **Стъпка 2** | Host Автентикация (1-Click Google OAuth) | ⚪ Очаква | — |
+| **Стъпка 2** | Host Автентикация (1-Click Google OAuth & Дашборд) | 🟢 Завършена | 12.09.2026 |
 | **Стъпка 3** | Гост PWA Преживяване (`/stay/[slug]`) | ⚪ Очаква | — |
 | **Стъпка 4** | База данни, Supabase Миграции & DAL | ⚪ Очаква | — |
 | **Стъпка 5** | FastAPI AI Concierge & Прокси слой | ⚪ Очаква | — |
@@ -35,12 +35,16 @@
 
 ---
 
-### [ ] Стъпка 2: Host Автентикация & Вход (`design/06`)
-- [ ] Изграждане на `/auth` страница и модал за вход според спецификацията.
-- [ ] Интеграция на 1-клик Google OAuth през Supabase Auth.
-- [ ] Състояния за зареждане, валидация и обработка на грешки без сурови stack traces.
-- [ ] Защита на пренасочването към `/dashboard`.
-- [ ] **Верификация**: Тест на входния поток, проверка за липса на `any`, одобрение от потребителя.
+### [x] Стъпка 2: Host Автентикация & Вход (`design/06`)
+- [x] **Стъпка 2А**: Сървърна инфраструктура (`src/lib/supabase/server.ts`), Data Access Layer (`src/lib/auth/dal.ts`) с `server-only` и `cache()`.
+- [x] **Стъпка 2А**: OAuth Route Handler (`/auth/callback/route.ts`) с размяна на код за HTTP-only сесийна бисквитка (`@supabase/ssr`).
+- [x] **Стъпка 2А**: Защитен маршрут `/dashboard` (`src/app/dashboard/page.tsx`) с моментално сървърно блокиране и пренасочване при неавтентикиран достъп (No-Middleware архитектура).
+- [x] **Стъпка 2Б**: Obsidian Luxury компактен модал за вход ([`AuthModal.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/AuthModal.tsx)) с Google 1-Click OAuth.
+- [x] **Стъпка 2Б**: Интерактивен мок Дашборд ([`DashboardPage.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/dashboard/DashboardPage.tsx)) с хост навигация, активни метрики и вила карта.
+- [x] **Стъпка 2Б**: Динамичен навбар ([`LandingNavbar.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/LandingNavbar.tsx) / [`NavbarAuthAction.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/NavbarAuthAction.tsx)):
+  - Нелогнат: "Вход с Google" (отваря модала).
+  - Логнат: "Табло" (препраща към `/dashboard`) + "Изход" (прекратява сесията и опреснява).
+- [x] **Верификация**: `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки. Тестван защитен достъп (HTTP 307 Redirect при нелогнат опит).
 
 ---
 
