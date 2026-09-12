@@ -142,15 +142,22 @@
     "markets": "Marchés touristiques supportés :"
   },
   "auth": {
-    "title": "Bienvenue sur SmartScan Stay",
-    "desc": "Connectez-vous avec votre compte Google pour gérer vos propriétés ou commencer votre essai gratuit de 14 jours.",
+    "welcomeBadge": "PORTAIL HÔTE",
+    "title": "Connexion à SmartScan Stay",
+    "desc": "Gérez vos propriétés, concierge IA et plaques QR depuis un seul endroit.",
     "continueGoogle": "Continuer avec Google",
     "connecting": "Connexion à Google...",
     "error": "Impossible de se connecter au service d'authentification. Veuillez réessayer.",
-    "orExplore": "ou découvrir",
-    "launchDemo": "Lancer la démo voyageur en direct",
-    "trialGuarantee": "14 jours d'accès illimité · Aucune carte bancaire requise",
-    "secureAuth": "Authentification sécurisée via Supabase Auth"
+    "securityNote": "Connexion sécurisée directe via Google OAuth · Aucun mot de passe",
+    "slide1Badge": "CONCIERGE IA 24/7",
+    "slide1Title": "Les clients s'adressent à l'IA, pas à vous",
+    "slide1Desc": "Réponses instantanées sur le Wi-Fi, le départ et le règlement intérieur dans 50+ langues à toute heure.",
+    "slide2Badge": "PLAQUE QR DE TABLE",
+    "slide2Title": "Zéro téléchargement d'application",
+    "slide2Desc": "Les clients scannent simplement le support acrylique avec leur caméra. S'ouvre en quelques secondes.",
+    "slide3Badge": "TABLEAU DE BORD HÔTE",
+    "slide3Title": "Tout en un seul endroit",
+    "slide3Desc": "Mettez à jour les informations, codes et conseils locaux en 60 secondes avec synchronisation directe."
   },
   "demo": {
     "title": "Démo de l'expérience client en direct",

@@ -142,15 +142,22 @@
     "markets": "Mercati turistici supportati:"
   },
   "auth": {
-    "title": "Benvenuto su SmartScan Stay",
-    "desc": "Accedi con il tuo account Google per gestire le tue proprietà o iniziare la prova gratuita di 14 giorni.",
+    "welcomeBadge": "PORTALE HOST",
+    "title": "Accedi a SmartScan Stay",
+    "desc": "Gestisci le tue proprietà, concierge AI e targhe QR da un unico posto.",
     "continueGoogle": "Continua con Google",
     "connecting": "Connessione a Google...",
     "error": "Impossibile connettersi al servizio di autenticazione. Riprova.",
-    "orExplore": "o esplora",
-    "launchDemo": "Avvia demo live per ospiti",
-    "trialGuarantee": "14 giorni di accesso illimitato · Nessuna carta di credito richiesta",
-    "secureAuth": "Autenticazione sicura tramite Supabase Auth"
+    "securityNote": "Accesso sicuro diretto tramite Google OAuth · Nessuna password",
+    "slide1Badge": "CONCIERGE AI 24/7",
+    "slide1Title": "Gli ospiti chiedono all'AI, non a te",
+    "slide1Desc": "Risposte istantanee per Wi-Fi, check-out e regole della casa in oltre 50 lingue a qualsiasi ora.",
+    "slide2Badge": "TARGA QR DA TAVOLO",
+    "slide2Title": "Nessuna app da scaricare",
+    "slide2Desc": "Gli ospiti inquadrano semplicemente il supporto acrilico con la fotocamera. Si apre in pochi secondi.",
+    "slide3Badge": "PANNELLO DI CONTROLLO",
+    "slide3Title": "Tutto in un unico posto",
+    "slide3Desc": "Aggiorna dettagli, codici e consigli in 60 secondi con sincronizzazione in tempo reale."
   },
   "demo": {
     "title": "Demo live dell'esperienza ospite",

@@ -142,15 +142,22 @@
     "markets": "Mercados turísticos soportados:"
   },
   "auth": {
-    "title": "Bienvenido a SmartScan Stay",
-    "desc": "Inicia sesión con tu cuenta de Google para gestionar tus propiedades o comenzar tu prueba gratuita de 14 días.",
+    "welcomeBadge": "PORTAL DE ANFITRIONES",
+    "title": "Iniciar sesión en SmartScan Stay",
+    "desc": "Gestiona tus propiedades, conserje AI y placas QR desde un solo lugar.",
     "continueGoogle": "Continuar con Google",
     "connecting": "Conectando con Google...",
     "error": "No se puede conectar con el servicio de autenticación. Por favor, inténtalo de nuevo.",
-    "orExplore": "o explorar",
-    "launchDemo": "Iniciar demo en vivo para huéspedes",
-    "trialGuarantee": "14 días de acceso ilimitado · No se requiere tarjeta de crédito",
-    "secureAuth": "Autenticación segura mediante Supabase Auth"
+    "securityNote": "Acceso seguro directo mediante Google OAuth · Sin contraseñas",
+    "slide1Badge": "CONSERJE AI 24/7",
+    "slide1Title": "Los huéspedes preguntan a la AI, no a ti",
+    "slide1Desc": "Respuestas instantáneas de Wi-Fi, salida y normas en más de 50 idiomas a cualquier hora.",
+    "slide2Badge": "PLACA QR DE SOBREMESA",
+    "slide2Title": "Cero descargas de apps",
+    "slide2Desc": "Los huéspedes solo escanean la placa acrílica con su cámara. Se abre en segundos.",
+    "slide3Badge": "PANEL DE CONTROL",
+    "slide3Title": "Todo en un solo lugar",
+    "slide3Desc": "Actualiza datos, códigos y recomendaciones en 60 segundos con sincronización en tiempo real."
   },
   "demo": {
     "title": "Demo en vivo de la experiencia del huésped",

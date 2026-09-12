@@ -142,15 +142,22 @@
     "markets": "Desteklenen Turizm Pazarları:"
   },
   "auth": {
-    "title": "SmartScan Stay'e Hoş Geldiniz",
-    "desc": "Mülklerinizi yönetmek veya 14 günlük ücretsiz denemenizi başlatmak için Google hesabınızla giriş yapın.",
+    "welcomeBadge": "EV SAHİBİ PORTALI",
+    "title": "SmartScan Stay'e Giriş Yap",
+    "desc": "Mülklerinizi, AI konsiyerjinizi ve QR plaketlerinizi tek bir yerden yönetin.",
     "continueGoogle": "Google ile Devam Et",
     "connecting": "Google'a bağlanılıyor...",
     "error": "Kimlik doğrulama hizmetine bağlanılamıyor. Lütfen tekrar deneyin.",
-    "orExplore": "veya keşfedin",
-    "launchDemo": "Canlı Misafir Konsiyerj Demosunu Başlat",
-    "trialGuarantee": "14 gün sınırsız erişim · Kredi kartı gerekmez",
-    "secureAuth": "Supabase Auth ile güvenli kimlik doğrulama"
+    "securityNote": "Google OAuth ile doğrudan güvenli giriş · Şifre gerektirmez",
+    "slide1Badge": "7/24 AI KONSİYERJ",
+    "slide1Title": "Misafirler size değil, AI'a sorar",
+    "slide1Desc": "Günün her saatinde 50'den fazla dilde Wi-Fi, çıkış ve ev kuralları için anında yanıtlar.",
+    "slide2Badge": "MASAÜSTÜ AKRİLİK QR",
+    "slide2Title": "Uygulama indirmeye son",
+    "slide2Desc": "Misafirler sadece kameralarıyla QR plaketini tarar. Saniyeler içinde açılır.",
+    "slide3Badge": "YÖNETİM PANELİ",
+    "slide3Title": "Her şey tek bir yerde",
+    "slide3Desc": "Mülk bilgilerini, şifreleri ve önerileri gerçek zamanlı senkronizasyonla 60 saniyede güncelleyin."
   },
   "demo": {
     "title": "Canlı Misafir Deneyimi Demosu",

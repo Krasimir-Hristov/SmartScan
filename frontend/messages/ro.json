@@ -142,15 +142,22 @@
     "markets": "Piețe turistice suportate:"
   },
   "auth": {
-    "title": "Bun venit la SmartScan Stay",
-    "desc": "Autentifică-te cu contul Google pentru a-ți gestiona proprietățile sau pentru a începe proba gratuită de 14 zile.",
+    "welcomeBadge": "PORTAL GAZDĂ",
+    "title": "Autentificare în SmartScan Stay",
+    "desc": "Gestionează-ți proprietățile, concierge-ul AI și plăcuțele QR dintr-un singur loc.",
     "continueGoogle": "Continuă cu Google",
     "connecting": "Conectare la Google...",
     "error": "Nu se poate conecta la serviciul de autentificare. Te rugăm să încerci din nou.",
-    "orExplore": "sau explorați",
-    "launchDemo": "Lansează demo live pentru oaspeți",
-    "trialGuarantee": "14 zile acces nelimitat · Nu este necesar un card de credit",
-    "secureAuth": "Autentificare securizată prin Supabase Auth"
+    "securityNote": "Autentificare securizată prin Google OAuth · Fără parole",
+    "slide1Badge": "CONCIERGE AI 24/7",
+    "slide1Title": "Oaspeții întreabă AI-ul, nu pe tine",
+    "slide1Desc": "Răspunsuri instantanee pentru Wi-Fi, check-out și regulile casei în peste 50 de limbi, la orice oră.",
+    "slide2Badge": "PLĂCUȚĂ QR ACRILICĂ",
+    "slide2Title": "Fără descărcare de aplicații",
+    "slide2Desc": "Oaspeții scanează pur și simplu suportul acrilic cu camera. Se deschide în câteva secunde.",
+    "slide3Badge": "PANOU DE CONTROL",
+    "slide3Title": "Totul într-un singur loc",
+    "slide3Desc": "Actualizează detaliile, codurile și recomandările în 60 de secunde cu sincronizare în timp real."
   },
   "demo": {
     "title": "Demo live experiență oaspete",

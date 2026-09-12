@@ -64,7 +64,7 @@ export const Dialog: React.FC<DialogProps> = ({
           type="button"
           onClick={onClose}
           aria-label="Затвори модалния прозорец"
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 z-30 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>

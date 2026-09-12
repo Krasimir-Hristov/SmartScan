@@ -142,15 +142,22 @@
     "markets": "Unterstützte Tourismusziele:"
   },
   "auth": {
-    "title": "Willkommen bei SmartScan Stay",
-    "desc": "Melde dich mit deinem Google-Konto an, um deine Objekte zu verwalten oder starte deine kostenlose 14-Tage-Testversion.",
+    "welcomeBadge": "HOST-PORTAL",
+    "title": "Anmelden bei SmartScan Stay",
+    "desc": "Verwalten Sie Ihre Unterkünfte, AI-Concierge und QR-Aufsteller an einem Ort.",
     "continueGoogle": "Mit Google fortfahren",
     "connecting": "Verbindung mit Google...",
     "error": "Verbindung zum Authentifizierungsdienst nicht möglich. Bitte versuche es erneut.",
-    "orExplore": "oder entdecken",
-    "launchDemo": "Live-Gäste-Demo starten",
-    "trialGuarantee": "14 Tage unbegrenzter Zugriff · Keine Kreditkarte erforderlich",
-    "secureAuth": "Sichere Authentifizierung über Supabase Auth"
+    "securityNote": "Sichere Anmeldung über Google OAuth · Keine Passwörter",
+    "slide1Badge": "24/7 AI-CONCIERGE",
+    "slide1Title": "Gäste fragen die AI, nicht Sie",
+    "slide1Desc": "Sofortige Antworten zu WLAN, Abreise und Hausregeln in über 50 Sprachen zu jeder Tages- und Nachtzeit.",
+    "slide2Badge": "PHYSISCHER QR-AUFSTELLER",
+    "slide2Title": "Keine App-Downloads nötig",
+    "slide2Desc": "Gäste scannen einfach den Acryl-QR-Aufsteller mit der Kamera. Öffnet sich in Sekundenschnelle.",
+    "slide3Badge": "HOST-DASHBOARD",
+    "slide3Title": "Alles an einem Ort",
+    "slide3Desc": "Aktualisieren Sie Objektdaten, Codes und Tipps in 60 Sekunden mit Echtzeit-Synchronisierung."
   },
   "demo": {
     "title": "Live-Demo des Gasterlebnisses",

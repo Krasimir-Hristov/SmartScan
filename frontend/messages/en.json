@@ -142,15 +142,22 @@
     "markets": "Supported Tourism Markets:"
   },
   "auth": {
-    "title": "Welcome to SmartScan Stay",
-    "desc": "Sign in with your Google account to manage your properties or start your 14-day free trial.",
+    "welcomeBadge": "HOST PORTAL",
+    "title": "Sign in to SmartScan Stay",
+    "desc": "Manage your properties, AI concierge, and QR plaques in one place.",
     "continueGoogle": "Continue with Google",
     "connecting": "Connecting to Google...",
     "error": "Unable to connect to authentication service. Please try again.",
-    "orExplore": "or explore",
-    "launchDemo": "Launch Live Guest Concierge Demo",
-    "trialGuarantee": "14 days unlimited access · No credit card required",
-    "secureAuth": "Secure authentication via Supabase Auth"
+    "securityNote": "Secure direct sign-in via Google OAuth · No passwords",
+    "slide1Badge": "24/7 AI CONCIERGE",
+    "slide1Title": "Guests ask AI, not you",
+    "slide1Desc": "Instant answers for Wi-Fi, checkout, and house rules in 50+ languages at any hour.",
+    "slide2Badge": "PHYSICAL QR PLAQUE",
+    "slide2Title": "Zero App Downloads",
+    "slide2Desc": "Guests simply scan the tabletop QR plaque with their camera. Opens in seconds in Safari or Chrome.",
+    "slide3Badge": "HOST DASHBOARD",
+    "slide3Title": "Everything in One Place",
+    "slide3Desc": "Update house details, passcodes, and local tips in 60 seconds with real-time sync."
   },
   "demo": {
     "title": "Live Guest Experience Demo",
