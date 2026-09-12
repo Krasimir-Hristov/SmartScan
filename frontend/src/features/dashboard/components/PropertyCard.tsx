@@ -20,6 +20,32 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     todayScans: 28,
   },
 }) => {
+  const getStatusBadge = (status: PropertySummary['status']) => {
+    switch (status) {
+      case 'active':
+        return {
+          label: 'Активен',
+          badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+          dotClass: 'bg-emerald-400 animate-pulse',
+        };
+      case 'paused':
+        return {
+          label: 'Паузиран',
+          badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+          dotClass: 'bg-amber-400',
+        };
+      case 'draft':
+      default:
+        return {
+          label: 'Чернова',
+          badgeClass: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
+          dotClass: 'bg-zinc-400',
+        };
+    }
+  };
+
+  const statusInfo = getStatusBadge(property.status);
+
   return (
     <div className="relative overflow-hidden rounded-3xl bg-linear-to-b from-zinc-900/90 via-zinc-950/90 to-zinc-950 border border-emerald-500/25 p-6 sm:p-8 shadow-xl shadow-emerald-950/20">
       {/* Ambient background glow */}
@@ -39,9 +65,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
               <h3 className="font-display text-xl font-bold tracking-tight text-white">
                 {property.name}
               </h3>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Активен
+              <span
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${statusInfo.badgeClass}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotClass}`} />
+                {statusInfo.label}
               </span>
             </div>
             <p className="text-xs text-zinc-400 font-sans">

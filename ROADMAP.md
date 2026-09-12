@@ -37,11 +37,11 @@
 
 ### [x] Стъпка 2: Host Автентикация & Вход (`design/06`)
 - [x] **Стъпка 2А**: Сървърна инфраструктура (`src/lib/supabase/server.ts`), Data Access Layer (`src/lib/auth/dal.ts`) с `server-only` и `cache()`.
-- [x] **Стъпка 2А**: OAuth Route Handler (`/auth/callback/route.ts`) с размяна на код за HTTP-only сесийна бисквитка (`@supabase/ssr`).
+- [x] **Стъпка 2А**: OAuth Route Handler (`src/app/auth/callback/route.ts`) с размяна на код за бисквитково-базирана сесия (`@supabase/ssr`).
 - [x] **Стъпка 2А**: Защитен маршрут `/dashboard` (`src/app/dashboard/page.tsx`) с моментално сървърно блокиране и пренасочване при неавтентикиран достъп (No-Middleware архитектура).
-- [x] **Стъпка 2Б**: Obsidian Luxury компактен модал за вход ([`AuthModal.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/AuthModal.tsx)) с Google 1-Click OAuth.
-- [x] **Стъпка 2Б**: Интерактивен мок Дашборд ([`DashboardPage.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/dashboard/DashboardPage.tsx)) с хост навигация, активни метрики и вила карта.
-- [x] **Стъпка 2Б**: Динамичен навбар ([`LandingNavbar.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/LandingNavbar.tsx) / [`NavbarAuthAction.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/NavbarAuthAction.tsx)):
+- [x] **Стъпка 2Б**: Obsidian Luxury компактен модал за вход ([`AuthModal.tsx`](frontend/src/features/landing/components/AuthModal.tsx)) с Google 1-Click OAuth.
+- [x] **Стъпка 2Б**: Интерактивен мок Дашборд ([`DashboardPage.tsx`](frontend/src/features/dashboard/DashboardPage.tsx)) с хост навигация, активни метрики и вила карта.
+- [x] **Стъпка 2Б**: Динамичен навбар ([`LandingNavbar.tsx`](frontend/src/features/landing/components/LandingNavbar.tsx) / [`NavbarAuthAction.tsx`](frontend/src/features/landing/components/NavbarAuthAction.tsx)):
   - Нелогнат: "Вход с Google" (отваря модала).
   - Логнат: "Табло" (препраща към `/dashboard`) + "Изход" (прекратява сесията и опреснява).
 - [x] **Верификация**: `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки. Тестван защитен достъп (HTTP 307 Redirect при нелогнат опит).
