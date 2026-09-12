@@ -51,7 +51,6 @@ export const LandingPage: React.FC = () => {
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onOpenDemo={() => setIsDemoOpen(true)}
       />
 
       {/* Interactive Guest Demo Modal */}
