@@ -1,31 +1,34 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { Home, QrCode, Sparkles } from 'lucide-react';
 import type { MetricItem } from '../types/dashboard.types';
 
 export const DashboardMetrics: React.FC = () => {
+  const t = useTranslations('dashboard');
+
   const metrics: MetricItem[] = [
     {
       id: 'active-spaces',
-      label: 'Активни пространства',
+      label: t('activeSpaces'),
       value: '1',
-      subtext: 'Вила 1904 Светилище',
-      trend: 'Онлайн 24/7',
+      subtext: t('activeSpacesSub'),
+      trend: t('activeSpacesTrend'),
     },
     {
       id: 'qr-scans',
-      label: 'QR Сканирания днес',
+      label: t('qrScansToday'),
       value: '28',
-      subtext: 'Всички стаи и трапезария',
-      trend: '+14% спрямо вчера',
+      subtext: t('qrScansTodaySub'),
+      trend: t('qrScansTodayTrend'),
     },
     {
       id: 'ai-resolution',
-      label: 'AI Авто-разрешаване',
+      label: t('aiAutoResolution'),
       value: '100%',
-      subtext: '34 въпроса отговорени без обаждане',
-      trend: '0 пропуснати обаждания',
+      subtext: t('aiAutoResolutionSub'),
+      trend: t('aiAutoResolutionTrend'),
     },
   ];
 

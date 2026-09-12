@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { QrCode, LogOut, ArrowLeft, Loader2, User } from 'lucide-react';
 import type { DashboardUser } from '../types/dashboard.types';
@@ -13,6 +14,7 @@ export interface DashboardNavbarProps {
 
 export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
   const router = useRouter();
+  const t = useTranslations('dashboard');
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
@@ -32,7 +34,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
-    'Host';
+    t('defaultHostName');
 
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
 
@@ -64,7 +66,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
           </Link>
 
           <span className='hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono'>
-            Хост Панел
+            {t('hostBadge')}
           </span>
         </div>
 
@@ -72,11 +74,11 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
         <div className='flex items-center gap-3 sm:gap-4'>
           <Link
             href='/'
-            aria-label='Обратно към сайта'
+            aria-label={t('backToSiteAria')}
             className='hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer'
           >
             <ArrowLeft className='w-3.5 h-3.5' />
-            <span>Към сайта</span>
+            <span>{t('backToSite')}</span>
           </Link>
 
           {/* User Info Capsule */}
@@ -108,7 +110,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
             type='button'
             onClick={handleSignOut}
             disabled={isSigningOut}
-            aria-label='Изход от профила'
+            aria-label={t('signOutAria')}
             className='inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900/90 hover:bg-red-950/40 border border-zinc-800 hover:border-red-500/30 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60'
           >
             {isSigningOut ? (
@@ -117,7 +119,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
               <LogOut className='w-4 h-4 text-zinc-400 group-hover:text-red-400' />
             )}
             <span className='hidden sm:inline'>
-              {isSigningOut ? 'Излизане...' : 'Изход'}
+              {isSigningOut ? t('signingOut') : t('signOut')}
             </span>
           </button>
         </div>

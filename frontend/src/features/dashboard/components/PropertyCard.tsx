@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { QrCode, ExternalLink, Wifi, Globe, ShieldCheck } from 'lucide-react';
 import type { PropertySummary } from '../types/dashboard.types';
 
@@ -20,24 +21,26 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     todayScans: 28,
   },
 }) => {
+  const t = useTranslations('dashboard');
+
   const getStatusBadge = (status: PropertySummary['status']) => {
     switch (status) {
       case 'active':
         return {
-          label: 'Активен',
+          label: t('statusActive'),
           badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
           dotClass: 'bg-emerald-400 animate-pulse',
         };
       case 'paused':
         return {
-          label: 'Паузиран',
+          label: t('statusPaused'),
           badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
           dotClass: 'bg-amber-400',
         };
       case 'draft':
       default:
         return {
-          label: 'Чернова',
+          label: t('statusDraft'),
           badgeClass: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
           dotClass: 'bg-zinc-400',
         };
@@ -83,10 +86,10 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           <button
             type="button"
             onClick={() => window.open(`/stay/${property.slug}`, '_blank')}
-            aria-label="Отвори мобилния наръчник за гости"
+            aria-label={t('openGuestGuide')}
             className="inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 transition-all cursor-pointer shadow-md shadow-emerald-500/20 font-sans"
           >
-            <span>Гост изглед</span>
+            <span>{t('guestView')}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -97,7 +100,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className="flex items-center gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-white/5">
           <Wifi className="w-4 h-4 text-emerald-400 shrink-0" />
           <div className="flex flex-col">
-            <span className="text-zinc-500 text-[10px]">Wi-Fi мрежа</span>
+            <span className="text-zinc-500 text-[10px]">{t('wifiNetwork')}</span>
             <span className="font-semibold text-zinc-200 font-mono">{property.wifiName}</span>
           </div>
         </div>
@@ -105,16 +108,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className="flex items-center gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-white/5">
           <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
           <div className="flex flex-col">
-            <span className="text-zinc-500 text-[10px]">AI Полиглот</span>
-            <span className="font-semibold text-zinc-200">{property.languagesCount}+ езика активни</span>
+            <span className="text-zinc-500 text-[10px]">{t('aiPolyglot')}</span>
+            <span className="font-semibold text-zinc-200">{t('languagesActive', { count: property.languagesCount })}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-white/5">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
           <div className="flex flex-col">
-            <span className="text-zinc-500 text-[10px]">Акрилен плакет</span>
-            <span className="font-semibold text-zinc-200">A5/A6 300 DPI готов</span>
+            <span className="text-zinc-500 text-[10px]">{t('acrylicPlaque')}</span>
+            <span className="font-semibold text-zinc-200">{t('printReady')}</span>
           </div>
         </div>
       </div>

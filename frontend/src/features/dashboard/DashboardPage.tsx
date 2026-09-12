@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardNavbar } from './components/DashboardNavbar';
 import { DashboardMetrics } from './components/DashboardMetrics';
 import { PropertyCard } from './components/PropertyCard';
@@ -12,11 +13,13 @@ export interface DashboardPageProps {
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
+  const t = useTranslations('dashboard');
+
   const displayName =
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
-    'Хазяин';
+    t('defaultHostName');
 
   return (
     <div className="min-h-dvh bg-[#09090b] text-zinc-100 flex flex-col antialiased selection:bg-emerald-500 selection:text-zinc-950 font-sans">
@@ -35,32 +38,32 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
               </span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
-              Добре дошли, {displayName}! 👋
+              {t('welcome', { name: displayName })}
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400">
-              Вашият полиглот AI асистент обслужва гостите ви денонощно на 50+ езика.
+              {t('welcomeSub')}
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 border border-emerald-500/30 text-xs font-medium text-zinc-300">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>AI система: Онлайн</span>
+              <span>{t('aiSystemOnline')}</span>
             </span>
           </div>
         </section>
 
         {/* Key Metrics Section */}
-        <section aria-label="Ключови показатели">
+        <section aria-label={t('keyMetrics')}>
           <DashboardMetrics />
         </section>
 
         {/* Managed Properties Section */}
-        <section aria-label="Управлявани имоти" className="flex flex-col gap-4">
+        <section aria-label={t('managedProperties')} className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-bold text-white flex items-center gap-2">
               <Bot className="w-5 h-5 text-emerald-400" />
-              <span>Вашите активни имоти</span>
+              <span>{t('activeProperties')}</span>
             </h2>
           </div>
 
@@ -70,7 +73,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user }) => {
 
       {/* Simple Dashboard Footer */}
       <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-center text-xs text-zinc-500">
-        SmartScan Stay · Защитен хост панел · Управление в реално време
+        {t('footerNote')}
       </footer>
     </div>
   );

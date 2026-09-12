@@ -74,13 +74,13 @@ export const NavbarAuthAction: React.FC<NavbarAuthActionProps> = ({
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 transition-all cursor-pointer"
           >
             <LayoutDashboard className="w-4 h-4" />
-            <span>Контролен панел (Табло)</span>
+            <span>{t('dashboardFull')}</span>
           </Link>
           <button
             type="button"
             onClick={handleSignOut}
             disabled={isSigningOut}
-            aria-label="Изход от профила"
+            aria-label={t('signOutAria')}
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 transition-all cursor-pointer disabled:cursor-not-allowed"
           >
             {isSigningOut ? (
@@ -88,7 +88,7 @@ export const NavbarAuthAction: React.FC<NavbarAuthActionProps> = ({
             ) : (
               <LogOut className="w-4 h-4 text-zinc-400" />
             )}
-            <span>{isSigningOut ? 'Излизане...' : 'Изход от профила'}</span>
+            <span>{isSigningOut ? t('signingOut') : t('signOut')}</span>
           </button>
         </div>
       );
@@ -117,17 +117,17 @@ export const NavbarAuthAction: React.FC<NavbarAuthActionProps> = ({
       <div className="flex items-center gap-2">
         <Link
           href="/dashboard"
-          aria-label="Към контролния панел"
+          aria-label={t('dashboardAria')}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-500/30 shadow-sm transition-all cursor-pointer"
         >
           <LayoutDashboard className="w-3.5 h-3.5" />
-          <span>Табло</span>
+          <span>{t('dashboard')}</span>
         </Link>
         <button
           type="button"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          aria-label="Изход от профила"
+          aria-label={t('signOutAria')}
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900/90 hover:bg-red-950/40 border border-zinc-800 hover:border-red-500/30 transition-all cursor-pointer disabled:cursor-not-allowed"
         >
           {isSigningOut ? (
@@ -135,7 +135,7 @@ export const NavbarAuthAction: React.FC<NavbarAuthActionProps> = ({
           ) : (
             <LogOut className="w-3.5 h-3.5 text-zinc-400" />
           )}
-          <span>{isSigningOut ? '...' : 'Изход'}</span>
+          <span>{isSigningOut ? '...' : t('signOut')}</span>
         </button>
       </div>
     );
