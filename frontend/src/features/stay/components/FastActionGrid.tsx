@@ -33,7 +33,7 @@ export const FastActionGrid: React.FC<FastActionGridProps> = ({ contacts }) => {
   const emergencyNumber = contacts.emergencyNumber || '112';
 
   return (
-    <section aria-label="Бързи контакти и действия" className="grid grid-cols-2 gap-3">
+    <section aria-label={t('fastActionGridAria')} className="grid grid-cols-2 gap-3">
       {/* 1. Copy Taxi Address Tile */}
       {contacts.taxiAddress && (
         <button

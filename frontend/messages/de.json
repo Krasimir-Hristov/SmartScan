@@ -248,6 +248,11 @@
     "demoAnswerParking": "Die Villa SmartScan bietet 2 private Parkplätze im Innenhof hinter dem Holztor. Kostenlose Parkplätze gibt es auch an der Straße.",
     "demoAnswerDining": "Top-Empfehlungen in Bansko:\n1. Taverne 'Dedo Pene' (authentische bulgarische Küche, 400m)\n2. Restaurant 'The House' (Steaks & Weine, 600m)\n3. 'Chalet Yanitza' (Alpenpanorama).",
     "demoAnswerDefault": "Vielen Dank für Ihre Frage! Als KI-Concierge der Villa SmartScan bin ich rund um die Uhr für Sie da.",
-    "clearChat": "Löschen"
+    "clearChat": "Löschen",
+    "fastActionGridAria": "Schnellkontakte und Notfallaktionen",
+    "aiTyping": "KI schreibt...",
+    "metaTitle": "{name} · Digitaler Gästeführer | SmartScan Stay",
+    "metaDesc": "Digitaler Gästeführer für {name}. Sofortiger Zugriff auf WLAN, Check-in, Taxi-Adresse und Ruhezeiten.",
+    "ogDesc": "Digitaler Gästeführer für {name}. Sofortiger Zugriff auf WLAN, Check-in, Taxi-Adresse und Ruhezeiten."
   }
 }

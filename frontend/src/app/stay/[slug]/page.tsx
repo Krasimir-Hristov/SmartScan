@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { StayExperience, getSpaceStayData } from '@/features/stay';
 
 interface StayPageProps {
@@ -11,19 +12,20 @@ export async function generateMetadata({
 }: StayPageProps): Promise<Metadata> {
   const { slug } = await params;
   const data = getSpaceStayData(slug);
+  const t = await getTranslations('stay');
 
   return {
-    title: `${data.name} · Дигитален наръчник | SmartScan Stay`,
-    description: `Дигитален наръчник за гости на ${data.name}. Моментален достъп до Wi-Fi, настаняване и бързи контакти.`,
+    title: t('metaTitle', { name: data.name }),
+    description: t('metaDesc', { name: data.name }),
     openGraph: {
-      title: `${data.name} · Дигитален наръчник`,
-      description: `Дигитален наръчник за гости на ${data.name}. Wi-Fi, адрес за такси, настаняване и правила за тишина.`,
+      title: t('metaTitle', { name: data.name }),
+      description: t('ogDesc', { name: data.name }),
       type: 'website',
     },
   };
 }
 
-const StayPage = async ({ params }: StayPageProps) => {
+const StayPage: React.FC<StayPageProps> = async ({ params }) => {
   const { slug } = await params;
 
   return (

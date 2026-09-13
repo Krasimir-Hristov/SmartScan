@@ -248,6 +248,11 @@
     "demoAnswerParking": "Villa SmartScan, ahşap kapının arkasındaki avluda 2 özel park yeri sunar. Sokak parkı da ücretsizdir.",
     "demoAnswerDining": "Bansko'da önerilen yerler:\n1. Taverna 'Dedo Pene' (geleneksel mutfak, 400m)\n2. 'The House' Restoran (biftek & şarap, 600m)\n3. 'Chalet Yanitza' (dağ manzarası).",
     "demoAnswerDefault": "Sorunuz için teşekkürler! Villa SmartScan Yapay Zeka Konsiyerji olarak 7/24 hizmetinizdeyim.",
-    "clearChat": "Temizle"
+    "clearChat": "Temizle",
+    "fastActionGridAria": "Hızlı iletişim ve acil durum eylemleri",
+    "aiTyping": "Yapay zeka yazıyor...",
+    "metaTitle": "{name} · Dijital Rehber | SmartScan Stay",
+    "metaDesc": "{name} için dijital misafir rehberi. Wi-Fi, giriş saatleri, taksi adresi ve sessizlik saatlerine anında erişim.",
+    "ogDesc": "{name} için dijital misafir rehberi. Wi-Fi, giriş saatleri, taksi adresi ve sessizlik saatlerine anında erişim."
   }
 }

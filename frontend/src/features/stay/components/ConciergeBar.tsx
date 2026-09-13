@@ -47,10 +47,20 @@ export const ConciergeBar: React.FC = () => {
   ];
 
   const msgCounterRef = React.useRef(0);
+  const pendingTimeoutsRef = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+
   const nextId = (prefix: string): string => {
     msgCounterRef.current += 1;
     return `${prefix}-${msgCounterRef.current}`;
   };
+
+  // Clear all pending timeouts on component unmount
+  React.useEffect(() => {
+    return () => {
+      pendingTimeoutsRef.current.forEach((handle) => clearTimeout(handle));
+      pendingTimeoutsRef.current = [];
+    };
+  }, []);
 
   const handleChipClick = (label: string, answer: string) => {
     triggerHaptic(50);
@@ -62,16 +72,19 @@ export const ConciergeBar: React.FC = () => {
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      pendingTimeoutsRef.current = pendingTimeoutsRef.current.filter((t) => t !== timer);
       const aiMsg: ChatMessage = {
         id: nextId('ai'),
         sender: 'ai',
         text: answer,
       };
       setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
+      setIsTyping(pendingTimeoutsRef.current.length > 0);
       triggerHaptic(50);
     }, 450);
+
+    pendingTimeoutsRef.current.push(timer);
   };
 
   const handleSend = (e?: React.FormEvent) => {
@@ -89,7 +102,8 @@ export const ConciergeBar: React.FC = () => {
     setInputQuery('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      pendingTimeoutsRef.current = pendingTimeoutsRef.current.filter((t) => t !== timer);
       // Find matching chip answer or default fallback
       const lower = query.toLowerCase();
       let answer = t('demoAnswerDefault');
@@ -109,13 +123,17 @@ export const ConciergeBar: React.FC = () => {
         text: answer,
       };
       setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
+      setIsTyping(pendingTimeoutsRef.current.length > 0);
       triggerHaptic(50);
     }, 550);
+
+    pendingTimeoutsRef.current.push(timer);
   };
 
   const handleClear = () => {
     triggerHaptic(30);
+    pendingTimeoutsRef.current.forEach((handle) => clearTimeout(handle));
+    pendingTimeoutsRef.current = [];
     setMessages([]);
     setIsTyping(false);
   };
@@ -179,7 +197,13 @@ export const ConciergeBar: React.FC = () => {
 
       {/* Chat Messages Log */}
       {messages.length > 0 && (
-        <div className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1">
+        <div
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-busy={isTyping}
+          className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1"
+        >
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -215,7 +239,7 @@ export const ConciergeBar: React.FC = () => {
                 <Sparkles className="w-3 h-3 animate-spin" />
               </div>
               <span className="italic text-[11px] text-emerald-400 animate-pulse font-mono">
-                AI is typing...
+                {t('aiTyping')}
               </span>
             </div>
           )}
