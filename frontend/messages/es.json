@@ -212,7 +212,7 @@
     "propertyBadge": "CONSERJE DIGITAL",
     "wifiTitle": "Wi-Fi de Alta Velocidad",
     "wifiNetwork": "Red",
-    "wifiPassword": "Contraseña",
+    "yourPasswordLabel": "Su contraseña",
     "copyPassword": "Copiar contraseña",
     "passwordCopied": "¡Contraseña copiada!",
     "taxiAddressTitle": "Dirección para taxi",

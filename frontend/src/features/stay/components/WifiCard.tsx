@@ -61,9 +61,9 @@ export const WifiCard: React.FC<WifiCardProps> = ({ wifi }) => {
             </span>
           </div>
           <div className='h-px bg-white/0.05' />
-          <div className='flex items-center justify-between'>
-            <span className='text-xs text-zinc-400'>{t('wifiPassword')}</span>
-            <span className='text-base font-bold text-emerald-400 font-mono tracking-wider'>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-400">{t('yourPasswordLabel')}</span>
+            <span className="text-base font-bold text-emerald-400 font-mono tracking-wider">
               {wifi.password}
             </span>
           </div>

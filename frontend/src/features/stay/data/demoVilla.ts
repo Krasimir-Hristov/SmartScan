@@ -13,7 +13,7 @@ export const DEMO_VILLA_SMARTSCAN: SpaceStayData = {
   badge: 'SMARTSCAN STAY',
   wifi: {
     ssid: 'SmartScan_Villa_5G',
-    password: 'SmartScan2026!',
+    password: 'smartscan-guest-wifi',
     encryption: 'WPA2/WPA3',
   },
   contacts: {

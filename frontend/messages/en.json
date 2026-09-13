@@ -212,7 +212,7 @@
     "propertyBadge": "DIGITAL CONCIERGE",
     "wifiTitle": "High-Speed Wi-Fi",
     "wifiNetwork": "Network",
-    "wifiPassword": "Password",
+    "yourPasswordLabel": "Your Password",
     "copyPassword": "Copy Password",
     "passwordCopied": "Password Copied!",
     "taxiAddressTitle": "Taxi Address",
