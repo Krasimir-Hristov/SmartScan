@@ -13,12 +13,20 @@ import { LandingFooter } from './components/LandingFooter';
 import { AuthModal } from './components/AuthModal';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
-import { QrCode, ExternalLink, Sparkles } from 'lucide-react';
+import { ExternalLink, Sparkles } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+
+const emptySubscribe = () => () => {};
+const getClientOrigin = () => (typeof window !== 'undefined' ? window.location.origin : '');
+const getServerOrigin = () => '';
 
 export const LandingPage: React.FC = () => {
   const tDemo = useTranslations('demo');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
+
+  const origin = React.useSyncExternalStore(emptySubscribe, getClientOrigin, getServerOrigin);
+  const demoUrl = origin ? `${origin}/stay/villa-smartscan` : '/stay/villa-smartscan';
 
   return (
     <div className="min-h-dvh bg-[#09090b] text-zinc-100 flex flex-col antialiased selection:bg-emerald-500 selection:text-zinc-950 font-sans">
@@ -53,7 +61,7 @@ export const LandingPage: React.FC = () => {
         onClose={() => setIsAuthOpen(false)}
       />
 
-      {/* Interactive Guest Demo Modal */}
+      {/* Interactive Guest Demo Modal with Scannable Vector QR Code */}
       <Dialog
         isOpen={isDemoOpen}
         onClose={() => setIsDemoOpen(false)}
@@ -61,18 +69,26 @@ export const LandingPage: React.FC = () => {
         description={tDemo('desc')}
       >
         <div className="flex flex-col items-center text-center gap-5 pt-2">
-          <div className="relative p-6 rounded-3xl bg-zinc-900 border-2 border-emerald-500/40 shadow-xl shadow-emerald-500/10">
-            <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-zinc-950 border border-emerald-400/40 text-emerald-400">
-              <QrCode className="w-14 h-14 animate-pulse" />
-            </div>
-            <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-zinc-950 font-mono">
+          {/* Real Vector SVG QR Code Card */}
+          <div className="relative p-4 rounded-3xl bg-white border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/15 flex items-center justify-center">
+            <QRCodeSVG
+              value={demoUrl}
+              size={180}
+              level="H"
+              marginSize={0}
+              fgColor="#09090b"
+              bgColor="#ffffff"
+            />
+            <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-zinc-950 font-mono shadow-md whitespace-nowrap">
               <Sparkles className="w-3 h-3" /> {tDemo('demoBadge')}
             </span>
           </div>
 
           <div className="flex flex-col gap-1 max-w-sm">
-            <h4 className="font-display text-base font-bold text-white">{tDemo('property')}</h4>
-            <p className="text-xs text-zinc-400 font-sans">
+            <h4 className="font-display text-base font-bold text-white tracking-tight">
+              {tDemo('property')}
+            </h4>
+            <p className="text-xs text-zinc-400 font-sans leading-relaxed">
               {tDemo('subtitle')}
             </p>
           </div>
@@ -83,7 +99,7 @@ export const LandingPage: React.FC = () => {
             fullWidth
             onClick={() => {
               setIsDemoOpen(false);
-              window.open('/stay/sanctuary-demo', '_blank');
+              window.open('/stay/villa-smartscan', '_blank');
             }}
             aria-label={tDemo('openGuest')}
             className="font-bold cursor-pointer"
