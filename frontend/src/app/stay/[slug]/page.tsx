@@ -1,7 +1,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { StayExperience, getSpaceStayData } from '@/features/stay';
+import { StayExperience } from '@/features/stay';
+import { getSpaceStayDataWithFallback } from '@/lib/dal';
 
 interface StayPageProps {
   params: Promise<{ slug: string }>;
@@ -11,7 +12,7 @@ export async function generateMetadata({
   params,
 }: StayPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const data = getSpaceStayData(slug);
+  const data = await getSpaceStayDataWithFallback(slug);
   const t = await getTranslations('stay');
 
   return {
@@ -27,10 +28,11 @@ export async function generateMetadata({
 
 const StayPage: React.FC<StayPageProps> = async ({ params }) => {
   const { slug } = await params;
+  const initialData = await getSpaceStayDataWithFallback(slug);
 
   return (
     <main className="min-h-dvh bg-[#070709]">
-      <StayExperience slug={slug} />
+      <StayExperience slug={slug} initialData={initialData} />
     </main>
   );
 };
