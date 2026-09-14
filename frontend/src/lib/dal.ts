@@ -3,26 +3,65 @@ import 'server-only';
 import { cache } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
-import type { Space, KnowledgeChunk, StaySettings } from '@/lib/types/databaseTypes';
+import type { Space, KnowledgeChunk, StaySettings, GuestSpace } from '@/lib/types/databaseTypes';
 import { DEMO_VILLA_SMARTSCAN, type SpaceStayData } from '@/features/stay';
 
 /**
  * Data Access Layer (DAL): Secure server-only abstraction for database operations.
  * - Enforces multi-tenant data boundaries.
- * - Protects raw database credentials from ever leaking to the browser.
+ * - Shields sensitive host billing data from anonymous guest queries.
  * - Uses React cache() for request-scoped query deduplication.
+ * - Exports named wrapper functions for optimal stack traces and HMR safety.
  */
 
 /**
- * Helper to map a database Space row + stay_settings JSONB to SpaceStayData.
+ * Safe validator / parser for stay_settings JSONB values.
+ * Guarantees a valid StaySettings object even if raw database content is malformed or null.
  */
-function mapSpaceRowToStayData(space: Space): SpaceStayData {
-  const settings: StaySettings = space.stay_settings || {};
+function parseStaySettings(raw: unknown): StaySettings {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return {};
+  }
+
+  const record = raw as Record<string, unknown>;
 
   return {
-    id: space.id,
-    slug: space.slug,
-    name: space.name,
+    wifiSsid: typeof record.wifiSsid === 'string' ? record.wifiSsid : undefined,
+    wifiPassword: typeof record.wifiPassword === 'string' ? record.wifiPassword : undefined,
+    taxiAddress: typeof record.taxiAddress === 'string' ? record.taxiAddress : undefined,
+    taxiPhone: typeof record.taxiPhone === 'string' ? record.taxiPhone : undefined,
+    whatsappPhone: typeof record.whatsappPhone === 'string' ? record.whatsappPhone : undefined,
+    whatsappPrefilledMessage:
+      typeof record.whatsappPrefilledMessage === 'string'
+        ? record.whatsappPrefilledMessage
+        : undefined,
+    emergencyNumber: typeof record.emergencyNumber === 'string' ? record.emergencyNumber : undefined,
+    checkInTime: typeof record.checkInTime === 'string' ? record.checkInTime : undefined,
+    checkOutTime: typeof record.checkOutTime === 'string' ? record.checkOutTime : undefined,
+    keyboxCode: typeof record.keyboxCode === 'string' ? record.keyboxCode : undefined,
+    nightSilenceStart:
+      typeof record.nightSilenceStart === 'string' ? record.nightSilenceStart : undefined,
+    nightSilenceEnd:
+      typeof record.nightSilenceEnd === 'string' ? record.nightSilenceEnd : undefined,
+    afternoonRestStart:
+      typeof record.afternoonRestStart === 'string' ? record.afternoonRestStart : undefined,
+    afternoonRestEnd:
+      typeof record.afternoonRestEnd === 'string' ? record.afternoonRestEnd : undefined,
+    customRules: typeof record.customRules === 'string' ? record.customRules : undefined,
+    tagline: typeof record.tagline === 'string' ? record.tagline : undefined,
+  };
+}
+
+/**
+ * Maps a guest-safe space payload to the frontend SpaceStayData shape.
+ */
+function mapGuestSpaceToStayData(guestSpace: GuestSpace): SpaceStayData {
+  const settings = parseStaySettings(guestSpace.stay_settings);
+
+  return {
+    id: guestSpace.id,
+    slug: guestSpace.slug,
+    name: guestSpace.name,
     tagline: settings.tagline || 'Boutique Digital Concierge Guide',
     wifi: {
       ssid: settings.wifiSsid || '',
@@ -35,7 +74,7 @@ function mapSpaceRowToStayData(space: Space): SpaceStayData {
       whatsappPhone: settings.whatsappPhone || '',
       whatsappPrefilledMessage:
         settings.whatsappPrefilledMessage ||
-        `Hello! Writing from ${space.name} regarding our stay.`,
+        `Hello! Writing from ${guestSpace.name} regarding our stay.`,
       emergencyNumber: settings.emergencyNumber || '112',
     },
     schedule: {
@@ -55,10 +94,11 @@ function mapSpaceRowToStayData(space: Space): SpaceStayData {
   };
 }
 
-/**
- * 1. Retrieves and verifies the currently authenticated host user.
- */
-export const getAuthenticatedHost = cache(async (): Promise<User | null> => {
+// ----------------------------------------------------------------------------
+// Internal Cached Implementations
+// ----------------------------------------------------------------------------
+
+const cachedGetAuthenticatedHost = cache(async (): Promise<User | null> => {
   try {
     const supabase = await createClient();
     const {
@@ -76,18 +116,13 @@ export const getAuthenticatedHost = cache(async (): Promise<User | null> => {
   }
 });
 
-export const getCurrentUser = getAuthenticatedHost;
-
-/**
- * 2. Retrieves all spaces owned by the authenticated host (for Host Dashboard).
- */
-export const getHostSpaces = cache(async (hostId?: string): Promise<Space[]> => {
+const cachedGetHostSpaces = cache(async (hostId?: string): Promise<Space[]> => {
   try {
     const supabase = await createClient();
     let targetHostId = hostId;
 
     if (!targetHostId) {
-      const user = await getAuthenticatedHost();
+      const user = await cachedGetAuthenticatedHost();
       if (!user) return [];
       targetHostId = user.id;
     }
@@ -108,39 +143,29 @@ export const getHostSpaces = cache(async (hostId?: string): Promise<Space[]> => 
   }
 });
 
-/**
- * 3. Retrieves an active space by its public slug (for Guest PWA).
- */
-export const getSpaceBySlug = cache(async (slug: string): Promise<Space | null> => {
+const cachedGetGuestSpaceBySlug = cache(async (slug: string): Promise<GuestSpace | null> => {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('spaces')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .maybeSingle();
+    const { data, error } = await supabase.rpc('get_guest_space_by_slug', {
+      space_slug: slug,
+    });
 
-    if (error) {
+    if (error || !data || data.length === 0) {
       return null;
     }
 
-    return data;
+    return data[0];
   } catch {
     return null;
   }
 });
 
-/**
- * 4. Retrieves space stay data by slug with graceful fallback to the demo villa.
- * Used by /stay/[slug] to guarantee zero downtime even before database seeding.
- */
-export const getSpaceStayDataWithFallback = cache(
+const cachedGetSpaceStayDataWithFallback = cache(
   async (slug: string): Promise<SpaceStayData> => {
     try {
-      const space = await getSpaceBySlug(slug);
-      if (space) {
-        return mapSpaceRowToStayData(space);
+      const guestSpace = await cachedGetGuestSpaceBySlug(slug);
+      if (guestSpace) {
+        return mapGuestSpaceToStayData(guestSpace);
       }
     } catch {
       // Fallback on error
@@ -151,10 +176,7 @@ export const getSpaceStayDataWithFallback = cache(
   }
 );
 
-/**
- * 5. Retrieves a single space by its unique UUID (for Dashboard SpaceEditor).
- */
-export const getSpaceById = cache(async (id: string): Promise<Space | null> => {
+const cachedGetSpaceById = cache(async (id: string): Promise<Space | null> => {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -173,10 +195,7 @@ export const getSpaceById = cache(async (id: string): Promise<Space | null> => {
   }
 });
 
-/**
- * 6. Retrieves all knowledge chunks for a specific space (for Host Knowledge Editor).
- */
-export const getSpaceKnowledgeChunks = cache(
+const cachedGetSpaceKnowledgeChunks = cache(
   async (spaceId: string): Promise<KnowledgeChunk[]> => {
     try {
       const supabase = await createClient();
@@ -196,3 +215,57 @@ export const getSpaceKnowledgeChunks = cache(
     }
   }
 );
+
+// ----------------------------------------------------------------------------
+// Public Exported Named Functions
+// ----------------------------------------------------------------------------
+
+/**
+ * 1. Retrieves and verifies the currently authenticated host user.
+ */
+export async function getAuthenticatedHost(): Promise<User | null> {
+  return cachedGetAuthenticatedHost();
+}
+
+/**
+ * Alias for getAuthenticatedHost() for backward compatibility.
+ */
+export async function getCurrentUser(): Promise<User | null> {
+  return cachedGetAuthenticatedHost();
+}
+
+/**
+ * 2. Retrieves all spaces owned by the authenticated host (for Host Dashboard).
+ */
+export async function getHostSpaces(hostId?: string): Promise<Space[]> {
+  return cachedGetHostSpaces(hostId);
+}
+
+/**
+ * 3. Retrieves public guest-safe space fields via secure RPC (shields host_id and Stripe IDs).
+ */
+export async function getGuestSpaceBySlug(slug: string): Promise<GuestSpace | null> {
+  return cachedGetGuestSpaceBySlug(slug);
+}
+
+/**
+ * 4. Retrieves space stay data by slug with graceful fallback to the demo villa.
+ * Used by /stay/[slug] to guarantee zero downtime even before database seeding.
+ */
+export async function getSpaceStayDataWithFallback(slug: string): Promise<SpaceStayData> {
+  return cachedGetSpaceStayDataWithFallback(slug);
+}
+
+/**
+ * 5. Retrieves a single space by its unique UUID (for Dashboard SpaceEditor).
+ */
+export async function getSpaceById(id: string): Promise<Space | null> {
+  return cachedGetSpaceById(id);
+}
+
+/**
+ * 6. Retrieves all knowledge chunks for a specific space (for Host Knowledge Editor).
+ */
+export async function getSpaceKnowledgeChunks(spaceId: string): Promise<KnowledgeChunk[]> {
+  return cachedGetSpaceKnowledgeChunks(spaceId);
+}

@@ -46,8 +46,8 @@ export interface Database {
           stripe_price_id: string | null;
           subscription_status: SubscriptionStatus;
           trial_ends_at: string | null;
-          stay_settings: StaySettings;
-          metadata: Record<string, unknown>;
+          stay_settings: Json;
+          metadata: Json;
           created_at: string;
           updated_at: string;
         };
@@ -62,8 +62,8 @@ export interface Database {
           stripe_price_id?: string | null;
           subscription_status?: SubscriptionStatus;
           trial_ends_at?: string | null;
-          stay_settings?: StaySettings;
-          metadata?: Record<string, unknown>;
+          stay_settings?: Json;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -78,8 +78,8 @@ export interface Database {
           stripe_price_id?: string | null;
           subscription_status?: SubscriptionStatus;
           trial_ends_at?: string | null;
-          stay_settings?: StaySettings;
-          metadata?: Record<string, unknown>;
+          stay_settings?: Json;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -101,7 +101,7 @@ export interface Database {
           content: string;
           category: string;
           embedding: string | null;
-          metadata: Record<string, unknown>;
+          metadata: Json;
           created_at: string;
           updated_at: string;
         };
@@ -112,7 +112,7 @@ export interface Database {
           content: string;
           category?: string;
           embedding?: string | null;
-          metadata?: Record<string, unknown>;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -123,7 +123,7 @@ export interface Database {
           content?: string;
           category?: string;
           embedding?: string | null;
-          metadata?: Record<string, unknown>;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -142,6 +142,18 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      get_guest_space_by_slug: {
+        Args: {
+          space_slug: string;
+        };
+        Returns: {
+          id: string;
+          name: string;
+          slug: string;
+          space_type: SpaceType;
+          stay_settings: Json;
+        }[];
+      };
       match_space_knowledge: {
         Args: {
           filter_space_id: string;
@@ -177,4 +189,5 @@ export type KnowledgeChunk = Database['public']['Tables']['knowledge_chunks']['R
 export type KnowledgeChunkInsert = Database['public']['Tables']['knowledge_chunks']['Insert'];
 export type KnowledgeChunkUpdate = Database['public']['Tables']['knowledge_chunks']['Update'];
 
+export type GuestSpace = Database['public']['Functions']['get_guest_space_by_slug']['Returns'][number];
 export type MatchedKnowledge = Database['public']['Functions']['match_space_knowledge']['Returns'][number];

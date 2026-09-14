@@ -6,8 +6,9 @@
 --   3. 'knowledge_chunks' table with 1536-dim embeddings
 --   4. HNSW Vector Index (vector_cosine_ops, m=16, ef_construction=64)
 --   5. High-performance RLS policies with cached (SELECT auth.uid())
---   6. Secure RPC match_space_knowledge function with strict space_id isolation
---   7. Automated updated_at trigger
+--   6. Automated updated_at trigger
+--   7. Secure RPC get_guest_space_by_slug (shields host_id and Stripe billing from anon)
+--   8. Secure RPC match_space_knowledge function with strict space_id isolation
 -- ==============================================================================
 
 -- 1. Enable pgvector extension in extensions schema
@@ -96,13 +97,8 @@ ALTER TABLE public.knowledge_chunks ENABLE ROW LEVEL SECURITY;
 
 -- --- Policies for public.spaces ---
 
--- Public guests: Read access to active spaces by slug
+-- Ensure anonymous users cannot directly SELECT sensitive columns (stripe_id, host_id) from raw spaces table
 DROP POLICY IF EXISTS "Public guests can view active spaces by slug" ON public.spaces;
-CREATE POLICY "Public guests can view active spaces by slug"
-ON public.spaces
-FOR SELECT
-TO anon, authenticated
-USING (is_active = true);
 
 -- Hosts: Full CRUD on their own spaces using cached (SELECT auth.uid())
 DROP POLICY IF EXISTS "Hosts can view their own spaces" ON public.spaces;
@@ -196,7 +192,36 @@ USING (
     )
 );
 
--- 8. Semantic Search RPC Function (Strict Multi-Tenant Space Isolation)
+-- 8. Secure RPC Function: Guest Space Lookup (Shields host_id and Stripe IDs from anonymous users)
+CREATE OR REPLACE FUNCTION public.get_guest_space_by_slug(space_slug TEXT)
+RETURNS TABLE (
+    id UUID,
+    name TEXT,
+    slug TEXT,
+    space_type TEXT,
+    stay_settings JSONB
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+    SELECT
+        s.id,
+        s.name,
+        s.slug,
+        s.space_type,
+        s.stay_settings
+    FROM public.spaces s
+    WHERE s.slug = space_slug
+      AND s.is_active = true
+    LIMIT 1;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.get_guest_space_by_slug(TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_guest_space_by_slug(TEXT) TO anon, authenticated, service_role;
+
+-- 9. Semantic Search RPC Function (Strict Multi-Tenant Space Isolation)
 CREATE OR REPLACE FUNCTION public.match_space_knowledge(
     filter_space_id UUID,
     query_embedding extensions.vector(1536),

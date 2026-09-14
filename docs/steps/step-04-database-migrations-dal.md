@@ -14,7 +14,7 @@
 2. **Таблица `public.spaces`**: Мулти-тенант абстракция за всички пространства (вили, ресторанти, имоти) с грануларно Stripe таксуване (`stripe_subscription_id`, `stripe_price_id`, `subscription_status`, `trial_ends_at`), индексиран `slug` и JSONB настройки за престоя (`stay_settings`).
 3. **Таблица `public.knowledge_chunks`**: Структурирани информационни карти за семантично търсене с векторна колона `embedding extensions.vector(1536)`.
 4. **HNSW Векторен индекс**: Суб-милисекундно семантично търсене с косинусово разстояние (`vector_cosine_ops`, `m=16`, `ef_construction=64`).
-5. **Row Level Security (RLS)**: Стриктна мулти-тенант изолация с кеширане на `(SELECT auth.uid())` за 10–100x по-висока скорост и публичен достъп за гости само до активни обекти по `slug`.
+5. **Row Level Security (RLS) & RPC защита**: Стриктна мулти-тенант изолация с кеширане на `(SELECT auth.uid())` за 10–100x по-висока скорост. Анонимният достъп до суровата таблица `spaces` е премахнат, а данните за госта се извличат през защитена RPC функция `get_guest_space_by_slug`, връщаща единствено безопасни полета и скриваща `stripe_subscription_id` и `host_id`.
 6. **RPC функция `match_space_knowledge`**: Семантично търсене със строг пре-филтър по `space_id`, проверка `s.is_active = true`, `SECURITY DEFINER` и изолиран `SET search_path = public, extensions`.
 7. **Автоматичен тригер**: `handle_updated_at()` за автоматично поддържане на `updated_at`.
 8. **Строга TypeScript типизация (`src/lib/types/databaseTypes.ts`)**: Пълни типове за `Database`, `Space`, `KnowledgeChunk`, `StaySettings`, без тип `any`.
@@ -68,7 +68,7 @@ erDiagram
 
 ## 3. Data Access Layer (DAL) Архитектура
 
-DAL слоят в [`frontend/src/lib/dal.ts`](file:///d:/myProjects/smart_scan/frontend/src/lib/dal.ts) осигурява пълен контрол на достъпа от сървъра към базата данни:
+DAL слоят в [`frontend/src/lib/dal.ts`](../../frontend/src/lib/dal.ts) осигурява пълен контрол на достъпа от сървъра към базата данни:
 
 ```mermaid
 flowchart TD
