@@ -1,141 +1,84 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { Sparkles, Flame, Trash2, Car, UtensilsCrossed, Send, Bot, User, RotateCcw } from 'lucide-react';
-import { useHaptic } from '../hooks/useHaptic';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import {
+  Sparkles,
+  Flame,
+  Trash2,
+  Car,
+  UtensilsCrossed,
+  Send,
+  Square,
+  Bot,
+  User,
+  RotateCcw,
+  AlertCircle,
+} from 'lucide-react';
+import { useConciergeChat } from '../hooks/useConciergeChat';
 
-interface ChatMessage {
-  id: string;
-  sender: 'user' | 'ai';
-  text: string;
+export interface ConciergeBarProps {
+  spaceId: string;
 }
 
-export const ConciergeBar: React.FC = () => {
+export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
   const t = useTranslations('stay');
-  const { triggerHaptic } = useHaptic();
-
+  const locale = useLocale();
   const [inputQuery, setInputQuery] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const {
+    messages,
+    isStreaming,
+    error,
+    sendMessage,
+    stopGeneration,
+    clearChat,
+  } = useConciergeChat({
+    spaceId,
+    locale,
+    connectionErrorMessage: t('chatConnectionError'),
+  });
 
   const chips = [
     {
       id: 'heating',
       label: t('chipHeating'),
       icon: Flame,
-      answer: t('demoAnswerHeating'),
     },
     {
       id: 'trash',
       label: t('chipTrash'),
       icon: Trash2,
-      answer: t('demoAnswerTrash'),
     },
     {
       id: 'parking',
       label: t('chipParking'),
       icon: Car,
-      answer: t('demoAnswerParking'),
     },
     {
       id: 'dining',
       label: t('chipDining'),
       icon: UtensilsCrossed,
-      answer: t('demoAnswerDining'),
     },
   ];
 
-  const msgCounterRef = React.useRef(0);
-  const pendingTimeoutsRef = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Auto-scroll to the newest message whenever messages or streaming updates
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isStreaming]);
 
-  const nextId = (prefix: string): string => {
-    msgCounterRef.current += 1;
-    return `${prefix}-${msgCounterRef.current}`;
-  };
-
-  // Clear all pending timeouts on component unmount
-  React.useEffect(() => {
-    return () => {
-      pendingTimeoutsRef.current.forEach((handle) => clearTimeout(handle));
-      pendingTimeoutsRef.current = [];
-    };
-  }, []);
-
-  const handleChipClick = (label: string, answer: string) => {
-    triggerHaptic(50);
-    const userMsg: ChatMessage = {
-      id: nextId('user'),
-      sender: 'user',
-      text: label,
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    setIsTyping(true);
-
-    const timer = setTimeout(() => {
-      pendingTimeoutsRef.current = pendingTimeoutsRef.current.filter((t) => t !== timer);
-      const aiMsg: ChatMessage = {
-        id: nextId('ai'),
-        sender: 'ai',
-        text: answer,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(pendingTimeoutsRef.current.length > 0);
-      triggerHaptic(50);
-    }, 450);
-
-    pendingTimeoutsRef.current.push(timer);
+  const handleChipClick = (label: string) => {
+    sendMessage(label);
   };
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const query = inputQuery.trim();
-    if (!query) return;
+    if (!query || isStreaming) return;
 
-    triggerHaptic(50);
-    const userMsg: ChatMessage = {
-      id: nextId('user'),
-      sender: 'user',
-      text: query,
-    };
-    setMessages((prev) => [...prev, userMsg]);
     setInputQuery('');
-    setIsTyping(true);
-
-    const timer = setTimeout(() => {
-      pendingTimeoutsRef.current = pendingTimeoutsRef.current.filter((t) => t !== timer);
-      // Find matching chip answer or default fallback
-      const lower = query.toLowerCase();
-      let answer = t('demoAnswerDefault');
-      if (lower.includes('heat') || lower.includes('парн') || lower.includes('warm') || lower.includes('thermostat')) {
-        answer = t('demoAnswerHeating');
-      } else if (lower.includes('trash') || lower.includes('боклук') || lower.includes('müll') || lower.includes('poubelle')) {
-        answer = t('demoAnswerTrash');
-      } else if (lower.includes('park') || lower.includes('паркинг') || lower.includes('auto') || lower.includes('car')) {
-        answer = t('demoAnswerParking');
-      } else if (lower.includes('food') || lower.includes('ресторант') || lower.includes('механ') || lower.includes('dine') || lower.includes('eat')) {
-        answer = t('demoAnswerDining');
-      }
-
-      const aiMsg: ChatMessage = {
-        id: nextId('ai'),
-        sender: 'ai',
-        text: answer,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(pendingTimeoutsRef.current.length > 0);
-      triggerHaptic(50);
-    }, 550);
-
-    pendingTimeoutsRef.current.push(timer);
-  };
-
-  const handleClear = () => {
-    triggerHaptic(30);
-    pendingTimeoutsRef.current.forEach((handle) => clearTimeout(handle));
-    pendingTimeoutsRef.current = [];
-    setMessages([]);
-    setIsTyping(false);
+    sendMessage(query);
   };
 
   return (
@@ -143,7 +86,7 @@ export const ConciergeBar: React.FC = () => {
       aria-labelledby="concierge-heading"
       className="relative overflow-hidden rounded-2xl bg-[#121216] border border-emerald-500/30 p-4 sm:p-5 shadow-2xl flex flex-col gap-4"
     >
-      {/* Subtle top glow */}
+      {/* Subtle top ambient glow */}
       <div
         className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-20 bg-emerald-500/15 blur-2xl"
         aria-hidden="true"
@@ -168,7 +111,8 @@ export const ConciergeBar: React.FC = () => {
         {messages.length > 0 && (
           <button
             type="button"
-            onClick={handleClear}
+            onClick={clearChat}
+            aria-label={t('clearChat')}
             className="flex items-center gap-1 text-[11px] text-zinc-400 hover:text-white px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
@@ -185,8 +129,10 @@ export const ConciergeBar: React.FC = () => {
             <button
               key={chip.id}
               type="button"
-              onClick={() => handleChipClick(chip.label, chip.answer)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950/80 border border-white/[0.08] hover:border-emerald-500/40 text-zinc-300 hover:text-white text-xs font-medium transition-all duration-150 cursor-pointer active:scale-95"
+              disabled={isStreaming}
+              onClick={() => handleChipClick(chip.label)}
+              aria-label={chip.label}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950/80 border border-white/[0.08] hover:border-emerald-500/40 text-zinc-300 hover:text-white text-xs font-medium transition-all duration-150 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Icon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span className="truncate">{chip.label}</span>
@@ -195,54 +141,78 @@ export const ConciergeBar: React.FC = () => {
         })}
       </div>
 
+      {/* Optional Error Alert Banner */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 text-rose-400 text-xs">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <span className="leading-snug">{error}</span>
+        </div>
+      )}
+
       {/* Chat Messages Log */}
       {messages.length > 0 && (
         <div
           role="log"
           aria-live="polite"
           aria-relevant="additions"
-          aria-busy={isTyping}
-          className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1"
+          aria-busy={isStreaming}
+          className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1 scroll-smooth"
         >
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-2 text-xs ${
-                msg.sender === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              {msg.sender === 'ai' && (
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mt-0.5">
-                  <Sparkles className="w-3 h-3" />
-                </div>
-              )}
+          {messages.map((msg) => {
+            if (msg.role === 'assistant' && !msg.content && msg.isStreaming) {
+              return null;
+            }
+            return (
               <div
-                className={`max-w-[85%] rounded-xl px-3.5 py-2.5 leading-relaxed whitespace-pre-line ${
-                  msg.sender === 'user'
-                    ? 'bg-emerald-600 text-white font-medium rounded-br-xs shadow-sm'
-                    : 'bg-zinc-950/90 border border-white/[0.08] text-zinc-200 rounded-bl-xs'
+                key={msg.id}
+                className={`flex gap-2 text-xs ${
+                  msg.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                {msg.text}
-              </div>
-              {msg.sender === 'user' && (
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 border border-white/10 mt-0.5">
-                  <User className="w-3 h-3" />
+                {msg.role === 'assistant' && (
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mt-0.5">
+                    <Sparkles className="w-3 h-3" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[85%] rounded-xl px-3.5 py-2.5 leading-relaxed whitespace-pre-line ${
+                    msg.role === 'user'
+                      ? 'bg-emerald-600 text-white font-medium rounded-br-xs shadow-sm'
+                      : 'bg-zinc-950/90 border border-white/[0.08] text-zinc-200 rounded-bl-xs'
+                  }`}
+                >
+                  {msg.content}
+                  {msg.role === 'assistant' && msg.isStreaming && (
+                    <span
+                      className="inline-block w-1.5 h-3.5 bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs"
+                      aria-hidden="true"
+                    />
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
-
-          {isTyping && (
-            <div className="flex items-center gap-2 text-xs text-zinc-400">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                <Sparkles className="w-3 h-3 animate-spin" />
+                {msg.role === 'user' && (
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 border border-white/10 mt-0.5">
+                    <User className="w-3 h-3" />
+                  </div>
+                )}
               </div>
-              <span className="italic text-[11px] text-emerald-400 animate-pulse font-mono">
-                {t('aiTyping')}
-              </span>
-            </div>
-          )}
+            );
+          })}
+
+          {isStreaming &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === 'assistant' &&
+            !messages[messages.length - 1].content && (
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <Sparkles className="w-3 h-3 animate-spin" />
+                </div>
+                <span className="italic text-[11px] text-emerald-400 animate-pulse font-mono">
+                  {t('aiTyping')}
+                </span>
+              </div>
+            )}
+
+          <div ref={messagesEndRef} aria-hidden="true" />
         </div>
       )}
 
@@ -253,16 +223,29 @@ export const ConciergeBar: React.FC = () => {
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
           placeholder={t('askPlaceholder')}
-          className="w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-zinc-950/90 border border-white/[0.08] focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/50 text-white text-base sm:text-xs placeholder:text-zinc-500 outline-none transition-all"
+          aria-label={t('askPlaceholder')}
+          disabled={isStreaming}
+          className="w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-zinc-950/90 border border-white/[0.08] focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/50 text-white text-base sm:text-xs placeholder:text-zinc-500 outline-none transition-all disabled:opacity-60"
         />
-        <button
-          type="submit"
-          disabled={!inputQuery.trim()}
-          aria-label={t('sendAria')}
-          className="absolute right-1.5 p-1.5 rounded-lg bg-emerald-500 text-zinc-950 hover:bg-emerald-400 disabled:opacity-30 disabled:hover:bg-emerald-500 transition-colors cursor-pointer disabled:cursor-not-allowed"
-        >
-          <Send className="w-3.5 h-3.5 stroke-[2.5]" />
-        </button>
+        {isStreaming ? (
+          <button
+            type="button"
+            onClick={stopGeneration}
+            aria-label={t('stopAria')}
+            className="absolute right-1.5 p-1.5 rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer"
+          >
+            <Square className="w-3.5 h-3.5 fill-current" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!inputQuery.trim()}
+            aria-label={t('sendAria')}
+            className="absolute right-1.5 p-1.5 rounded-lg bg-emerald-500 text-zinc-950 hover:bg-emerald-400 disabled:opacity-30 disabled:hover:bg-emerald-500 transition-colors cursor-pointer disabled:cursor-not-allowed"
+          >
+            <Send className="w-3.5 h-3.5 stroke-[2.5]" />
+          </button>
+        )}
       </form>
     </section>
   );

@@ -249,6 +249,8 @@
     "demoAnswerDining": "Recomendaciones en Bansko:\n1. Taberna 'Dedo Pene' (comida típica, 400m)\n2. Restaurante 'The House' (carnes y vinos, 600m)\n3. 'Chalet Yanitza' (vistas a la montaña).",
     "demoAnswerDefault": "¡Gracias por su consulta! Como Conserje IA de Villa SmartScan, estoy disponible las 24 horas.",
     "clearChat": "Borrar",
+    "stopAria": "Detener generación",
+    "chatConnectionError": "Error de conexión con el conserje. Inténtelo de nuevo.",
     "fastActionGridAria": "Contactos rápidos y acciones de emergencia",
     "aiTyping": "La IA está escribiendo...",
     "metaTitle": "{name} · Guía Digital | SmartScan Stay",

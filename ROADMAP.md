@@ -11,8 +11,8 @@
 | **Стъпка 1** | Landing Page & Дизайн система | 🟢 Завършена | 11.09.2026 |
 | **Стъпка 2** | Host Автентикация (1-Click Google OAuth & Дашборд) | 🟢 Завършена | 12.09.2026 |
 | **Стъпка 3** | Гост PWA Преживяване (`/stay/[slug]`) | 🟢 Завършена | 13.09.2026 |
-| **Стъпка 4** | База данни, Supabase Миграции & DAL | ⚪ Очаква | — |
-| **Стъпка 5** | FastAPI AI Concierge & Прокси слой | ⚪ Очаква | — |
+| **Стъпка 4** | База данни, Supabase Миграции & DAL | 🟢 Завършена | 13.09.2026 |
+| **Стъпка 5** | FastAPI AI Concierge & Прокси слой | 🟢 Завършена | 14.09.2026 |
 | **Стъпка 6** | Хазяин Дашборд (`/dashboard`) | ⚪ Очаква | — |
 | **Стъпка 7** | Гласово въвеждане (Voice Ingest + Whisper) | ⚪ Очаква | — |
 | **Стъпка 8** | Физически QR Табелки за печат (PDF A5/A6) | ⚪ Очаква | — |
@@ -62,7 +62,7 @@
 
 ---
 
-### [ ] Стъпка 4: База данни, Supabase Миграции & Data Access Layer (DAL)
+### [x] Стъпка 4: База данни, Supabase Миграции & Data Access Layer (DAL)
 - [x] SQL миграционен файл `supabase/migrations/20260914000001_create_spaces_and_knowledge.sql` с DDL за `spaces` и `knowledge_chunks`.
 - [x] Активиране на `pgvector` в схема `extensions` и създаване на HNSW индекс (`vector_cosine_ops`, `m=16`, `ef_construction=64`).
 - [x] RPC функция `match_space_knowledge` със строг пре-филтър `WHERE space_id = filter_space_id`, `s.is_active = true` и `SECURITY DEFINER`.
@@ -72,19 +72,23 @@
 - [x] Стриктни TypeScript типове за базата данни в `src/lib/types/databaseTypes.ts`.
 - [x] Сървърен Data Access Layer `src/lib/dal.ts` (`getAuthenticatedHost`, `getHostSpaces`, `getSpaceBySlug`, `getSpaceStayDataWithFallback`).
 - [x] Интеграция с Next.js App Router (`/stay/[slug]`), защита със `'server-only'` и React `cache()`.
-- [ ] Финална верификация и ревю от CodeRabbit.
+- [x] Финална верификация и ревю от CodeRabbit.
 
 ---
 
-### [ ] Стъпка 5: FastAPI AI Concierge & Прокси слой
-- [ ] No-Middleware прокси слой `src/lib/proxy.ts` (почистване на `x-*` хедъри за защита от CVE-2025-29927).
-- [ ] FastAPI ядро в `backend/app/` (Pydantic v2 схеми, SlowAPI rate limiter).
-- [ ] OpenRouter клиент с `google/gemini-2.5-flash` и SSE стрийминг (`text/event-stream`).
-- [ ] Защита от Prompt Injection: Regex филтриране на тагове + `<property_context>` XML изолация.
-- [ ] Sliding window памет (до 6 съобщения).
-- [ ] Свързване на реалния SSE стрийминг към PWA чата на госта.
-- [ ] **Таргетирани тестове**: Тест на Regex чистача срещу Prompt Injection, тест на SSE генератора.
-- [ ] **Верификация**: Тест на отговори на различни езици (български, английски, немски и др.), одобрение.
+### [x] Стъпка 5: FastAPI AI Concierge (LangGraph StateGraph) & Прокси слой
+- [x] **Стъпка 5А**: FastAPI ядро в `backend/app/` (Python 3.12, Pydantic v2 схеми, SlowAPI rate limiter: 30 req / 10 min).
+- [x] **Стъпка 5А**: LangGraph `StateGraph` консиерж пайплайн (`sanitize_node` ➔ `retrieve_rag_node` ➔ `generate_stream_node`).
+- [x] **Стъпка 5А**: Защита от Prompt Injection: нулева латентност с `TAG_SANITIZER_REGEX` + XML изолация в `<property_context>`.
+- [x] **Стъпка 5А**: RAG контекст интеграция със Supabase (`spaces.stay_settings` + pgvector `match_space_knowledge` RPC) с флагмански fallback.
+- [x] **Стъпка 5А**: OpenRouter SSE стрийминг с Gemini 2.5 Flash и LangGraph `StreamWriter` (`stream_mode="custom"`, `version="v2"`).
+- [x] **Стъпка 5А**: No-Middleware прокси слой `frontend/src/lib/proxy.ts` и `app/api/py/[...path]/route.ts` с филтриране на `x-*` хедъри за защита от **CVE-2025-29927**.
+- [x] **Стъпка 5А**: 11 автоматизирани теста (`pytest tests/ -v`: сигурност, валидация на графа, rate limit и SSE интеграция).
+- [x] **Стъпка 5А**: Верификация: `uv run pytest` = 11 passed, `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки.
+- [x] **Стъпка 5Б**: Фронтенд SSE клиент `src/features/stay/api/chatStream.ts` с `ReadableStreamDefaultReader` и `AbortSignal`.
+- [x] **Стъпка 5Б**: Custom React 19 хук `useConciergeChat.ts` с токен-по-токен акумулиране, sliding window и хаптична вибрация.
+- [x] **Стъпка 5Б**: Рефакториране на `ConciergeBar.tsx` в гост PWA с реален чат стрийминг, бързи чипове и бутон Stop.
+- [x] **Стъпка 5Б**: Пълна верификация: `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки.
 
 ---
 

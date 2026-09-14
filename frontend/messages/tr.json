@@ -249,6 +249,8 @@
     "demoAnswerDining": "Bansko'da önerilen yerler:\n1. Taverna 'Dedo Pene' (geleneksel mutfak, 400m)\n2. 'The House' Restoran (biftek & şarap, 600m)\n3. 'Chalet Yanitza' (dağ manzarası).",
     "demoAnswerDefault": "Sorunuz için teşekkürler! Villa SmartScan Yapay Zeka Konsiyerji olarak 7/24 hizmetinizdeyim.",
     "clearChat": "Temizle",
+    "stopAria": "Üretimi durdur",
+    "chatConnectionError": "Konsiyerj ile bağlantı hatası oluştu. Lütfen tekrar deneyin.",
     "fastActionGridAria": "Hızlı iletişim ve acil durum eylemleri",
     "aiTyping": "Yapay zeka yazıyor...",
     "metaTitle": "{name} · Dijital Rehber | SmartScan Stay",

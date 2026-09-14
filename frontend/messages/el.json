@@ -249,6 +249,8 @@
     "demoAnswerDining": "Κορυφαίες επιλογές στο Μπάνσκο:\n1. Ταβέρνα 'Dedo Pene' (παραδοσιακή κουζίνα, 400μ)\n2. Εστιατόριο 'The House' (μπριζόλες & κρασί, 600μ)\n3. 'Chalet Yanitza' (θέα στο βουνό).",
     "demoAnswerDefault": "Σας ευχαριστώ! Ως AI Concierge της Villa SmartScan, είμαι στη διάθεσή σας όλο το 24ωρο.",
     "clearChat": "Καθαρισμός",
+    "stopAria": "Διακοπή δημιουργίας",
+    "chatConnectionError": "Σφάλμα σύνδεσης με τη θυρωρείο. Παρακαλώ δοκιμάστε ξανά.",
     "fastActionGridAria": "Γρήγορες επαφές και ενέργειες έκτακτης ανάγκης",
     "aiTyping": "Το AI πληκτρολογεί...",
     "metaTitle": "{name} · Ψηφιακός Οδηγός | SmartScan Stay",
