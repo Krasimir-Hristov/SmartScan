@@ -2,7 +2,7 @@
 
 import logging
 import uuid
-from typing import Optional
+
 from app.core.database import get_supabase_client
 from app.features.knowledge.schemas import KnowledgeChunkDTO, SpaceStayContext
 
@@ -63,7 +63,7 @@ def _safe_str(val: object, default: str = "") -> str:
     return default
 
 
-def _safe_opt_str(val: object) -> Optional[str]:
+def _safe_opt_str(val: object) -> str | None:
     """Safe type guard converting an unknown value to optional string."""
     if isinstance(val, str) and val.strip():
         return val.strip()
@@ -125,7 +125,7 @@ async def get_space_stay_context(space_id: str) -> SpaceStayContext:
             emergency_number=_safe_str(settings.get("emergencyNumber"), "112"),
             rag_chunks=[],
         )
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to fetch space context for %s: %s", space_id, exc)
         return DEMO_VILLA_CONTEXT
 
@@ -183,6 +183,6 @@ async def get_relevant_knowledge_chunks(
                 )
 
         return chunks
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to query knowledge chunks for %s: %s", space_id, exc)
         return DEMO_VILLA_CONTEXT.rag_chunks

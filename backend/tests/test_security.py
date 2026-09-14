@@ -1,6 +1,5 @@
 """Tests for zero-latency prompt injection defense and security sanitizer."""
 
-import pytest
 from app.core.security import sanitize_user_input
 
 

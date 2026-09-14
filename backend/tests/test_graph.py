@@ -3,12 +3,12 @@
 import pytest
 from pydantic import ValidationError
 
-from app.features.concierge.schemas import ChatMessage, ConciergeChatRequest
 from app.features.concierge.graph import (
-    sanitize_node,
-    retrieve_rag_node,
     concierge_workflow,
+    retrieve_rag_node,
+    sanitize_node,
 )
+from app.features.concierge.schemas import ChatMessage, ConciergeChatRequest
 
 
 def test_chat_message_schema():

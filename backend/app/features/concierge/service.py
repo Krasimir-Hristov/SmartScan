@@ -1,7 +1,8 @@
 """Service layer for AI Concierge: invokes LangGraph workflow and streams SSE chunks."""
 
 import json
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 from app.features.concierge.graph import concierge_workflow
 from app.features.concierge.schemas import ConciergeChatRequest
 
@@ -35,7 +36,7 @@ async def stream_concierge_chat(
 
         # Signal stream completion to the frontend client
         yield "data: [DONE]\n\n"
-    except Exception as exc:
+    except Exception:  # noqa: BLE001
         err_payload = {"error": "Възникна непредвидена грешка в консиержа."}
         yield f"data: {json.dumps(err_payload)}\n\n"
         yield "data: [DONE]\n\n"

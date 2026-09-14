@@ -3,15 +3,16 @@
 import asyncio
 import json
 from typing import TypedDict
+
 import httpx
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import StreamWriter
 
 from app.core.config import settings
 from app.core.security import sanitize_user_input
 from app.features.knowledge.service import (
-    get_space_stay_context,
     get_relevant_knowledge_chunks,
+    get_space_stay_context,
 )
 
 
@@ -68,7 +69,7 @@ async def retrieve_rag_node(state: ConciergeState) -> dict[str, object]:
 def _build_concierge_system_prompt(state: ConciergeState) -> str:
     details = state.get("static_details", {})
     locale = state.get("locale", "en")
-    return f"""You are a polite, hospitable, and knowledgeable digital concierge for: {state.get('space_name', 'SmartScan Stay')}.
+    return f"""You are a polite, hospitable, and knowledgeable digital concierge for: {state.get("space_name", "SmartScan Stay")}.
 Your SOLE role is to assist guests with practical information about their stay at this property.
 
 CRITICAL LANGUAGE & POLYGLOT RULE (ABSOLUTE TOP PRIORITY):
@@ -87,18 +88,18 @@ SECURITY & INTEGRITY RULES:
 4. If a question is completely unrelated to the property or the guest's stay, politely guide the guest back to property inquiries.
 
 PROPERTY CORE FACTS:
-- Wi-Fi Network: {details.get('wifi_ssid')}
-- Wi-Fi Password: {details.get('wifi_password')}
-- Exact Address: {details.get('address')}
-- Check-in Time: from {details.get('check_in')}
-- Check-out Time: until {details.get('check_out')}
-- Keybox Code: {details.get('keybox_code')}
-- Quiet Hours: {details.get('night_silence')}
-- Emergency Phone: {details.get('emergency_number')}
+- Wi-Fi Network: {details.get("wifi_ssid")}
+- Wi-Fi Password: {details.get("wifi_password")}
+- Exact Address: {details.get("address")}
+- Check-in Time: from {details.get("check_in")}
+- Check-out Time: until {details.get("check_out")}
+- Keybox Code: {details.get("keybox_code")}
+- Quiet Hours: {details.get("night_silence")}
+- Emergency Phone: {details.get("emergency_number")}
 
 ADDITIONAL PROPERTY GUIDEBOOK:
 <property_context>
-{state.get('property_context', '')}
+{state.get("property_context", "")}
 </property_context>
 """
 
@@ -120,24 +121,37 @@ async def generate_stream_node(
         # Graceful development mode fallback for testing without external API key
         details = state.get("static_details", {})
         q_lower = query.lower()
-        is_en = (
-            locale == "en"
-            or any(
-                w in q_lower
-                for w in [
-                    "where", "how", "what", "is", "the", "park", "heat",
-                    "warm", "trash", "wifi", "food", "eat", "password",
-                ]
-            )
+        is_en = locale == "en" or any(
+            w in q_lower
+            for w in [
+                "where",
+                "how",
+                "what",
+                "is",
+                "the",
+                "park",
+                "heat",
+                "warm",
+                "trash",
+                "wifi",
+                "food",
+                "eat",
+                "password",
+            ]
         )
 
-        if any(w in q_lower for w in ["wifi", "вайфай", "интернет", "парол", "password"]):
+        if any(
+            w in q_lower for w in ["wifi", "вайфай", "интернет", "парол", "password"]
+        ):
             response_text = (
                 f"The Wi-Fi network is '{details.get('wifi_ssid')}' and the password is: {details.get('wifi_password')}."
                 if is_en
                 else f"Паролата за Wi-Fi мрежата '{details.get('wifi_ssid')}' е: {details.get('wifi_password')}."
             )
-        elif any(w in q_lower for w in ["парно", "климатик", "отоплен", "термостат", "heat", "warm"]):
+        elif any(
+            w in q_lower
+            for w in ["парно", "климатик", "отоплен", "термостат", "heat", "warm"]
+        ):
             response_text = (
                 "The living room thermostat is set to 22°C. Use the up/down panel arrows to adjust. Bedroom heaters turn on via the side switch."
                 if is_en
@@ -155,7 +169,9 @@ async def generate_stream_node(
                 if is_en
                 else "На разположение е безплатен открит паркинг в двора за до 2 автомобила."
             )
-        elif any(w in q_lower for w in ["храна", "ресторант", "механ", "food", "dine", "eat"]):
+        elif any(
+            w in q_lower for w in ["храна", "ресторант", "механ", "food", "dine", "eat"]
+        ):
             response_text = (
                 "We recommend 'Starata Izba' tavern (300m away) and 'Edelweiss' restaurant (500m away)."
                 if is_en
@@ -205,28 +221,34 @@ async def generate_stream_node(
 
     full_output = []
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            async with client.stream("POST", url, headers=headers, json=payload) as response:
-                if response.status_code != 200:
-                    writer({"error": "AI услугата е временно недостъпна. Моля опитайте отново."})
-                    return {"stream_output": "ERROR"}
+        async with (
+            httpx.AsyncClient(timeout=30.0) as client,
+            client.stream("POST", url, headers=headers, json=payload) as response,
+        ):
+            if response.status_code != 200:
+                writer(
+                    {
+                        "error": "AI услугата е временно недостъпна. Моля опитайте отново."
+                    }
+                )
+                return {"stream_output": "ERROR"}
 
-                async for line in response.aiter_lines():
-                    if not line:
+            async for line in response.aiter_lines():
+                if not line:
+                    continue
+                if line.startswith("data: "):
+                    data_str = line[6:].strip()
+                    if data_str == "[DONE]":
+                        break
+                    try:
+                        chunk_json = json.loads(data_str)
+                        delta = chunk_json["choices"][0]["delta"].get("content", "")
+                        if delta:
+                            full_output.append(delta)
+                            writer({"content": delta})
+                    except (json.JSONDecodeError, KeyError, IndexError):
                         continue
-                    if line.startswith("data: "):
-                        data_str = line[6:].strip()
-                        if data_str == "[DONE]":
-                            break
-                        try:
-                            chunk_json = json.loads(data_str)
-                            delta = chunk_json["choices"][0]["delta"].get("content", "")
-                            if delta:
-                                full_output.append(delta)
-                                writer({"content": delta})
-                        except (json.JSONDecodeError, KeyError, IndexError):
-                            continue
-    except Exception:
+    except Exception:  # noqa: BLE001
         writer({"error": "Възникна временна грешка при връзката с AI асистента."})
         return {"stream_output": "ERROR"}
 

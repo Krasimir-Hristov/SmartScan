@@ -1,6 +1,5 @@
 """Pydantic v2 schemas for knowledge chunks and space context."""
 
-from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -9,7 +8,7 @@ class KnowledgeChunkDTO(BaseModel):
 
     content: str = Field(..., min_length=1)
     category: str = Field(default="general")
-    similarity: Optional[float] = Field(default=None)
+    similarity: float | None = Field(default=None)
 
 
 class SpaceStayContext(BaseModel):
@@ -22,8 +21,8 @@ class SpaceStayContext(BaseModel):
     address: str = Field(default="")
     check_in_time: str = Field(default="14:00")
     check_out_time: str = Field(default="11:00")
-    keybox_code: Optional[str] = Field(default=None)
-    night_silence_start: Optional[str] = Field(default=None)
-    night_silence_end: Optional[str] = Field(default=None)
+    keybox_code: str | None = Field(default=None)
+    night_silence_start: str | None = Field(default=None)
+    night_silence_end: str | None = Field(default=None)
     emergency_number: str = Field(default="112")
     rag_chunks: list[KnowledgeChunkDTO] = Field(default_factory=list)

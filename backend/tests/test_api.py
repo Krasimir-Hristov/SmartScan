@@ -1,13 +1,16 @@
 """Integration tests for FastAPI endpoints: health check, rate limiting, and chat stream."""
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+
 from app.main import app
 
 
 @pytest.mark.asyncio
 async def test_health_check_endpoint():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.get("/api/py/health")
         assert response.status_code == 200
         data = response.json()
@@ -23,7 +26,9 @@ async def test_concierge_chat_endpoint_streaming():
         "history": [],
     }
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post("/api/py/concierge/chat", json=payload)
         assert response.status_code == 200
         assert "text/event-stream" in response.headers.get("content-type", "")
