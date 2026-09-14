@@ -62,14 +62,17 @@
 
 ---
 
-### [ ] Стъпка 4: База данни, Supabase Миграции & DAL
-- [ ] SQL миграционен файл с DDL за `spaces` и `knowledge_chunks`.
-- [ ] Активиране на `pgvector` и създаване на HNSW индекс (`vector_cosine_ops`).
-- [ ] RPC функция `match_space_knowledge` със строг пре-филтър `WHERE space_id = filter_space_id`.
-- [ ] Row Level Security (RLS) политики за изолация на хазяите и публичен достъп на гостите.
-- [ ] Сървърен клиент `src/lib/supabase/server.ts` и Data Access Layer `src/lib/dal.ts`.
-- [ ] **Таргетирани тестове**: Тест на SQL функцията и пре-филтъра за изолация.
-- [ ] **Верификация**: Успешно изпълнение на SQL миграцията, тестване на DAL заявка, одобрение.
+### [ ] Стъпка 4: База данни, Supabase Миграции & Data Access Layer (DAL)
+- [x] SQL миграционен файл `supabase/migrations/20260914000001_create_spaces_and_knowledge.sql` с DDL за `spaces` и `knowledge_chunks`.
+- [x] Активиране на `pgvector` в схема `extensions` и създаване на HNSW индекс (`vector_cosine_ops`, `m=16`, `ef_construction=64`).
+- [x] RPC функция `match_space_knowledge` със строг пре-филтър `WHERE space_id = filter_space_id`, `s.is_active = true` и `SECURITY DEFINER`.
+- [x] Row Level Security (RLS) политики с кеширано `(SELECT auth.uid())` и публичен достъп за гости по slug.
+- [x] Индексиране на всички външни ключове (`host_id`, `space_id`, `slug`) съгласно Supabase Postgres Best Practices.
+- [x] Автоматичен тригер `handle_updated_at()` за двете таблици.
+- [x] Стриктни TypeScript типове за базата данни в `src/lib/types/databaseTypes.ts`.
+- [x] Сървърен Data Access Layer `src/lib/dal.ts` (`getAuthenticatedHost`, `getHostSpaces`, `getSpaceBySlug`, `getSpaceStayDataWithFallback`).
+- [x] Интеграция с Next.js App Router (`/stay/[slug]`), защита със `'server-only'` и React `cache()`.
+- [ ] Финална верификация и ревю от CodeRabbit.
 
 ---
 
