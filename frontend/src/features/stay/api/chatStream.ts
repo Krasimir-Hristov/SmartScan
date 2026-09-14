@@ -54,8 +54,9 @@ export async function streamConciergeChat({
     let buffer = '';
 
     try {
+      let receivedDone = false;
       while (true) {
-        const { done, value } = await reader.read();
+        const { value, done } = await reader.read();
         if (done) {
           break;
         }
@@ -73,6 +74,7 @@ export async function streamConciergeChat({
 
           const rawData = trimmed.replace(/^data:\s*/, '');
           if (rawData === '[DONE]') {
+            receivedDone = true;
             onDone();
             return;
           }
@@ -92,7 +94,9 @@ export async function streamConciergeChat({
         }
       }
 
-      onDone();
+      if (!receivedDone) {
+        onError(new Error('STREAM_INTERRUPTED'));
+      }
     } finally {
       reader.releaseLock();
     }

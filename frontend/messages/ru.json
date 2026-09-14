@@ -249,6 +249,8 @@
     "demoAnswerDining": "Лучшие заведения в Банско:\n1. Механа 'Dedo Pene' (аутентичная кухня, 400м)\n2. Ресторан 'The House' (стейки и вина, 600м)\n3. 'Chalet Yanitza' (вид на горы).",
     "demoAnswerDefault": "Спасибо за вопрос! Как ИИ-консьерж Villa SmartScan, я доступен 24/7.",
     "clearChat": "Очистить",
+    "stopAria": "Остановить генерацию",
+    "chatConnectionError": "Ошибка подключения к консьержу. Пожалуйста, попробуйте снова.",
     "fastActionGridAria": "Быстрые контакты и экстренные действия",
     "aiTyping": "ИИ печатает...",
     "metaTitle": "{name} · Цифровой гид | SmartScan Stay",

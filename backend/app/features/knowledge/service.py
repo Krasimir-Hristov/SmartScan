@@ -1,5 +1,6 @@
 """Knowledge retrieval and space context data service with multi-tenant isolation."""
 
+import asyncio
 import logging
 import uuid
 
@@ -88,26 +89,34 @@ def _is_valid_uuid(val: str) -> bool:
 async def get_space_stay_context(space_id: str) -> SpaceStayContext:
     """Retrieves space stay settings and basic property context.
 
-    Falls back gracefully to demo data if the space is demo or database is unconfigured.
+    Only falls back to demo data if the space explicitly starts with 'demo-'.
+    For non-demo spaces, missing data or errors return a tenant-neutral default.
     """
-    if space_id.startswith("demo-") or not _is_valid_uuid(space_id):
+    if space_id.startswith("demo-"):
         return DEMO_VILLA_CONTEXT
+
+    if not _is_valid_uuid(space_id):
+        return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
 
     client = get_supabase_client()
     if not client:
-        return DEMO_VILLA_CONTEXT
+        return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
 
     try:
-        res = (
-            client.table("spaces")
-            .select("id, name, stay_settings")
-            .eq("id", space_id)
-            .single()
-            .execute()
-        )
+
+        def _fetch_space():
+            return (
+                client.table("spaces")
+                .select("id, name, stay_settings")
+                .eq("id", space_id)
+                .single()
+                .execute()
+            )
+
+        res = await asyncio.to_thread(_fetch_space)
         data = _extract_dict(res.data)
         if not data:
-            return DEMO_VILLA_CONTEXT
+            return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
 
         settings = _extract_dict(data.get("stay_settings"))
 
@@ -127,7 +136,7 @@ async def get_space_stay_context(space_id: str) -> SpaceStayContext:
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to fetch space context for %s: %s", space_id, exc)
-        return DEMO_VILLA_CONTEXT
+        return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
 
 
 async def get_relevant_knowledge_chunks(
@@ -135,7 +144,7 @@ async def get_relevant_knowledge_chunks(
     query: str,
 ) -> list[KnowledgeChunkDTO]:
     """Retrieves relevant knowledge chunks for the space with strict multi-tenant isolation."""
-    if space_id.startswith("demo-") or not _is_valid_uuid(space_id):
+    if space_id.startswith("demo-"):
         q_lower = query.lower()
         if not q_lower:
             return DEMO_VILLA_CONTEXT.rag_chunks
@@ -151,18 +160,25 @@ async def get_relevant_knowledge_chunks(
         ]
         return matched if matched else DEMO_VILLA_CONTEXT.rag_chunks
 
+    if not _is_valid_uuid(space_id):
+        return []
+
     client = get_supabase_client()
     if not client:
-        return DEMO_VILLA_CONTEXT.rag_chunks
+        return []
 
     try:
-        res = (
-            client.table("knowledge_chunks")
-            .select("title, content, category")
-            .eq("space_id", space_id)
-            .limit(5)
-            .execute()
-        )
+
+        def _fetch_chunks():
+            return (
+                client.table("knowledge_chunks")
+                .select("title, content, category")
+                .eq("space_id", space_id)
+                .limit(5)
+                .execute()
+            )
+
+        res = await asyncio.to_thread(_fetch_chunks)
         raw_list = res.data
         if not isinstance(raw_list, list):
             return []
@@ -185,4 +201,4 @@ async def get_relevant_knowledge_chunks(
         return chunks
     except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to query knowledge chunks for %s: %s", space_id, exc)
-        return DEMO_VILLA_CONTEXT.rag_chunks
+        return []

@@ -249,6 +249,8 @@
     "demoAnswerDining": "Recomandări de top în Bansko:\n1. Taverna 'Dedo Pene' (bucătărie tradițională autentică, 400m)\n2. Restaurantul 'The House' (fripturi & vinuri, 600m)\n3. 'Chalet Yanitza' (vedere spre munți).",
     "demoAnswerDefault": "Vă mulțumesc pentru întrebare! Ca asistent AI pentru Villa SmartScan, sunt disponibil non-stop.",
     "clearChat": "Șterge",
+    "stopAria": "Oprește generarea",
+    "chatConnectionError": "Eroare de conexiune cu concierge-ul. Vă rugăm să încercați din nou.",
     "fastActionGridAria": "Contacte rapide și acțiuni de urgență",
     "aiTyping": "AI scrie...",
     "metaTitle": "{name} · Ghid Digital | SmartScan Stay",

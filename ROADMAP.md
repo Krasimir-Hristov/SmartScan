@@ -62,7 +62,7 @@
 
 ---
 
-### [ ] Стъпка 4: База данни, Supabase Миграции & Data Access Layer (DAL)
+### [x] Стъпка 4: База данни, Supabase Миграции & Data Access Layer (DAL)
 - [x] SQL миграционен файл `supabase/migrations/20260914000001_create_spaces_and_knowledge.sql` с DDL за `spaces` и `knowledge_chunks`.
 - [x] Активиране на `pgvector` в схема `extensions` и създаване на HNSW индекс (`vector_cosine_ops`, `m=16`, `ef_construction=64`).
 - [x] RPC функция `match_space_knowledge` със строг пре-филтър `WHERE space_id = filter_space_id`, `s.is_active = true` и `SECURITY DEFINER`.
@@ -72,7 +72,7 @@
 - [x] Стриктни TypeScript типове за базата данни в `src/lib/types/databaseTypes.ts`.
 - [x] Сървърен Data Access Layer `src/lib/dal.ts` (`getAuthenticatedHost`, `getHostSpaces`, `getSpaceBySlug`, `getSpaceStayDataWithFallback`).
 - [x] Интеграция с Next.js App Router (`/stay/[slug]`), защита със `'server-only'` и React `cache()`.
-- [ ] Финална верификация и ревю от CodeRabbit.
+- [x] Финална верификация и ревю от CodeRabbit.
 
 ---
 

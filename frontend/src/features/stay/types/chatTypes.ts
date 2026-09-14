@@ -22,6 +22,7 @@ export interface UseConciergeChatOptions {
   spaceId: string;
   locale?: string;
   initialMessages?: ChatMessage[];
+  connectionErrorMessage?: string;
 }
 
 export interface UseConciergeChatReturn {

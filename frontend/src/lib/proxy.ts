@@ -13,6 +13,12 @@ export async function proxyToBackend(
   const url = new URL(targetPath, backendUrl);
   url.search = request.nextUrl.search;
 
+  // Extract real client IP before scrubbing external x-* headers
+  const rawForwarded = request.headers.get('x-forwarded-for');
+  const clientIp = rawForwarded
+    ? rawForwarded.split(',')[0].trim()
+    : request.headers.get('x-real-ip') || '127.0.0.1';
+
   // Defensive Header Filtering (CVE-2025-29927 Mitigation)
   const cleanHeaders = new Headers(request.headers);
   for (const [key] of request.headers.entries()) {
@@ -21,12 +27,16 @@ export async function proxyToBackend(
     }
   }
 
+  // Inject verified proxy client IP for trusted internal rate limiting
+  cleanHeaders.set('x-forwarded-for', clientIp);
+
   try {
     const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
     const backendResponse = await fetch(url.toString(), {
       method: request.method,
       headers: cleanHeaders,
       body: hasBody ? await request.blob() : undefined,
+      signal: request.signal,
     });
 
     return new NextResponse(backendResponse.body, {
@@ -34,7 +44,10 @@ export async function proxyToBackend(
       statusText: backendResponse.statusText,
       headers: backendResponse.headers,
     });
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      return new NextResponse(null, { status: 499, statusText: 'Client Closed Request' });
+    }
     return NextResponse.json(
       { error: 'Backend service temporarily unavailable' },
       { status: 502 }

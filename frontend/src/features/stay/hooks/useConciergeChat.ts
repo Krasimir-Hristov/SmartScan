@@ -14,6 +14,7 @@ export function useConciergeChat({
   spaceId,
   locale = 'en',
   initialMessages = [],
+  connectionErrorMessage,
 }: UseConciergeChatOptions): UseConciergeChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -115,15 +116,18 @@ export function useConciergeChat({
         },
         onError: (err: Error) => {
           setIsStreaming(false);
-          setError(err.message);
+          const fallbackMsg =
+            connectionErrorMessage ||
+            (locale === 'bg'
+              ? 'Възникна грешка при връзката с консиержа. Моля опитайте отново.'
+              : 'Connection error with concierge. Please try again.');
+          setError(err.message === 'STREAM_INTERRUPTED' ? fallbackMsg : err.message || fallbackMsg);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessageId
                 ? {
                     ...msg,
-                    content:
-                      msg.content ||
-                      'Възникна грешка при връзката с консиержа. Моля опитайте отново.',
+                    content: msg.content || fallbackMsg,
                     isStreaming: false,
                   }
                 : msg
@@ -133,7 +137,7 @@ export function useConciergeChat({
         },
       });
     },
-    [isStreaming, messages, spaceId, locale, triggerHaptic]
+    [isStreaming, messages, spaceId, locale, connectionErrorMessage, triggerHaptic]
   );
 
   return {

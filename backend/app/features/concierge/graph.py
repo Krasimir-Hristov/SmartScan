@@ -3,6 +3,7 @@
 import asyncio
 import json
 from typing import TypedDict
+from xml.sax.saxutils import escape as xml_escape
 
 import httpx
 from langgraph.graph import END, START, StateGraph
@@ -69,6 +70,7 @@ async def retrieve_rag_node(state: ConciergeState) -> dict[str, object]:
 def _build_concierge_system_prompt(state: ConciergeState) -> str:
     details = state.get("static_details", {})
     locale = state.get("locale", "en")
+    safe_property_context = xml_escape(state.get("property_context", ""))
     return f"""You are a polite, hospitable, and knowledgeable digital concierge for: {state.get("space_name", "SmartScan Stay")}.
 Your SOLE role is to assist guests with practical information about their stay at this property.
 
@@ -99,7 +101,7 @@ PROPERTY CORE FACTS:
 
 ADDITIONAL PROPERTY GUIDEBOOK:
 <property_context>
-{state.get("property_context", "")}
+{safe_property_context}
 </property_context>
 """
 
@@ -201,7 +203,8 @@ async def generate_stream_node(
         role = msg.get("role", "user")
         content = msg.get("content", "")
         if role in ["user", "assistant"] and content:
-            messages.append({"role": role, "content": content})
+            clean_content = sanitize_user_input(content) if role == "user" else content
+            messages.append({"role": role, "content": clean_content})
 
     messages.append({"role": "user", "content": query})
 

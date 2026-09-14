@@ -249,6 +249,8 @@
     "demoAnswerDining": "Top local recommendations in Bansko:\n1. Tavern 'Dedo Pene' (authentic regional specialties, 400m)\n2. 'The House' Restaurant (fine steaks & local wine, 600m)\n3. 'Chalet Yanitza' (mountain view dining).",
     "demoAnswerDefault": "Thank you for asking! As Villa SmartScan's AI Concierge, I'm here 24/7. In the full release, I answer questions using the house's complete knowledge base in any language.",
     "clearChat": "Clear",
+    "stopAria": "Stop generating",
+    "chatConnectionError": "An error occurred while connecting to the concierge. Please try again.",
     "fastActionGridAria": "Quick contacts and emergency actions",
     "aiTyping": "AI is typing...",
     "metaTitle": "{name} · Digital Guide | SmartScan Stay",

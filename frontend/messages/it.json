@@ -249,6 +249,8 @@
     "demoAnswerDining": "I migliori posti a Bansko:\n1. Taverna 'Dedo Pene' (cucina tradizionale, 400m)\n2. Ristorante 'The House' (bistecche e vini, 600m)\n3. 'Chalet Yanitza' (vista panoramica).",
     "demoAnswerDefault": "Grazie per la domanda! Come Concierge IA di Villa SmartScan, sono a tua disposizione 24 ore su 24.",
     "clearChat": "Cancella",
+    "stopAria": "Interrompi generazione",
+    "chatConnectionError": "Errore di connessione con il concierge. Riprova.",
     "fastActionGridAria": "Contatti rapidi e azioni di emergenza",
     "aiTyping": "L'IA sta scrivendo...",
     "metaTitle": "{name} · Guida Digitale | SmartScan Stay",

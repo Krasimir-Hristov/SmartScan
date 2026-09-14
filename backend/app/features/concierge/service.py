@@ -37,6 +37,6 @@ async def stream_concierge_chat(
         # Signal stream completion to the frontend client
         yield "data: [DONE]\n\n"
     except Exception:  # noqa: BLE001
-        err_payload = {"error": "Възникна непредвидена грешка в консиержа."}
+        err_payload = {"error": "CONCIERGE_INTERNAL_ERROR"}
         yield f"data: {json.dumps(err_payload)}\n\n"
         yield "data: [DONE]\n\n"
