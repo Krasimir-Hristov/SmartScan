@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Eliminar propiedad definitivamente",
     "deleteSpaceModalDeleting": "Eliminando propiedad...",
     "deleteSpaceModalErrorMismatch": "El nombre introducido no coincide con el nombre de la propiedad.",
-    "deleteSpaceModalErrorServer": "Se produjo un error al eliminar la propiedad."
+    "deleteSpaceModalErrorServer": "Se produjo un error al eliminar la propiedad.",
+    "welcomeBannerAria": "Banner de bienvenida"
   },
   "stay": {
     "propertyBadge": "CONSERJE DIGITAL",

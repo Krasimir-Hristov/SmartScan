@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Изтрий имота завинаги",
     "deleteSpaceModalDeleting": "Изтриване на имота...",
     "deleteSpaceModalErrorMismatch": "Въведеното име не съвпада с името на имота.",
-    "deleteSpaceModalErrorServer": "Възникна грешка при изтриването на имота."
+    "deleteSpaceModalErrorServer": "Възникна грешка при изтриването на имота.",
+    "welcomeBannerAria": "Банер за добре дошли"
   },
   "stay": {
     "propertyBadge": "ДИГИТАЛЕН КОНСИЕРЖ",

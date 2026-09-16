@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Mülkü Kalıcı Olarak Sil",
     "deleteSpaceModalDeleting": "Mülk siliniyor...",
     "deleteSpaceModalErrorMismatch": "Girilen ad mülk adıyla eşleşmiyor.",
-    "deleteSpaceModalErrorServer": "Mülk silinirken bir hata oluştu."
+    "deleteSpaceModalErrorServer": "Mülk silinirken bir hata oluştu.",
+    "welcomeBannerAria": "Hoş geldiniz başlığı"
   },
   "stay": {
     "propertyBadge": "DİJİTAL KONSİYERJ",

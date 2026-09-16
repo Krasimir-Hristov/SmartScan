@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Unterkunft endgültig löschen",
     "deleteSpaceModalDeleting": "Unterkunft wird gelöscht...",
     "deleteSpaceModalErrorMismatch": "Der eingegebene Name stimmt nicht mit dem Namen der Unterkunft überein.",
-    "deleteSpaceModalErrorServer": "Beim Löschen der Unterkunft ist ein Fehler aufgetreten."
+    "deleteSpaceModalErrorServer": "Beim Löschen der Unterkunft ist ein Fehler aufgetreten.",
+    "welcomeBannerAria": "Willkommensbanner"
   },
   "stay": {
     "propertyBadge": "DIGITALER CONCIERGE",

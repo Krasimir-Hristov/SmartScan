@@ -67,7 +67,9 @@ export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label={t('deleteSpaceModalTitle')}
-      onClick={onClose}
+      onClick={() => {
+        if (!isDeleting) onClose();
+      }}
       className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div

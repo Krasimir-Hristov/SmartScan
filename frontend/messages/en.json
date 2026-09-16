@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Permanently Delete Property",
     "deleteSpaceModalDeleting": "Deleting property...",
     "deleteSpaceModalErrorMismatch": "The entered name does not match the property name.",
-    "deleteSpaceModalErrorServer": "An error occurred while deleting the property."
+    "deleteSpaceModalErrorServer": "An error occurred while deleting the property.",
+    "welcomeBannerAria": "Welcome Banner"
   },
   "stay": {
     "propertyBadge": "DIGITAL CONCIERGE",

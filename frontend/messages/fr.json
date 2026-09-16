@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Supprimer définitivement la propriété",
     "deleteSpaceModalDeleting": "Suppression de la propriété...",
     "deleteSpaceModalErrorMismatch": "Le nom saisi ne correspond pas au nom de la propriété.",
-    "deleteSpaceModalErrorServer": "Une erreur est survenue lors de la suppression de la propriété."
+    "deleteSpaceModalErrorServer": "Une erreur est survenue lors de la suppression de la propriété.",
+    "welcomeBannerAria": "Bannière de bienvenue"
   },
   "stay": {
     "propertyBadge": "CONCIERGE DIGITAL",

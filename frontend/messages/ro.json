@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Șterge proprietatea definitiv",
     "deleteSpaceModalDeleting": "Se șterge proprietatea...",
     "deleteSpaceModalErrorMismatch": "Numele introdus nu coincide cu numele proprietății.",
-    "deleteSpaceModalErrorServer": "A apărut o eroare la ștergerea proprietății."
+    "deleteSpaceModalErrorServer": "A apărut o eroare la ștergerea proprietății.",
+    "welcomeBannerAria": "Banner de bun venit"
   },
   "stay": {
     "propertyBadge": "CONCIERGE DIGITAL",

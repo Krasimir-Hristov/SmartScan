@@ -20,6 +20,7 @@ import { triggerHaptic } from '@/lib/utils';
 import {
   addKnowledgeChunkAction,
   deleteKnowledgeChunkAction,
+  getSpaceKnowledgeChunksAction,
 } from '../actions/spaceActions';
 
 export interface KnowledgeManagerProps {
@@ -44,6 +45,20 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  React.useEffect(() => {
+    let isCancelled = false;
+    if (initialChunks.length === 0) {
+      getSpaceKnowledgeChunksAction(spaceId).then((result) => {
+        if (!isCancelled && result.success && result.data) {
+          setChunks(result.data);
+        }
+      });
+    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [spaceId, initialChunks.length]);
 
   const handleAddChunk = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,14 +106,23 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
 
   const handleDeleteChunk = async (chunkId: string) => {
     setDeletingId(chunkId);
+    setFeedback(null);
     try {
       const result = await deleteKnowledgeChunkAction(chunkId, spaceId);
       if (result.success) {
         setChunks((prev) => prev.filter((c) => c.id !== chunkId));
         triggerHaptic(40);
+      } else {
+        setFeedback({
+          type: 'error',
+          text: result.error || t('feedbackSaveError'),
+        });
       }
     } catch {
-      // Deletion error handled silently
+      setFeedback({
+        type: 'error',
+        text: t('feedbackServerError'),
+      });
     } finally {
       setDeletingId(null);
     }
@@ -131,9 +155,7 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
             {t('knowledgeTitle')}
           </h2>
         </div>
-        <p className='text-xs text-zinc-400'>
-          {t('knowledgeSub')}
-        </p>
+        <p className='text-xs text-zinc-400'>{t('knowledgeSub')}</p>
       </div>
 
       {feedback && (
@@ -248,7 +270,7 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
             <p>{t('noCards')}</p>
           </div>
         ) : (
-          <div className='flex flex-col gap-2.5 max-h-[360px] overflow-y-auto pr-1'>
+          <div className='flex flex-col gap-2.5 max-h-360px overflow-y-auto pr-1'>
             {chunks.map((chunk) => (
               <div
                 key={chunk.id}

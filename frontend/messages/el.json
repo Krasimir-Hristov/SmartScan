@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Οριστική διαγραφή καταλύματος",
     "deleteSpaceModalDeleting": "Διαγραφή καταλύματος...",
     "deleteSpaceModalErrorMismatch": "Το όνομα που εισαγάγατε δεν ταιριάζει με το όνομα του καταλύματος.",
-    "deleteSpaceModalErrorServer": "Παρουσιάστηκε σφάλμα κατά τη διαγραφή του καταλύματος."
+    "deleteSpaceModalErrorServer": "Παρουσιάστηκε σφάλμα κατά τη διαγραφή του καταλύματος.",
+    "welcomeBannerAria": "Πλαίσιο καλωσορίσματος"
   },
   "stay": {
     "propertyBadge": "ΨΗΦΙΑΚΟΣ CONCIERGE",

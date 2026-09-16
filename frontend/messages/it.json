@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Elimina struttura definitivamente",
     "deleteSpaceModalDeleting": "Eliminazione struttura in corso...",
     "deleteSpaceModalErrorMismatch": "Il nome inserito non corrisponde al nome della struttura.",
-    "deleteSpaceModalErrorServer": "Si è verificato un errore durante l'eliminazione della struttura."
+    "deleteSpaceModalErrorServer": "Si è verificato un errore durante l'eliminazione della struttura.",
+    "welcomeBannerAria": "Banner di benvenuto"
   },
   "stay": {
     "propertyBadge": "CONCIERGE DIGITALE",

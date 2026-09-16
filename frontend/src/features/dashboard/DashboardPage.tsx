@@ -144,7 +144,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
              ========================================================================= */
           <>
             {/* Welcome Header */}
-            <section aria-label="Welcome Banner" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <section aria-label={t('welcomeBannerAria')} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono">

@@ -36,9 +36,42 @@ export async function deleteAccountAction(
       };
     }
 
+    const supabaseUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const secretKey = process.env.SUPABASE_SECRET_KEY;
+
+    if (!supabaseUrl || !secretKey) {
+      return {
+        success: false,
+        error: 'Server configuration error: Admin credentials unavailable for account deletion.',
+      };
+    }
+
     const hostId = user.id;
 
-    // 1. Delete all host's spaces (cascades to knowledge_chunks)
+    // 1. Privileged account deletion via Supabase Auth Admin
+    const adminClient = createAdminSupabase<Database>(supabaseUrl, secretKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+
+    const { error: adminDeleteError } =
+      await adminClient.auth.admin.deleteUser(hostId);
+
+    const isNotFound =
+      adminDeleteError?.message?.toLowerCase().includes('not found') ||
+      (adminDeleteError as { status?: number } | undefined)?.status === 404;
+
+    if (adminDeleteError && !isNotFound) {
+      return {
+        success: false,
+        error: 'Failed to delete user account: ' + adminDeleteError.message,
+      };
+    }
+
+    // 2. Delete all host's spaces (cascades to knowledge_chunks)
     const { error: deleteSpacesError } = await supabase
       .from('spaces')
       .delete()
@@ -49,28 +82,6 @@ export async function deleteAccountAction(
         success: false,
         error: 'Failed to remove user spaces: ' + deleteSpacesError.message,
       };
-    }
-
-    // 2. If admin secret key is available, delete the user from auth.users
-    const supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-    const secretKey = process.env.SUPABASE_SECRET_KEY;
-
-    if (supabaseUrl && secretKey) {
-      const adminClient = createAdminSupabase<Database>(supabaseUrl, secretKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      });
-
-      const { error: adminDeleteError } =
-        await adminClient.auth.admin.deleteUser(hostId);
-
-      if (adminDeleteError) {
-        // Fallback: continue with sign out
-        console.warn('Admin deleteUser warning:', adminDeleteError.message);
-      }
     }
 
     // 3. Sign out the user and clear session cookies

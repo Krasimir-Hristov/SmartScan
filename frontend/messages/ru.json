@@ -330,7 +330,8 @@
     "deleteSpaceModalConfirmButton": "Удалить объект навсегда",
     "deleteSpaceModalDeleting": "Удаление объекта...",
     "deleteSpaceModalErrorMismatch": "Введенное название не совпадает с названием объекта.",
-    "deleteSpaceModalErrorServer": "Произошла ошибка при удалении объекта."
+    "deleteSpaceModalErrorServer": "Произошла ошибка при удалении объекта.",
+    "welcomeBannerAria": "Приветственный баннер"
   },
   "stay": {
     "propertyBadge": "ЦИФРОВОЙ КОНСЬЕРЖ",

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { generateSpaceSlug } from '@/lib/utils';
+import { generateSpaceSlug } from '../utils/slugUtils';
 import type { Space, KnowledgeChunk, StaySettings } from '@/lib/types/databaseTypes';
 import type {
   CreateSpaceInput,
@@ -123,27 +123,41 @@ export async function updateSpaceAction(
       return { success: false, error: 'Името на обекта е задължително.' };
     }
 
-    const staySettings: StaySettings = {
-      taxiAddress: input.taxiAddress?.trim() || undefined,
-      wifiSsid: input.wifiSsid?.trim() || undefined,
-      wifiPassword: input.wifiPassword?.trim() || undefined,
-      taxiPhone: input.taxiPhone?.trim() || undefined,
-      whatsappPhone: input.whatsappPhone?.trim() || undefined,
-      emergencyNumber: input.emergencyNumber?.trim() || '112',
-      nightSilenceStart: input.nightSilenceStart?.trim() || undefined,
-      nightSilenceEnd: input.nightSilenceEnd?.trim() || undefined,
-      afternoonRestStart: input.afternoonRestStart?.trim() || undefined,
-      afternoonRestEnd: input.afternoonRestEnd?.trim() || undefined,
-      checkInTime: input.checkInTime?.trim() || '15:00',
-      checkOutTime: input.checkOutTime?.trim() || '11:00',
-      keyboxCode: input.keyboxCode?.trim() || undefined,
+    const { data: existingSpace, error: fetchError } = await supabase
+      .from('spaces')
+      .select('stay_settings')
+      .eq('id', input.id)
+      .eq('host_id', user.id)
+      .single();
+
+    if (fetchError || !existingSpace) {
+      return { success: false, error: 'Нямате права над този обект или той не съществува.' };
+    }
+
+    const existingSettings = (existingSpace.stay_settings || {}) as StaySettings;
+
+    const mergedStaySettings: StaySettings = {
+      ...existingSettings,
+      taxiAddress: input.taxiAddress !== undefined ? (input.taxiAddress?.trim() || undefined) : existingSettings.taxiAddress,
+      wifiSsid: input.wifiSsid !== undefined ? (input.wifiSsid?.trim() || undefined) : existingSettings.wifiSsid,
+      wifiPassword: input.wifiPassword !== undefined ? (input.wifiPassword?.trim() || undefined) : existingSettings.wifiPassword,
+      taxiPhone: input.taxiPhone !== undefined ? (input.taxiPhone?.trim() || undefined) : existingSettings.taxiPhone,
+      whatsappPhone: input.whatsappPhone !== undefined ? (input.whatsappPhone?.trim() || undefined) : existingSettings.whatsappPhone,
+      emergencyNumber: input.emergencyNumber !== undefined ? (input.emergencyNumber?.trim() || '112') : (existingSettings.emergencyNumber || '112'),
+      nightSilenceStart: input.nightSilenceStart !== undefined ? (input.nightSilenceStart?.trim() || undefined) : existingSettings.nightSilenceStart,
+      nightSilenceEnd: input.nightSilenceEnd !== undefined ? (input.nightSilenceEnd?.trim() || undefined) : existingSettings.nightSilenceEnd,
+      afternoonRestStart: input.afternoonRestStart !== undefined ? (input.afternoonRestStart?.trim() || undefined) : existingSettings.afternoonRestStart,
+      afternoonRestEnd: input.afternoonRestEnd !== undefined ? (input.afternoonRestEnd?.trim() || undefined) : existingSettings.afternoonRestEnd,
+      checkInTime: input.checkInTime !== undefined ? (input.checkInTime?.trim() || '15:00') : (existingSettings.checkInTime || '15:00'),
+      checkOutTime: input.checkOutTime !== undefined ? (input.checkOutTime?.trim() || '11:00') : (existingSettings.checkOutTime || '11:00'),
+      keyboxCode: input.keyboxCode !== undefined ? (input.keyboxCode?.trim() || undefined) : existingSettings.keyboxCode,
     };
 
     const { data: updatedSpace, error: updateError } = await supabase
       .from('spaces')
       .update({
         name: trimmedName,
-        stay_settings: staySettings,
+        stay_settings: mergedStaySettings,
         ...(input.isActive !== undefined ? { is_active: input.isActive } : {}),
       })
       .eq('id', input.id)
@@ -262,6 +276,52 @@ export async function deleteKnowledgeChunkAction(
     return { success: true, data: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Неочаквана грешка при изтриване.';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Retrieves all knowledge chunks for a given space owned by the host.
+ */
+export async function getSpaceKnowledgeChunksAction(
+  spaceId: string
+): Promise<ActionResult<KnowledgeChunk[]>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Нямате оторизация.' };
+    }
+
+    // Verify host ownership of this space
+    const { data: spaceOwner, error: ownerError } = await supabase
+      .from('spaces')
+      .select('id')
+      .eq('id', spaceId)
+      .eq('host_id', user.id)
+      .maybeSingle();
+
+    if (ownerError || !spaceOwner) {
+      return { success: false, error: 'Нямате права над това пространство.' };
+    }
+
+    const { data: chunks, error: chunksError } = await supabase
+      .from('knowledge_chunks')
+      .select('*')
+      .eq('space_id', spaceId)
+      .order('created_at', { ascending: true });
+
+    if (chunksError) {
+      return { success: false, error: chunksError.message };
+    }
+
+    return { success: true, data: (chunks as KnowledgeChunk[]) ?? [] };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неочаквана грешка при зареждане на знанията.';
     return { success: false, error: message };
   }
 }
