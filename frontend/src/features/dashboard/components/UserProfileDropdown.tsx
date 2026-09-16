@@ -209,11 +209,13 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
       )}
 
       {/* Delete Account Confirmation Modal */}
-      <DeleteAccountModal
-        isOpen={isDeleteModalOpen}
-        userEmail={userEmail}
-        onClose={() => setIsDeleteModalOpen(false)}
-      />
+      {isDeleteModalOpen && (
+        <DeleteAccountModal
+          isOpen={isDeleteModalOpen}
+          userEmail={userEmail}
+          onClose={() => setIsDeleteModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

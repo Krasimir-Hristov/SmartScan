@@ -479,13 +479,15 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
       </form>
 
       {/* GitHub-Style Delete Space Modal with Exact Name Confirmation */}
-      <DeleteSpaceModal
-        isOpen={isDeleteModalOpen}
-        spaceId={space.id}
-        spaceName={space.name}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onSpaceDeleted={onSpaceDeleted}
-      />
+      {isDeleteModalOpen && (
+        <DeleteSpaceModal
+          isOpen={isDeleteModalOpen}
+          spaceId={space.id}
+          spaceName={space.name}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onSpaceDeleted={onSpaceDeleted}
+        />
+      )}
     </div>
   );
 };

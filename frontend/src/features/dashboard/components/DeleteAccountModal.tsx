@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -13,6 +13,8 @@ export interface DeleteAccountModalProps {
   onClose: () => void;
 }
 
+const emptySubscribe = () => () => {};
+
 export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   isOpen,
   userEmail,
@@ -20,25 +22,16 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
 }) => {
   const t = useTranslations('dashboard');
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
   const [typedEmail, setTypedEmail] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Reset input when opening
-  useEffect(() => {
-    if (isOpen) {
-      setTypedEmail('');
-      setErrorMessage(null);
-      setIsDeleting(false);
-    }
-  }, [isOpen]);
-
-  if (!isOpen || !mounted) return null;
+  if (!isOpen || !isClient) return null;
 
   const isMatch =
     typedEmail.trim().toLowerCase() === userEmail.trim().toLowerCase();

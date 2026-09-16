@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, Loader2, X, Trash2 } from 'lucide-react';
@@ -14,6 +14,8 @@ export interface DeleteSpaceModalProps {
   onSpaceDeleted?: (spaceId: string) => void;
 }
 
+const emptySubscribe = () => () => {};
+
 export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
   isOpen,
   spaceId,
@@ -22,25 +24,16 @@ export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
   onSpaceDeleted,
 }) => {
   const t = useTranslations('dashboard');
-  const [mounted, setMounted] = useState(false);
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
   const [typedName, setTypedName] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Reset state on open
-  useEffect(() => {
-    if (isOpen) {
-      setTypedName('');
-      setErrorMessage(null);
-      setIsDeleting(false);
-    }
-  }, [isOpen]);
-
-  if (!isOpen || !mounted) return null;
+  if (!isOpen || !isClient) return null;
 
   const isMatch =
     typedName.trim().toLowerCase() === spaceName.trim().toLowerCase();
