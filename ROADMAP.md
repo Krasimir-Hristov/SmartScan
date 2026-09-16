@@ -6,24 +6,25 @@
 
 ## Статус на проекта
 
-| Етап | Модул | Статус | Последна проверка |
-| :--- | :--- | :--- | :--- |
-| **Стъпка 1** | Landing Page & Дизайн система | 🟢 Завършена | 11.09.2026 |
-| **Стъпка 2** | Host Автентикация (1-Click Google OAuth & Дашборд) | 🟢 Завършена | 12.09.2026 |
-| **Стъпка 3** | Гост PWA Преживяване (`/stay/[slug]`) | 🟢 Завършена | 13.09.2026 |
-| **Стъпка 4** | База данни, Supabase Миграции & DAL | 🟢 Завършена | 13.09.2026 |
-| **Стъпка 5** | FastAPI AI Concierge & Прокси слой | 🟢 Завършена | 14.09.2026 |
-| **Стъпка 6** | Хазяин Дашборд (`/dashboard`) | ⚪ Очаква | — |
-| **Стъпка 7** | Гласово въвеждане (Voice Ingest + Whisper) | ⚪ Очаква | — |
-| **Стъпка 8** | Физически QR Табелки за печат (PDF A5/A6) | ⚪ Очаква | — |
-| **Стъпка 9** | Stripe Granular Billing | ⚪ Очаква | — |
-| **Стъпка 10**| Pre-Deployment Verification, E2E Testing & Production Hardening | ⚪ Очаква | — |
+| Етап          | Модул                                                           | Статус       | Последна проверка |
+| :------------ | :-------------------------------------------------------------- | :----------- | :---------------- |
+| **Стъпка 1**  | Landing Page & Дизайн система                                   | 🟢 Завършена | 11.09.2026        |
+| **Стъпка 2**  | Host Автентикация (1-Click Google OAuth & Дашборд)              | 🟢 Завършена | 12.09.2026        |
+| **Стъпка 3**  | Гост PWA Преживяване (`/stay/[slug]`)                           | 🟢 Завършена | 13.09.2026        |
+| **Стъпка 4**  | База данни, Supabase Миграции & DAL                             | 🟢 Завършена | 13.09.2026        |
+| **Стъпка 5**  | FastAPI AI Concierge & Прокси слой                              | 🟢 Завършена | 14.09.2026        |
+| **Стъпка 6**  | Хазяин Дашборд (`/dashboard`)                                   | ⚪ Очаква    | —                 |
+| **Стъпка 7**  | Гласово въвеждане (Voice Ingest + Whisper)                      | ⚪ Очаква    | —                 |
+| **Стъпка 8**  | Физически QR Табелки за печат (PDF A5/A6)                       | ⚪ Очаква    | —                 |
+| **Стъпка 9**  | Stripe Granular Billing                                         | ⚪ Очаква    | —                 |
+| **Стъпка 10** | Pre-Deployment Verification, E2E Testing & Production Hardening | ⚪ Очаква    | —                 |
 
 ---
 
 ## Подробен чек-лист по стъпки
 
 ### [x] Стъпка 1: Landing Page & Дизайн система (`design/00` & `design/05`)
+
 - [x] Прилагане на Obsidian High-Tech Luxury естетиката (цветови токени `#09090b`, `#121216`, `#10b981`).
 - [x] Интегриране на шрифтовете: `Space Grotesk` (заглавия), `Manrope` (основен текст), `JetBrains Mono` (код, баджове).
 - [x] Hero секция с двойно CTA (`Start Free with Google` + интерактивно `Try Live Demo (as Guest)`).
@@ -36,6 +37,7 @@
 ---
 
 ### [x] Стъпка 2: Host Автентикация & Вход (`design/06`)
+
 - [x] **Стъпка 2А**: Сървърна инфраструктура (`src/lib/supabase/server.ts`), Data Access Layer (`src/lib/auth/dal.ts`) с `server-only` и `cache()`.
 - [x] **Стъпка 2А**: OAuth Route Handler (`src/app/auth/callback/route.ts`) с размяна на код за бисквитково-базирана сесия (`@supabase/ssr`).
 - [x] **Стъпка 2А**: Защитен маршрут `/dashboard` (`src/app/dashboard/page.tsx`) с моментално сървърно блокиране и пренасочване при неавтентикиран достъп (No-Middleware архитектура).
@@ -49,6 +51,7 @@
 ---
 
 ### [x] Стъпка 3: Гост Мобилно PWA Преживяване (`/stay/[slug]`) (`design/01`)
+
 - [x] Асинхронна Next.js 16 страница (`await params`) с поддръжка на slug.
 - [x] Zero-Image правило: 100% векторни икони и типография (зареждане под 200ms).
 - [x] 1-клик Wi-Fi карта с копиране и хаптична вибрация (`navigator.vibrate(50)`).
@@ -63,6 +66,7 @@
 ---
 
 ### [x] Стъпка 4: База данни, Supabase Миграции & Data Access Layer (DAL)
+
 - [x] SQL миграционен файл `supabase/migrations/20260914000001_create_spaces_and_knowledge.sql` с DDL за `spaces` и `knowledge_chunks`.
 - [x] Активиране на `pgvector` в схема `extensions` и създаване на HNSW индекс (`vector_cosine_ops`, `m=16`, `ef_construction=64`).
 - [x] RPC функция `match_space_knowledge` със строг пре-филтър `WHERE space_id = filter_space_id`, `s.is_active = true` и `SECURITY DEFINER`.
@@ -77,6 +81,7 @@
 ---
 
 ### [x] Стъпка 5: FastAPI AI Concierge (LangGraph StateGraph) & Прокси слой
+
 - [x] **Стъпка 5А**: FastAPI ядро в `backend/app/` (Python 3.12, Pydantic v2 схеми, SlowAPI rate limiter: 30 req / 10 min).
 - [x] **Стъпка 5А**: LangGraph `StateGraph` консиерж пайплайн (`sanitize_node` ➔ `retrieve_rag_node` ➔ `generate_stream_node`).
 - [x] **Стъпка 5А**: Защита от Prompt Injection: нулева латентност с `TAG_SANITIZER_REGEX` + XML изолация в `<property_context>`.
@@ -93,6 +98,7 @@
 ---
 
 ### [ ] Стъпка 6: Хазяин Дашборд (`/dashboard`) (`design/03`)
+
 - [ ] Защитен маршрут през Server Component и DAL сесия.
 - [ ] Изчистена навигация: лого, табове, селектор на език, профил.
 - [ ] Превключвател на вертикали (Stay, Menu, Real Estate).
@@ -104,6 +110,7 @@
 ---
 
 ### [ ] Стъпка 7: Гласово въвеждане за хазяина (`voice-ingest`) (`design/04`)
+
 - [ ] Фронтенд бутон с `MediaRecorder API` и анимация на звукова вълна (до 60 сек).
 - [ ] Бекенд ендпойнт `/api/py/voice/ingest` с Whisper v3 транскрипция.
 - [ ] Структуриране на изговорения текст в 1–3 информационни карти чрез Gemini Flash.
@@ -113,8 +120,9 @@
 ---
 
 ### [ ] Стъпка 8: Физически QR Табелки за печат (`design/02`)
+
 - [ ] Модал за преглед и печат на табелка в дашборда на хазяина.
-- [ ] Генерация на A5 (148x210mm) и A6 (105x148mm) векторни PDF табелки с `@react-pdf/renderer` (300+ DPI).
+- [ ] Генерация на A4 (210x297mm), A5 (148x210mm) и A6 (105x148mm) векторни PDF табелки с `@react-pdf/renderer` (300+ DPI).
 - [ ] Два стила: Obsidian Dark Luxury (черен акрил) и High-Contrast Light (за обикновен печат на бяла хартия).
 - [ ] Динамичен SVG QR код насочващ към реалния URL на гост PWA.
 - [ ] **Верификация**: Генериране на PDF, сканиране на QR кода от екран/разпечатка, одобрение.
@@ -122,6 +130,7 @@
 ---
 
 ### [ ] Стъпка 9: Stripe Granular Billing (`design/07`)
+
 - [ ] Грануларно таксуване на ниво конкретен обект (`space_id`): €9/месец за Stay.
 - [ ] 14-дневен безплатен пробен период без изискване на карта.
 - [ ] Сезонен паузинг ("Summer/Winter hold" за запазване на данните без таксуване извън сезона).
@@ -131,6 +140,7 @@
 ---
 
 ### [ ] Стъпка 10: Pre-Deployment Verification, E2E Testing & Production Hardening
+
 - [ ] **Full-Flow E2E Smoke Test**: Пълен цикъл: Нов хазяин ➔ Обект ➔ Ингест (Глас/Текст) ➔ QR Печат ➔ Гост мобилен чат.
 - [ ] **Multi-Tenancy Security Audit**: Верификация, че никое пространство не може да чете данни на друго пространство.
 - [ ] **CVE-2025-29927 & Proxy Audit**: Проверка на почистването на `x-*` хедъри в `proxy.ts`.
