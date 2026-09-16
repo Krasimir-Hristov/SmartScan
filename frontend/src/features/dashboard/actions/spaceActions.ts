@@ -262,14 +262,21 @@ export async function deleteKnowledgeChunkAction(
       return { success: false, error: 'Нямате оторизация.' };
     }
 
-    const { error: deleteError } = await supabase
+    const { data: deletedChunk, error: deleteError } = await supabase
       .from('knowledge_chunks')
       .delete()
       .eq('id', chunkId)
-      .eq('space_id', spaceId);
+      .eq('space_id', spaceId)
+      .select('id')
+      .maybeSingle();
 
     if (deleteError) {
       return { success: false, error: deleteError.message };
+    }
+
+    // Zero deleted rows (wrong id / not owned) must not be reported as success.
+    if (!deletedChunk) {
+      return { success: false, error: 'Бележката не е намерена или вече е изтрита.' };
     }
 
     revalidatePath('/dashboard');
@@ -343,14 +350,21 @@ export async function deleteSpaceAction(
       return { success: false, error: 'Нямате оторизация.' };
     }
 
-    const { error: deleteError } = await supabase
+    const { data: deletedSpace, error: deleteError } = await supabase
       .from('spaces')
       .delete()
       .eq('id', spaceId)
-      .eq('host_id', user.id);
+      .eq('host_id', user.id)
+      .select('id')
+      .maybeSingle();
 
     if (deleteError) {
       return { success: false, error: deleteError.message };
+    }
+
+    // Zero deleted rows (wrong id / not owned) must not be reported as success.
+    if (!deletedSpace) {
+      return { success: false, error: 'Обектът не е намерен или вече е изтрит.' };
     }
 
     revalidatePath('/dashboard');

@@ -24,8 +24,17 @@ export async function proxyToBackend(
   url.search = request.nextUrl.search;
 
   // Extract real client IP before scrubbing external x-* headers.
-  // Trust only the RIGHT-MOST entry (appended by the nearest trusted edge);
-  // the left entries are client-controlled and used for spoofing.
+  // Priority:
+  // 1. Platform-set headers (e.g. x-vercel-forwarded-for) are assigned by the
+  //    hosting edge itself and cannot be spoofed by clients.
+  // 2. The RIGHT-MOST x-forwarded-for entry — the one appended by the nearest
+  //    trusted edge proxy. Left entries can be freely spoofed by clients to
+  //    rotate rate-limit identities.
+  const platformForwarded = request.headers.get('x-vercel-forwarded-for');
+  const platformIp = platformForwarded
+    ? platformForwarded.split(',')[0].trim()
+    : '';
+
   const rawForwarded = request.headers.get('x-forwarded-for');
   const forwardedChain = rawForwarded
     ? rawForwarded
@@ -34,9 +43,12 @@ export async function proxyToBackend(
         .filter(Boolean)
     : [];
   const clientIp =
-    forwardedChain.length > 0
+    platformIp ||
+    (forwardedChain.length > 0
       ? forwardedChain[forwardedChain.length - 1]
-      : request.headers.get('x-real-ip') || '127.0.0.1';
+      : '') ||
+    request.headers.get('x-real-ip') ||
+    '127.0.0.1';
 
   // Defensive Header Filtering (CVE-2025-29927 Mitigation)
   const cleanHeaders = new Headers(request.headers);

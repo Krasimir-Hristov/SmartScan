@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle, Loader2, X, Trash2 } from 'lucide-react';
@@ -32,6 +32,17 @@ export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
   const [typedName, setTypedName] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Escape closes the modal only while no deletion is in flight.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isDeleting) onClose();
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isDeleting, onClose]);
 
   if (!isOpen || !isClient) return null;
 
@@ -82,7 +93,7 @@ export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
           onClick={onClose}
           disabled={isDeleting}
           aria-label={t('cancel')}
-          className="absolute top-5 right-5 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-50"
+          className="absolute top-5 right-5 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <X className="w-5 h-5" />
         </button>
@@ -124,6 +135,7 @@ export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
             placeholder={t('deleteSpaceModalInputPlaceholder')}
             disabled={isDeleting}
             autoComplete="off"
+            autoFocus
             aria-label={t('deleteSpaceModalConfirmPrompt')}
             className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all font-mono"
           />
@@ -143,7 +155,7 @@ export const DeleteSpaceModal: React.FC<DeleteSpaceModalProps> = ({
             onClick={onClose}
             disabled={isDeleting}
             aria-label={t('cancel')}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('cancel')}
           </button>

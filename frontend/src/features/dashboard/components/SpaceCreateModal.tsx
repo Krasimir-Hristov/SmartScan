@@ -141,7 +141,7 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
       aria-label={t('createModalAria')}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-3xl bg-[#121216] border border-white/10 shadow-2xl shadow-black/80 overflow-hidden text-zinc-100">
+      <div className="relative w-full max-w-2xl max-h-[90dvh] flex flex-col rounded-3xl bg-[#121216] border border-white/10 shadow-2xl shadow-black/80 overflow-hidden text-zinc-100">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/8 bg-zinc-950/60 sticky top-0 z-10">
           <div className="flex items-center gap-3">
@@ -292,6 +292,7 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
 
           {/* 6. Часове за тишина (Нов компонент с Toggle бутони и падащи менюта) */}
           <QuietHoursControl
+            idPrefix="create"
             nightSilenceStart={nightSilenceStart}
             nightSilenceEnd={nightSilenceEnd}
             hasNightSilence={hasNightSilence}
@@ -367,14 +368,14 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-xl border border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors disabled:cursor-not-allowed cursor-pointer"
             >
               {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? (
                 <>

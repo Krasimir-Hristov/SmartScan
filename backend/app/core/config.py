@@ -1,6 +1,6 @@
 """Application settings and environment configuration."""
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +18,19 @@ class Settings(BaseSettings):
     # Shared secret injected by the Next.js proxy (proxy.ts) into x-internal-auth.
     # The backend trusts forwarded client IPs only when this secret matches.
     BACKEND_PROXY_SECRET: str = Field(default="")
+
+    @model_validator(mode="after")
+    def _require_proxy_secret_in_production(self) -> "Settings":
+        """Fail fast: without the proxy secret, production rate limiting degrades
+        to a single shared bucket (all guests behind one server IP)."""
+        if (
+            self.ENVIRONMENT.strip().lower() == "production"
+            and not self.BACKEND_PROXY_SECRET
+        ):
+            raise ValueError(
+                "BACKEND_PROXY_SECRET must be set when ENVIRONMENT is 'production'."
+            )
+        return self
 
     # Supabase credentials
     SUPABASE_URL: str = Field(default="")
