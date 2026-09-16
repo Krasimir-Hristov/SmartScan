@@ -3,16 +3,22 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Home, QrCode, Sparkles } from 'lucide-react';
-import type { MetricItem } from '../types/dashboard.types';
+import type { MetricItem } from '../types/dashboardTypes';
 
-export const DashboardMetrics: React.FC = () => {
+export interface DashboardMetricsProps {
+  activeSpacesCount?: number;
+}
+
+export const DashboardMetrics: React.FC<DashboardMetricsProps> = ({
+  activeSpacesCount = 1,
+}) => {
   const t = useTranslations('dashboard');
 
   const metrics: MetricItem[] = [
     {
       id: 'active-spaces',
       label: t('activeSpaces'),
-      value: '1',
+      value: String(activeSpacesCount),
       subtext: t('activeSpacesSub'),
       trend: t('activeSpacesTrend'),
     },

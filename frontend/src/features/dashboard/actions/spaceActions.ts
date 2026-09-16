@@ -1,0 +1,302 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
+import { generateSpaceSlug } from '@/lib/utils';
+import type { Space, KnowledgeChunk, StaySettings } from '@/lib/types/databaseTypes';
+import type {
+  CreateSpaceInput,
+  UpdateSpaceInput,
+  CreateKnowledgeInput,
+  ActionResult,
+} from '../types/dashboardTypes';
+
+/**
+ * Creates a new space for the authenticated host.
+ */
+export async function createSpaceAction(
+  input: CreateSpaceInput
+): Promise<ActionResult<Space>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Нямате оторизация за това действие.' };
+    }
+
+    const trimmedName = input.name?.trim();
+    if (!trimmedName) {
+      return { success: false, error: 'Името на обекта е задължително.' };
+    }
+
+    // Generate guaranteed-unique short public code (Airbnb / Booking style, e.g. 'v-8k92pm')
+    let finalSlug = '';
+    let isUnique = false;
+    let attempts = 0;
+
+    while (!isUnique && attempts < 10) {
+      attempts++;
+      const candidateSlug = generateSpaceSlug(6);
+      const { data: existingSlug } = await supabase
+        .from('spaces')
+        .select('id')
+        .eq('slug', candidateSlug)
+        .maybeSingle();
+
+      if (!existingSlug) {
+        finalSlug = candidateSlug;
+        isUnique = true;
+      }
+    }
+
+    if (!finalSlug) {
+      return { success: false, error: 'Грешка при генериране на уникален код за обекта.' };
+    }
+
+    const staySettings: StaySettings = {
+      taxiAddress: input.taxiAddress?.trim() || undefined,
+      wifiSsid: input.wifiSsid?.trim() || undefined,
+      wifiPassword: input.wifiPassword?.trim() || undefined,
+      taxiPhone: input.taxiPhone?.trim() || undefined,
+      whatsappPhone: input.whatsappPhone?.trim() || undefined,
+      emergencyNumber: input.emergencyNumber?.trim() || '112',
+      nightSilenceStart: input.nightSilenceStart?.trim() || undefined,
+      nightSilenceEnd: input.nightSilenceEnd?.trim() || undefined,
+      afternoonRestStart: input.afternoonRestStart?.trim() || undefined,
+      afternoonRestEnd: input.afternoonRestEnd?.trim() || undefined,
+      checkInTime: input.checkInTime?.trim() || '15:00',
+      checkOutTime: input.checkOutTime?.trim() || '11:00',
+      keyboxCode: input.keyboxCode?.trim() || undefined,
+    };
+
+    const { data: createdSpace, error: insertError } = await supabase
+      .from('spaces')
+      .insert({
+        host_id: user.id,
+        name: trimmedName,
+        slug: finalSlug,
+        space_type: 'stay',
+        is_active: true,
+        stay_settings: staySettings,
+      })
+      .select('*')
+      .single();
+
+    if (insertError || !createdSpace) {
+      return {
+        success: false,
+        error: insertError?.message || 'Грешка при създаване на обекта.',
+      };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true, data: createdSpace as Space };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неочаквана грешка на сървъра.';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Updates basic info and stay_settings for an existing space owned by the host.
+ */
+export async function updateSpaceAction(
+  input: UpdateSpaceInput
+): Promise<ActionResult<Space>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Нямате оторизация за това действие.' };
+    }
+
+    const trimmedName = input.name?.trim();
+    if (!trimmedName) {
+      return { success: false, error: 'Името на обекта е задължително.' };
+    }
+
+    const staySettings: StaySettings = {
+      taxiAddress: input.taxiAddress?.trim() || undefined,
+      wifiSsid: input.wifiSsid?.trim() || undefined,
+      wifiPassword: input.wifiPassword?.trim() || undefined,
+      taxiPhone: input.taxiPhone?.trim() || undefined,
+      whatsappPhone: input.whatsappPhone?.trim() || undefined,
+      emergencyNumber: input.emergencyNumber?.trim() || '112',
+      nightSilenceStart: input.nightSilenceStart?.trim() || undefined,
+      nightSilenceEnd: input.nightSilenceEnd?.trim() || undefined,
+      afternoonRestStart: input.afternoonRestStart?.trim() || undefined,
+      afternoonRestEnd: input.afternoonRestEnd?.trim() || undefined,
+      checkInTime: input.checkInTime?.trim() || '15:00',
+      checkOutTime: input.checkOutTime?.trim() || '11:00',
+      keyboxCode: input.keyboxCode?.trim() || undefined,
+    };
+
+    const { data: updatedSpace, error: updateError } = await supabase
+      .from('spaces')
+      .update({
+        name: trimmedName,
+        stay_settings: staySettings,
+        ...(input.isActive !== undefined ? { is_active: input.isActive } : {}),
+      })
+      .eq('id', input.id)
+      .eq('host_id', user.id)
+      .select('*')
+      .single();
+
+    if (updateError || !updatedSpace) {
+      return {
+        success: false,
+        error: updateError?.message || 'Грешка при обновяване на обекта.',
+      };
+    }
+
+    revalidatePath('/dashboard');
+    if (updatedSpace.slug) {
+      revalidatePath(`/stay/${updatedSpace.slug}`);
+    }
+
+    return { success: true, data: updatedSpace as Space };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неочаквана грешка на сървъра.';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Adds a textual knowledge chunk to the AI concierge knowledge base.
+ */
+export async function addKnowledgeChunkAction(
+  input: CreateKnowledgeInput
+): Promise<ActionResult<KnowledgeChunk>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Нямате оторизация за това действие.' };
+    }
+
+    const trimmedContent = input.content?.trim();
+    if (!trimmedContent) {
+      return { success: false, error: 'Съдържанието на бележката е задължително.' };
+    }
+
+    // Verify space ownership
+    const { data: spaceOwner } = await supabase
+      .from('spaces')
+      .select('id')
+      .eq('id', input.spaceId)
+      .eq('host_id', user.id)
+      .maybeSingle();
+
+    if (!spaceOwner) {
+      return { success: false, error: 'Нямате права над това пространство.' };
+    }
+
+    const { data: chunk, error: insertError } = await supabase
+      .from('knowledge_chunks')
+      .insert({
+        space_id: input.spaceId,
+        title: input.title?.trim() || 'Бележка за обекта',
+        content: trimmedContent,
+        category: input.category || 'general',
+      })
+      .select('*')
+      .single();
+
+    if (insertError || !chunk) {
+      return {
+        success: false,
+        error: insertError?.message || 'Грешка при запис на знанието.',
+      };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true, data: chunk as KnowledgeChunk };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неочаквана грешка на сървъра.';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Deletes a knowledge chunk.
+ */
+export async function deleteKnowledgeChunkAction(
+  chunkId: string,
+  spaceId: string
+): Promise<ActionResult<boolean>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Нямате оторизация.' };
+    }
+
+    const { error: deleteError } = await supabase
+      .from('knowledge_chunks')
+      .delete()
+      .eq('id', chunkId)
+      .eq('space_id', spaceId);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true, data: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неочаквана грешка при изтриване.';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Deletes an entire space owned by the host.
+ */
+export async function deleteSpaceAction(
+  spaceId: string
+): Promise<ActionResult<boolean>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: 'Нямате оторизация.' };
+    }
+
+    const { error: deleteError } = await supabase
+      .from('spaces')
+      .delete()
+      .eq('id', spaceId)
+      .eq('host_id', user.id);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true, data: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неочаквана грешка при изтриване.';
+    return { success: false, error: message };
+  }
+}
