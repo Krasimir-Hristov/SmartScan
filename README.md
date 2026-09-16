@@ -221,21 +221,30 @@ OPENROUTER_API_KEY="sk-or-v1-..."
 
 # Supabase (PostgreSQL & pgvector RAG)
 SUPABASE_URL="https://your-project-id.supabase.co"
-SUPABASE_SECRET_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+SUPABASE_SECRET_KEY="sbp_secret_..."
 
 # Rate Limiting & Environment
 ENVIRONMENT="development"
 ALLOWED_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
+
+# Споделена тайна с Next.js проксито (ЗАДЪЛЖИТЕЛНА в production):
+# валидира x-internal-auth, за да се доверява бекендът на x-forwarded-for
+# (иначе rate limiting-ът работи по socket address — един общ bucket).
+BACKEND_PROXY_SECRET="генерирай с: openssl rand -hex 32"
 ```
 
 ### Frontend (`frontend/.env.local`)
 ```ini
 # Supabase Client Credentials
 NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="sbp_publishable_..."
 
 # Internal Backend URL (За No-Middleware проксито proxy.ts)
 BACKEND_INTERNAL_URL="http://127.0.0.1:8000"
+
+# Споделена тайна с FastAPI бекенда — СЪЩАТА стойност като BACKEND_PROXY_SECRET
+# в backend/.env (server-only, никога с NEXT_PUBLIC_ префикс).
+BACKEND_PROXY_SECRET="генерирай с: openssl rand -hex 32"
 ```
 
 ---

@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000)
     ALLOWED_ORIGINS: str = Field(default="http://localhost:3000")
 
+    # Shared secret injected by the Next.js proxy (proxy.ts) into x-internal-auth.
+    # The backend trusts forwarded client IPs only when this secret matches.
+    BACKEND_PROXY_SECRET: str = Field(default="")
+
     # Supabase credentials
     SUPABASE_URL: str = Field(default="")
     SUPABASE_PUBLISHABLE_KEY: str = Field(default="")

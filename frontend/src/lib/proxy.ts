@@ -4,20 +4,39 @@ import { NextRequest, NextResponse } from 'next/server';
  * Proxies incoming client requests to the internal FastAPI backend service.
  * Enforces strict "Defensive Header Filtering" to mitigate CVE-2025-29927
  * by scrubbing all incoming headers starting with 'x-' (specifically x-middleware-subrequest).
+ *
+ * Rate-limit trust chain:
+ * - The client IP is taken from the RIGHT-MOST x-forwarded-for entry — the one
+ *   appended by the nearest trusted edge proxy. Left entries can be freely
+ *   spoofed by clients to rotate rate-limit identities.
+ * - BACKEND_PROXY_SECRET marks this proxy to the FastAPI backend, which only
+ *   trusts forwarded IPs when the secret matches (constant-time compared there).
+ *   The secret is server-only (no NEXT_PUBLIC_ prefix) and the scrubbing below
+ *   guarantees it can never be injected by an external client.
  */
 export async function proxyToBackend(
   request: NextRequest,
   targetPath: string
 ): Promise<NextResponse> {
   const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
+  const proxySecret = process.env.BACKEND_PROXY_SECRET;
   const url = new URL(targetPath, backendUrl);
   url.search = request.nextUrl.search;
 
-  // Extract real client IP before scrubbing external x-* headers
+  // Extract real client IP before scrubbing external x-* headers.
+  // Trust only the RIGHT-MOST entry (appended by the nearest trusted edge);
+  // the left entries are client-controlled and used for spoofing.
   const rawForwarded = request.headers.get('x-forwarded-for');
-  const clientIp = rawForwarded
-    ? rawForwarded.split(',')[0].trim()
-    : request.headers.get('x-real-ip') || '127.0.0.1';
+  const forwardedChain = rawForwarded
+    ? rawForwarded
+        .split(',')
+        .map((ip) => ip.trim())
+        .filter(Boolean)
+    : [];
+  const clientIp =
+    forwardedChain.length > 0
+      ? forwardedChain[forwardedChain.length - 1]
+      : request.headers.get('x-real-ip') || '127.0.0.1';
 
   // Defensive Header Filtering (CVE-2025-29927 Mitigation)
   const cleanHeaders = new Headers(request.headers);
@@ -27,8 +46,11 @@ export async function proxyToBackend(
     }
   }
 
-  // Inject verified proxy client IP for trusted internal rate limiting
+  // Inject verified proxy client IP + shared secret for trusted internal rate limiting.
   cleanHeaders.set('x-forwarded-for', clientIp);
+  if (proxySecret) {
+    cleanHeaders.set('x-internal-auth', proxySecret);
+  }
 
   try {
     const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
