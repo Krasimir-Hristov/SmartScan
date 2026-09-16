@@ -13,6 +13,7 @@ export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'paused' |
  * Strongly typed settings structure for stay_settings JSONB column.
  */
 export interface StaySettings {
+  [key: string]: Json | undefined;
   wifiSsid?: string;
   wifiPassword?: string;
   taxiAddress?: string;

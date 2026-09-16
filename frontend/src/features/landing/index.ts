@@ -5,4 +5,4 @@ export type {
   WorkflowStep,
   FeatureItem,
   PricingPlan,
-} from './types/landing.types';
+} from './types/landingTypes';

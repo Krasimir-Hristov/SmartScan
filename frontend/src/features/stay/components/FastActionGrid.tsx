@@ -32,6 +32,14 @@ export const FastActionGrid: React.FC<FastActionGridProps> = ({ contacts }) => {
 
   const emergencyNumber = contacts.emergencyNumber || '112';
 
+  const regularTilesCount =
+    (contacts.taxiAddress ? 1 : 0) +
+    (contacts.taxiPhone ? 1 : 0) +
+    (contacts.whatsappPhone ? 1 : 0);
+
+  // When regular tiles are 0 or 2, emergency tile should span full width (col-span-2) to avoid awkward gaps
+  const isEmergencyFullWidth = regularTilesCount % 2 === 0;
+
   return (
     <section aria-label={t('fastActionGridAria')} className="grid grid-cols-2 gap-3">
       {/* 1. Copy Taxi Address Tile */}
@@ -105,11 +113,13 @@ export const FastActionGrid: React.FC<FastActionGridProps> = ({ contacts }) => {
         </a>
       )}
 
-      {/* 4. Emergency 112 SOS Tile (Red Accent) */}
+      {/* 4. Emergency 112 SOS Tile (Red Accent, responsive col-span) */}
       <a
         href={`tel:${emergencyNumber}`}
         aria-label={t('emergencyAria')}
-        className="flex flex-col justify-between p-4 rounded-2xl bg-red-950/20 border border-red-500/30 hover:border-red-500/60 text-left transition-all cursor-pointer group active:scale-[0.98] min-h-[120px]"
+        className={`${
+          isEmergencyFullWidth ? 'col-span-2 sm:col-span-2' : ''
+        } flex flex-col justify-between p-4 rounded-2xl bg-red-950/20 border border-red-500/30 hover:border-red-500/60 text-left transition-all cursor-pointer group active:scale-[0.98] min-h-[110px]`}
       >
         <div className="flex items-center justify-between w-full">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 group-hover:bg-red-500/30 transition-colors">
@@ -129,3 +139,4 @@ export const FastActionGrid: React.FC<FastActionGridProps> = ({ contacts }) => {
     </section>
   );
 };
+

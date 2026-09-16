@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth/dal';
+import { getCurrentUser, getHostSpaces, getSpaceKnowledgeChunks } from '@/lib/dal';
 import { DashboardPage } from '@/features/dashboard';
 
 export const metadata: Metadata = {
@@ -16,7 +16,17 @@ const Page = async () => {
     redirect('/?auth=required');
   }
 
-  return <DashboardPage user={user} />;
+  const spaces = await getHostSpaces(user.id);
+  const initialChunks =
+    spaces.length > 0 ? await getSpaceKnowledgeChunks(spaces[0].id) : [];
+
+  return (
+    <DashboardPage
+      user={user}
+      initialSpaces={spaces}
+      initialKnowledgeChunks={initialChunks}
+    />
+  );
 };
 
 export default Page;

@@ -14,3 +14,4 @@ export function triggerHaptic(durationMs = 50): void {
     }
   }
 }
+

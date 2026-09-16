@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { QrCode, ExternalLink, Wifi, Globe, ShieldCheck } from 'lucide-react';
-import type { PropertySummary } from '../types/dashboard.types';
+import type { PropertySummary } from '../types/dashboardTypes';
 
 export interface PropertyCardProps {
   property?: PropertySummary;
@@ -12,8 +12,8 @@ export interface PropertyCardProps {
 export const PropertyCard: React.FC<PropertyCardProps> = ({
   property = {
     id: 'prop-1',
-    name: 'Вила 1904 Светилище',
-    location: 'Миконос, Гърция',
+    name: 'Villa Sanctuary',
+    location: 'Mykonos, Greece',
     slug: 'sanctuary-demo',
     status: 'active',
     languagesCount: 50,
