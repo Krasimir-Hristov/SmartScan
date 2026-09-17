@@ -25,3 +25,9 @@ def test_development_allows_empty_secret() -> None:
 def test_environment_check_is_case_insensitive() -> None:
     with pytest.raises(ValidationError):
         Settings(ENVIRONMENT="Production", BACKEND_PROXY_SECRET="")
+
+
+def test_production_rejects_whitespace_proxy_secret() -> None:
+    with pytest.raises(ValidationError):
+        Settings(ENVIRONMENT="production", BACKEND_PROXY_SECRET="   ")
+

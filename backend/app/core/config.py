@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         to a single shared bucket (all guests behind one server IP)."""
         if (
             self.ENVIRONMENT.strip().lower() == "production"
-            and not self.BACKEND_PROXY_SECRET
+            and not self.BACKEND_PROXY_SECRET.strip()
         ):
             raise ValueError(
                 "BACKEND_PROXY_SECRET must be set when ENVIRONMENT is 'production'."
