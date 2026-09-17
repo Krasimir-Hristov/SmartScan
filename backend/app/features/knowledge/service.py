@@ -109,6 +109,9 @@ async def get_space_stay_context(space_id: str) -> SpaceStayContext:
                 client.table("spaces")
                 .select("id, name, stay_settings")
                 .eq("id", space_id)
+                # Multi-tenant security: deactivated (paused/canceled) spaces
+                # must never serve data through the guest concierge API.
+                .eq("is_active", True)
                 .single()
                 .execute()
             )
@@ -172,8 +175,11 @@ async def get_relevant_knowledge_chunks(
         def _fetch_chunks():
             return (
                 client.table("knowledge_chunks")
-                .select("title, content, category")
+                # Inner join on spaces enforces is_active at query level:
+                # chunks of deactivated spaces are never returned.
+                .select("title, content, category, spaces!inner(is_active)")
                 .eq("space_id", space_id)
+                .eq("spaces.is_active", True)
                 .limit(5)
                 .execute()
             )

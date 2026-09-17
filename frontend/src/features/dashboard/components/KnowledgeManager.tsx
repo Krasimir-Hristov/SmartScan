@@ -48,17 +48,18 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
 
   React.useEffect(() => {
     let isCancelled = false;
-    if (initialChunks.length === 0) {
-      getSpaceKnowledgeChunksAction(spaceId).then((result) => {
-        if (!isCancelled && result.success && result.data) {
-          setChunks(result.data);
-        }
-      });
-    }
+    // Always sync on mount and on every space switch: the initialChunks prop
+    // is server-rendered for a single space only and goes stale after
+    // additions, deletions or switching spaces.
+    getSpaceKnowledgeChunksAction(spaceId).then((result) => {
+      if (!isCancelled && result.success && result.data) {
+        setChunks(result.data);
+      }
+    });
     return () => {
       isCancelled = true;
     };
-  }, [spaceId, initialChunks.length]);
+  }, [spaceId]);
 
   const handleAddChunk = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,7 +241,7 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
           type='submit'
           disabled={isSubmitting}
           aria-label={t('addCard')}
-          className='inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer self-start'
+          className='inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer self-start'
         >
           {isSubmitting ? (
             <>
@@ -288,7 +289,7 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
                     onClick={() => handleDeleteChunk(chunk.id)}
                     disabled={deletingId === chunk.id}
                     aria-label={t('deleteCard')}
-                    className='opacity-0 group-hover:opacity-100 p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer'
+                    className='opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer disabled:cursor-not-allowed'
                   >
                     {deletingId === chunk.id ? (
                       <Loader2 className='w-3.5 h-3.5 animate-spin' />

@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { Moon, SunMedium, Clock } from 'lucide-react';
 
 export interface QuietHoursControlProps {
+  /** Unique DOM id prefix: the control renders in multiple simultaneous modals. */
+  idPrefix: string;
   nightSilenceStart: string;
   nightSilenceEnd: string;
   hasNightSilence: boolean;
@@ -71,6 +73,7 @@ const getOptionsWithFallback = (list: string[], currentVal?: string): string[] =
 };
 
 export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
+  idPrefix,
   nightSilenceStart,
   nightSilenceEnd,
   hasNightSilence,
@@ -139,11 +142,11 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
         {hasNightSilence ? (
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5 animate-in fade-in duration-150">
             <div className="flex flex-col gap-1">
-              <label htmlFor="night-start-select" className="text-[11px] font-medium text-zinc-400">
+              <label htmlFor={`${idPrefix}-night-start-select`} className="text-[11px] font-medium text-zinc-400">
                 {t('from')}
               </label>
               <select
-                id="night-start-select"
+                id={`${idPrefix}-night-start-select`}
                 value={nightSilenceStart || '23:00'}
                 onChange={(e) => onChangeNightStart(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
@@ -157,11 +160,11 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="night-end-select" className="text-[11px] font-medium text-zinc-400">
+              <label htmlFor={`${idPrefix}-night-end-select`} className="text-[11px] font-medium text-zinc-400">
                 {t('to')}
               </label>
               <select
-                id="night-end-select"
+                id={`${idPrefix}-night-end-select`}
                 value={nightSilenceEnd || '08:00'}
                 onChange={(e) => onChangeNightEnd(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
@@ -219,11 +222,11 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
         {hasAfternoonRest ? (
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5 animate-in fade-in duration-150">
             <div className="flex flex-col gap-1">
-              <label htmlFor="siesta-start-select" className="text-[11px] font-medium text-zinc-400">
+              <label htmlFor={`${idPrefix}-siesta-start-select`} className="text-[11px] font-medium text-zinc-400">
                 {t('from')}
               </label>
               <select
-                id="siesta-start-select"
+                id={`${idPrefix}-siesta-start-select`}
                 value={afternoonRestStart || '14:30'}
                 onChange={(e) => onChangeAfternoonStart(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
@@ -237,11 +240,11 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="siesta-end-select" className="text-[11px] font-medium text-zinc-400">
+              <label htmlFor={`${idPrefix}-siesta-end-select`} className="text-[11px] font-medium text-zinc-400">
                 {t('to')}
               </label>
               <select
-                id="siesta-end-select"
+                id={`${idPrefix}-siesta-end-select`}
                 value={afternoonRestEnd || '17:30'}
                 onChange={(e) => onChangeAfternoonEnd(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"

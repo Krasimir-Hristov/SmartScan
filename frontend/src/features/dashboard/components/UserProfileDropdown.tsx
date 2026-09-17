@@ -70,12 +70,16 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
     setIsSigningOut(true);
     try {
       const supabase = createClient();
-      await supabase.auth.signOut();
-    } catch {
-      // Proceed with redirection
-    } finally {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        // Keep the user on the page so sign-out can be retried.
+        setIsSigningOut(false);
+        return;
+      }
       router.push('/');
       router.refresh();
+    } catch {
+      setIsSigningOut(false);
     }
   };
 
@@ -181,7 +185,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             onClick={handleSignOut}
             disabled={isSigningOut}
             aria-label={t('signOutAria')}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer w-full text-left disabled:opacity-50"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer w-full text-left"
           >
             {isSigningOut ? (
               <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
