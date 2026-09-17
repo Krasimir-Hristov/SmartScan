@@ -210,11 +210,11 @@ async def ingest_knowledge_text(
 
     if not _is_valid_uuid(space_id):
         logger.warning("Cannot ingest text: invalid space_id UUID %s", space_id)
-        return cards
+        raise ValueError(f"Invalid space_id UUID: {space_id}")
 
     client = get_supabase_client()
     if not client:
-        return cards
+        raise RuntimeError("Database client unavailable")
 
     try:
         # Step 2: Generate 1536-dimensional embeddings for all cards in one batch
@@ -242,9 +242,9 @@ async def ingest_knowledge_text(
         await asyncio.to_thread(_insert_rows)
         return cards
 
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Failed to insert knowledge chunks with embeddings: %s", exc)
-        return cards
+    except Exception as exc:
+        logger.error("Failed to insert knowledge chunks: %s", exc)
+        raise RuntimeError(f"Database insertion failed: {exc}") from exc
 
 
 async def get_space_knowledge_chips(space_id: str) -> list[KnowledgeChipDTO]:

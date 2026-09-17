@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Space_Grotesk, Manrope, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import './globals.css';
 
 // ─── Design System Fonts ──────────────────────────────────────────────────────
@@ -66,7 +67,9 @@ const RootLayout = async ({ children }: RootLayoutProps) => {
     <html lang={locale} className={`${fontClasses} dark h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans bg-[#09090b] text-zinc-100">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

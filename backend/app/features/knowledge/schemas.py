@@ -55,7 +55,7 @@ class IngestTextRequest(BaseModel):
     )
     raw_text: str = Field(
         ...,
-        min_length=3,
+        min_length=5,
         max_length=5000,
         description="Spoken or typed natural language text to be parsed into atomic knowledge cards",
     )

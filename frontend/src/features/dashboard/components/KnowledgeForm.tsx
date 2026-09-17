@@ -68,6 +68,7 @@ export const KnowledgeForm: React.FC<KnowledgeFormProps> = ({
     e.preventDefault();
     if (isRecording && onToggleVoice) {
       onToggleVoice();
+      return;
     }
     if (!content.trim()) {
       onValidationError(t('feedbackRequired'));
@@ -224,7 +225,7 @@ export const KnowledgeForm: React.FC<KnowledgeFormProps> = ({
                 aria-label={
                   isRecording ? t('voiceStopBtn') : t('voiceRecordBtn')
                 }
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                   isRecording
                     ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse hover:bg-red-500/30'
                     : isTranscribing

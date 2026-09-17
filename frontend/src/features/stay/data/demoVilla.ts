@@ -35,6 +35,12 @@ export const DEMO_VILLA_SMARTSCAN: SpaceStayData = {
     siestaEnd: '17:30',
   },
   hostName: 'Alexander',
+  knowledgeChips: [
+    { id: 'demo-heating', title: 'Отопление и термостат', category: 'appliances' },
+    { id: 'demo-parking', title: 'Паркинг в двора', category: 'parking' },
+    { id: 'demo-trash', title: 'Контейнери за смет', category: 'rules' },
+    { id: 'demo-food', title: 'Препоръчани ресторанти', category: 'recommendations' },
+  ],
 };
 
 /**

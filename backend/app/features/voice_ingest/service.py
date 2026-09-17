@@ -53,10 +53,17 @@ async def transcribe_audio_whisper(
     is_live_key = _is_live_openrouter_key(settings.OPENROUTER_API_KEY)
 
     if not is_live_key:
-        logger.info("Using mock Whisper transcription for testing/offline mode.")
-        return (
-            "Термостатът в хола е настроен на 22 градуса. Wi-Fi паролата е на рутера.",
-            language or "bg",
+        env = (settings.ENVIRONMENT or "development").strip().lower()
+        if env in ("development", "test"):
+            logger.info("Using mock Whisper transcription for testing/offline mode.")
+            return (
+                "Термостатът в хола е настроен на 22 градуса. Wi-Fi паролата е на рутера.",
+                language or "bg",
+            )
+        logger.error("OPENROUTER_API_KEY is missing or invalid in environment: %s", env)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Гласовата услуга е временно недостъпна. Липсва валиден API ключ.",
         )
 
     headers = {

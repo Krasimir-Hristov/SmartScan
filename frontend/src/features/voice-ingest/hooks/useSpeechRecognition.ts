@@ -193,6 +193,15 @@ export const useSpeechRecognition = (
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          const terminalErrors = [
+            'not-allowed',
+            'service-not-allowed',
+            'language-not-supported',
+            'audio-capture',
+          ];
+          if (terminalErrors.includes(event.error)) {
+            shouldRestartRef.current = false;
+          }
           if (event.error === 'not-allowed') {
             setError('Достъпът до микрофона е отказан. Моля, разрешете микрофона в настройките на браузъра.');
           } else if (event.error === 'network') {

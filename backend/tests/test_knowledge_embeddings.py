@@ -34,7 +34,8 @@ def test_mock_vector_generation() -> None:
 async def test_generate_embeddings_offline_fallback() -> None:
     """Verifies that in offline / dev mode, embeddings generate 1536-dim vectors."""
     texts = ["Wi-Fi password is guest123", "Keybox code is 4455"]
-    embeddings = await generate_embeddings(texts)
+    with patch("app.core.config.settings.OPENROUTER_API_KEY", ""):
+        embeddings = await generate_embeddings(texts)
     assert len(embeddings) == 2
     assert len(embeddings[0]) == 1536
     assert len(embeddings[1]) == 1536
@@ -94,7 +95,8 @@ def test_create_fallback_card_heuristic() -> None:
 @pytest.mark.asyncio
 async def test_structure_knowledge_cards_gemini_fallback() -> None:
     """Verifies graceful fallback when API key is not live."""
-    cards = await structure_knowledge_cards_gemini("Паролата за интернета е MountainGuest")
+    with patch("app.core.config.settings.OPENROUTER_API_KEY", ""):
+        cards = await structure_knowledge_cards_gemini("Паролата за интернета е MountainGuest")
     assert len(cards) >= 1
     assert cards[0].category == "wifi"
 
@@ -102,10 +104,11 @@ async def test_structure_knowledge_cards_gemini_fallback() -> None:
 @pytest.mark.asyncio
 async def test_ingest_knowledge_text_demo() -> None:
     """Verifies demo space returns structured cards without database writes."""
-    cards = await ingest_knowledge_text(
-        space_id="demo-space-villa-smartscan",
-        raw_text="Паролата за интернета е MountainGuest2026. Кодът за ключа е 1234.",
-    )
+    with patch("app.core.config.settings.OPENROUTER_API_KEY", ""):
+        cards = await ingest_knowledge_text(
+            space_id="demo-space-villa-smartscan",
+            raw_text="Паролата за интернета е MountainGuest2026. Кодът за ключа е 1234.",
+        )
     assert len(cards) >= 1
     assert any(c.category in ["wifi", "access"] for c in cards)
 
@@ -120,6 +123,8 @@ async def test_ingest_knowledge_text_db_insert() -> None:
     mock_table.insert.return_value = mock_insert
     mock_insert.execute.return_value = MagicMock(data=[{"id": "chunk-1"}])
 
+    mock_embeddings = [[0.01] * 1536, [0.02] * 1536]
+
     with patch(
         "app.features.knowledge.service.get_supabase_client",
         return_value=mock_supabase,
@@ -130,6 +135,10 @@ async def test_ingest_knowledge_text_db_insert() -> None:
             StructuredCard(title="Wi-Fi", category="wifi", content="Password is guest1234"),
             StructuredCard(title="Cat", category="rules", content="Watch for neighbor cat"),
         ],
+    ), patch(
+        "app.features.knowledge.service.generate_embeddings",
+        new_callable=AsyncMock,
+        return_value=mock_embeddings,
     ):
         cards = await ingest_knowledge_text(
             space_id="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",

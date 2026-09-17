@@ -167,7 +167,7 @@ export const VoiceIngestModal: React.FC<VoiceIngestModalProps> = ({
                 onClick={handleToggleMic}
                 disabled={isSaving}
                 aria-label={isListening ? t('stopRecordAria') : t('startRecordAria')}
-                className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                   isListening
                     ? 'bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.5)] animate-pulse'
                     : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:scale-105'
@@ -206,7 +206,7 @@ export const VoiceIngestModal: React.FC<VoiceIngestModalProps> = ({
                   type="button"
                   onClick={() => resetTranscript()}
                   disabled={isSaving || isListening}
-                  className="inline-flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <RotateCcw className="w-3 h-3" />
                   {t('clearText')}

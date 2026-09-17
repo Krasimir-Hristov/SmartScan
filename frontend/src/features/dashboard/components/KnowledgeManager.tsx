@@ -57,13 +57,14 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
   });
 
   const handleToggleVoice = useCallback(() => {
+    if (isTranscribing) return;
     triggerHaptic(40);
     if (isRecording) {
       void stopRecording();
     } else {
       void startRecording();
     }
-  }, [isRecording, startRecording, stopRecording]);
+  }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
   React.useEffect(() => {
     let isCancelled = false;
@@ -157,7 +158,7 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
           onClick={handleToggleVoice}
           disabled={isTranscribing}
           aria-label={isRecording ? t('voiceStopBtn') : t('voiceRecordBtn')}
-          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 self-start sm:self-auto ${
+          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 self-start sm:self-auto disabled:cursor-not-allowed disabled:opacity-50 ${
             isRecording
               ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse hover:bg-red-500/30'
               : isTranscribing

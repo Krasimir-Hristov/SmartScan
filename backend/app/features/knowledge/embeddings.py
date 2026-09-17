@@ -79,32 +79,37 @@ async def generate_embeddings(texts: list[str]) -> list[list[float]]:
 
         if response.status_code != 200:
             logger.warning(
-                "OpenRouter embeddings returned status %d: %s. Using fallback vector.",
+                "OpenRouter embeddings returned status %d: %s.",
                 response.status_code,
                 response.text,
             )
-            return [_generate_mock_vector(t, settings.EMBEDDING_DIMENSIONS) for t in texts]
+            return []
 
         data = response.json()
         raw_embeddings = data.get("data", [])
-        # Sort by index to maintain batch ordering
-        raw_embeddings.sort(key=lambda item: item.get("index", 0))
+        if not isinstance(raw_embeddings, list):
+            return []
 
-        embeddings: list[list[float]] = []
+        out: list[list[float] | None] = [None] * len(texts)
+        seen_indices: set[int] = set()
+
         for item in raw_embeddings:
-            vec = item.get("embedding", [])
+            if not isinstance(item, dict):
+                continue
+            idx = item.get("index")
+            if not isinstance(idx, int) or idx < 0 or idx >= len(texts) or idx in seen_indices:
+                continue
+            vec = item.get("embedding")
             if isinstance(vec, list) and len(vec) == settings.EMBEDDING_DIMENSIONS:
-                embeddings.append([float(x) for x in vec])
-            else:
-                logger.warning(
-                    "Unexpected embedding vector length %s (expected %d). Using fallback.",
-                    len(vec) if isinstance(vec, list) else "not-a-list",
-                    settings.EMBEDDING_DIMENSIONS,
-                )
-                embeddings.append(_generate_mock_vector("fallback", settings.EMBEDDING_DIMENSIONS))
+                out[idx] = [float(x) for x in vec]
+                seen_indices.add(idx)
 
-        return embeddings
+        if any(v is None for v in out):
+            logger.warning("Incomplete embedding batch received from OpenRouter (%d/%d valid).", len(seen_indices), len(texts))
+            return []
+
+        return [v for v in out if v is not None]
 
     except Exception as exc:  # noqa: BLE001 # pylint: disable=broad-exception-caught
         logger.warning("Error generating embeddings via OpenRouter: %s", exc)
-        return [_generate_mock_vector(t, settings.EMBEDDING_DIMENSIONS) for t in texts]
+        return []

@@ -36,10 +36,10 @@ async def ingest_text_endpoint(
     them in Supabase with pgvector HNSW indexing.
     """
     clean_text = payload.raw_text.strip()
-    if len(clean_text) < 3:
+    if len(clean_text) < 5:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Текстът за въвеждане трябва да съдържа поне 3 символа.",
+            detail="Текстът за въвеждане трябва да съдържа поне 5 символа.",
         )
 
     try:
@@ -55,6 +55,17 @@ async def ingest_text_endpoint(
             cards=cards,
         )
 
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(val_err),
+        ) from val_err
+    except RuntimeError as run_err:
+        logger.error("Runtime error in ingest_text_endpoint: %s", run_err)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(run_err),
+        ) from run_err
     except Exception as exc:
         logger.error("Error in ingest_text_endpoint: %s", exc)
         raise HTTPException(

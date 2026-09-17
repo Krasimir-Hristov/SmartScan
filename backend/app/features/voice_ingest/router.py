@@ -5,10 +5,16 @@ import logging
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
 
 from app.core.rate_limit import limiter
-from app.features.voice_ingest.schemas import TranscribeResponse
+from app.features.voice_ingest.schemas import LanguageParam, TranscribeResponse
 from app.features.voice_ingest.service import transcribe_audio_whisper
 
 logger = logging.getLogger(__name__)
+
+SUPPORTED_AUDIO_MIMES = {
+    "audio/webm", "audio/mp4", "audio/mpeg", "audio/mp3",
+    "audio/wav", "audio/x-wav", "audio/ogg", "audio/flac",
+    "audio/aac", "audio/m4a", "audio/x-m4a",
+}
 
 router = APIRouter(prefix="/voice", tags=["Voice Transcription"])
 
@@ -50,13 +56,20 @@ async def transcribe_voice_endpoint(
             )
 
         filename = file.filename or "recording.webm"
-        content_type = file.content_type or "audio/webm"
+        raw_mime = (file.content_type or "audio/webm").split(";")[0].strip().lower()
+        if raw_mime not in SUPPORTED_AUDIO_MIMES:
+            raise HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                detail=f"Неподдържан аудио формат: {raw_mime}.",
+            )
+
+        validated_lang = LanguageParam(code=language).code
 
         transcript, detected_lang = await transcribe_audio_whisper(
             audio_bytes=content,
             filename=filename,
-            content_type=content_type,
-            language=language,
+            content_type=raw_mime,
+            language=validated_lang,
         )
 
         return TranscribeResponse(

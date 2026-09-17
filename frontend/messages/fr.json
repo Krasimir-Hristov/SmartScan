@@ -418,19 +418,19 @@
     "modalTitle": "Ajouter des connaissances par la voix",
     "modalSubtitle": "Dictée vocale en direct et structuration IA",
     "closeAria": "Fermer",
-    "recordingInstruction": "Parlez librement dans votre langue ou saisissez des instructions pour l hébergement :",
+    "recordingInstruction": "Parlez librement dans votre langue ou saisissez des instructions pour l'hébergement :",
     "startRecordAria": "Démarrer la dictée",
     "stopRecordAria": "Arrêter la dictée",
     "listening": "Nous vous écoutons...",
     "stopAndFormat": "Arrêter & formater les fiches",
     "processingTitle": "Traitement de la note vocale...",
-    "processingDesc": "Whisper v3 transcrit vos paroles et Gemini 2.5 Flash structure des fiches d information prêtes pour le concierge.",
+    "processingDesc": "Whisper v3 transcrit vos paroles et Gemini 2.5 Flash structure des fiches d'information prêtes pour le concierge.",
     "transcriptTitle": "TRANSCRIPTION (WHISPER V3)",
     "copyTranscript": "Copier",
     "copied": "Copié !",
     "suggestedCardsTitle": "FICHES PROPOSÉES POUR LE GUIDE",
     "canEditCards": "Vous pouvez modifier chaque fiche",
-    "noAudioRecorded": "Aucun audio n a été enregistré. Veuillez réessayer.",
+    "noAudioRecorded": "Aucun audio n'a été enregistré. Veuillez réessayer.",
     "networkError": "Erreur réseau lors de la connexion au serveur.",
     "retryInstruction": "Vous pouvez tenter un nouvel enregistrement audio.",
     "retryRecord": "Nouvel enregistrement",
@@ -460,6 +460,6 @@
     "helperNote": "Vous pouvez modifier ou compléter le texte avec le clavier à tout moment.",
     "cancelBtn": "Annuler",
     "saveBtn": "Enregistrer",
-    "noTextToSave": "Veuillez parler ou saisir du texte avant d enregistrer."
+    "noTextToSave": "Veuillez parler ou saisir du texte avant d'enregistrer."
   }
 }

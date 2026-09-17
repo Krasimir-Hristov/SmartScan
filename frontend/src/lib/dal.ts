@@ -165,7 +165,14 @@ const cachedGetSpaceStayDataWithFallback = cache(
     try {
       const guestSpace = await cachedGetGuestSpaceBySlug(slug);
       if (guestSpace) {
-        return mapGuestSpaceToStayData(guestSpace);
+        const stayData = mapGuestSpaceToStayData(guestSpace);
+        const chunks = await cachedGetSpaceKnowledgeChunks(guestSpace.id);
+        stayData.knowledgeChips = chunks.map((c) => ({
+          id: c.id,
+          title: c.title,
+          category: c.category,
+        }));
+        return stayData;
       }
     } catch {
       // Fallback on error

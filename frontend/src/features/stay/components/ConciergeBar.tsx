@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   Sparkles,
@@ -44,25 +45,27 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData })
   const t = useTranslations('stay');
   const locale = useLocale();
   const [inputQuery, setInputQuery] = useState('');
-  const [knowledgeChips, setKnowledgeChips] = useState<DynamicChip[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, isStreaming, error, sendMessage, stopGeneration, clearChat } =
     useConciergeChat({ spaceId, locale, connectionErrorMessage: t('chatConnectionError') });
 
-  // Fetch host knowledge card topics as dynamic chips
-  useEffect(() => {
-    let isMounted = true;
-    fetch(`/api/py/knowledge/chips?space_id=${encodeURIComponent(spaceId)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: unknown) => {
-        if (isMounted && Array.isArray(data)) setKnowledgeChips(data as DynamicChip[]);
-      })
-      .catch(() => {});
-    return () => {
-      isMounted = false;
-    };
-  }, [spaceId]);
+  // Fetch host knowledge card topics as dynamic chips with TanStack Query
+  const { data: knowledgeChips = [] } = useQuery<DynamicChip[]>({
+    queryKey: ['knowledgeChips', spaceId],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/py/knowledge/chips?space_id=${encodeURIComponent(spaceId)}`);
+        if (!res.ok) return [];
+        const data: unknown = await res.json();
+        return Array.isArray(data) ? (data as DynamicChip[]) : [];
+      } catch {
+        return [];
+      }
+    },
+    initialData: stayData?.knowledgeChips,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Dynamically assemble chips for verified host data (Taxi + Host Knowledge Cards)
   const chips = useMemo(() => {
