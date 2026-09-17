@@ -1,82 +1,91 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   Sparkles,
-  Flame,
-  Trash2,
-  Car,
-  UtensilsCrossed,
   Send,
   Square,
   Bot,
   User,
   RotateCcw,
   AlertCircle,
+  Globe,
+  Car,
+  Flame,
+  Trash2,
+  UtensilsCrossed,
+  HelpCircle,
 } from 'lucide-react';
 import { useConciergeChat } from '../hooks/useConciergeChat';
+import type { SpaceStayData } from '../types/stayTypes';
 
 export interface ConciergeBarProps {
   spaceId: string;
+  stayData?: SpaceStayData;
 }
 
-export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
+interface DynamicChip {
+  id: string;
+  title: string;
+  category: string;
+}
+
+const getCategoryIcon = (category: string) => {
+  const cat = category.toLowerCase();
+  if (cat.includes('heat') || cat.includes('климатик') || cat.includes('парно')) return Flame;
+  if (cat.includes('park') || cat.includes('паркинг') || cat.includes('транспорт')) return Car;
+  if (cat.includes('trash') || cat.includes('смет') || cat.includes('боклук')) return Trash2;
+  if (cat.includes('dine') || cat.includes('food') || cat.includes('хран') || cat.includes('ресторант')) return UtensilsCrossed;
+  return HelpCircle;
+};
+
+export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData }) => {
   const t = useTranslations('stay');
   const locale = useLocale();
   const [inputQuery, setInputQuery] = useState('');
+  const [knowledgeChips, setKnowledgeChips] = useState<DynamicChip[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const {
-    messages,
-    isStreaming,
-    error,
-    sendMessage,
-    stopGeneration,
-    clearChat,
-  } = useConciergeChat({
-    spaceId,
-    locale,
-    connectionErrorMessage: t('chatConnectionError'),
-  });
+  const { messages, isStreaming, error, sendMessage, stopGeneration, clearChat } =
+    useConciergeChat({ spaceId, locale, connectionErrorMessage: t('chatConnectionError') });
 
-  const chips = [
-    {
-      id: 'heating',
-      label: t('chipHeating'),
-      icon: Flame,
-    },
-    {
-      id: 'trash',
-      label: t('chipTrash'),
-      icon: Trash2,
-    },
-    {
-      id: 'parking',
-      label: t('chipParking'),
-      icon: Car,
-    },
-    {
-      id: 'dining',
-      label: t('chipDining'),
-      icon: UtensilsCrossed,
-    },
-  ];
+  // Fetch host knowledge card topics as dynamic chips
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`/api/py/knowledge/chips?space_id=${encodeURIComponent(spaceId)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: unknown) => {
+        if (isMounted && Array.isArray(data)) setKnowledgeChips(data as DynamicChip[]);
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [spaceId]);
 
-  // Auto-scroll to the newest message whenever messages or streaming updates
+  // Dynamically assemble chips for verified host data (Taxi + Host Knowledge Cards)
+  const chips = useMemo(() => {
+    const list: Array<{ id: string; label: string; icon: React.ComponentType<{ className?: string }> }> = [];
+    if (stayData?.contacts?.taxiPhone?.trim()) {
+      list.push({ id: 'taxi', label: t('chipTaxi'), icon: Car });
+    }
+    for (const kc of knowledgeChips) {
+      list.push({ id: kc.id, label: kc.title, icon: getCategoryIcon(kc.category) });
+    }
+    return list;
+  }, [stayData?.contacts?.taxiPhone, knowledgeChips, t]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
 
-  const handleChipClick = (label: string) => {
-    sendMessage(label);
-  };
+  const handleChipClick = (label: string) => sendMessage(label);
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const query = inputQuery.trim();
     if (!query || isStreaming) return;
-
     setInputQuery('');
     sendMessage(query);
   };
@@ -121,25 +130,33 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
         )}
       </div>
 
-      {/* Quick Prompt Chips */}
-      <div className="flex flex-wrap gap-1.5">
-        {chips.map((chip) => {
-          const Icon = chip.icon;
-          return (
-            <button
-              key={chip.id}
-              type="button"
-              disabled={isStreaming}
-              onClick={() => handleChipClick(chip.label)}
-              aria-label={chip.label}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950/80 border border-white/[0.08] hover:border-emerald-500/40 text-zinc-300 hover:text-white text-xs font-medium transition-all duration-150 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Icon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="truncate">{chip.label}</span>
-            </button>
-          );
-        })}
+      {/* Multilingual Polyglot CTA Banner */}
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-[11px] leading-snug">
+        <Globe className="w-3.5 h-3.5 shrink-0 text-emerald-400 animate-pulse" />
+        <span>{t('polyglotCtaBanner')}</span>
       </div>
+
+      {/* Quick Prompt Chips */}
+      {chips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((chip) => {
+            const Icon = chip.icon;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                disabled={isStreaming}
+                onClick={() => handleChipClick(chip.label)}
+                aria-label={chip.label}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950/80 border border-white/[0.08] hover:border-emerald-500/40 text-zinc-300 hover:text-white text-xs font-medium transition-all duration-150 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Icon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">{chip.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Optional Error Alert Banner */}
       {error && (

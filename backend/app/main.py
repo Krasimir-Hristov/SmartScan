@@ -8,7 +8,8 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.features.concierge.router import router as concierge_router
-from app.features.voice_ingest.router import router as voice_ingest_router
+from app.features.knowledge.router import router as knowledge_router
+from app.features.voice_ingest.router import router as voice_router
 
 app = FastAPI(
     title="SmartScan Stay API",
@@ -42,7 +43,8 @@ async def health_check() -> dict[str, str]:
 
 # Register feature routers under /api/py
 app.include_router(concierge_router, prefix="/api/py")
-app.include_router(voice_ingest_router, prefix="/api/py")
+app.include_router(knowledge_router, prefix="/api/py")
+app.include_router(voice_router, prefix="/api/py")
 
 
 @app.get("/", include_in_schema=False)
