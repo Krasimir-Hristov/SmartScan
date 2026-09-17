@@ -1,6 +1,7 @@
 """Router for Host Voice Ingest audio upload and structuring endpoints."""
 
 import logging
+from typing import Annotated
 
 from fastapi import (
     APIRouter,
@@ -62,8 +63,14 @@ def _validate_audio_format(filename: str, content_type: str | None) -> None:
 @limiter.limit("5/minute", key_func=get_client_ip)
 async def voice_ingest_endpoint(
     request: Request,
-    audio: UploadFile = File(..., description="Audio recording file (max 60s, max 10MB)"),
-    space_id: str | None = Form(default=None, description="Optional space identifier"),
+    audio: Annotated[
+        UploadFile,
+        File(description="Audio recording file (max 60s, max 10MB)"),
+    ],
+    space_id: Annotated[
+        str | None,
+        Form(description="Optional space identifier"),
+    ] = None,
 ) -> VoiceIngestResponse:
     """Receives host voice note, sends to Whisper v3 for speech-to-text,
     and structures with Gemini 2.5 Flash into actionable cards.

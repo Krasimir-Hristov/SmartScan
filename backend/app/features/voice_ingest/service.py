@@ -184,7 +184,7 @@ async def structure_cards_gemini(
 
         return cards[:3]  # Enforce maximum of 3 cards
 
-    except Exception as exc:
+    except (httpx.HTTPError, json.JSONDecodeError, KeyError, ValueError) as exc:
         logger.warning(
             "Error during card structuring: %s. Using fallback card.", exc
         )

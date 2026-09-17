@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from app.features.voice_ingest.schemas import (
     StructuredCard,
@@ -42,7 +43,7 @@ def test_structured_card_validation() -> None:
 
 def test_structured_card_rejects_invalid_category() -> None:
     """Invalid category triggers validation error."""
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         StructuredCard(
             title="Тест",
             category="invalid_category",  # type: ignore[arg-type]
@@ -252,9 +253,11 @@ def test_ingest_rate_limit_enforced() -> None:
     }
 
     from app.core.config import settings
-    with patch.object(settings, "BACKEND_PROXY_SECRET", "secret-test"):
-        with patch("httpx.AsyncClient.post", new_callable=AsyncMock, side_effect=[whisper_mock, gemini_mock] * 6):
-            # Send 5 valid requests
+    with (
+        patch.object(settings, "BACKEND_PROXY_SECRET", "secret-test"),
+        patch("httpx.AsyncClient.post", new_callable=AsyncMock, side_effect=[whisper_mock, gemini_mock] * 6),
+    ):
+        # Send 5 valid requests
             for _ in range(5):
                 res = client.post(
                     "/api/py/voice/ingest",
