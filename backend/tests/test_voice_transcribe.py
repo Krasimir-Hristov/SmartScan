@@ -61,6 +61,7 @@ def test_transcribe_voice_unsupported_mime():
 
 def test_transcribe_voice_with_language_param(monkeypatch):
     from unittest.mock import AsyncMock, MagicMock, patch
+
     from app.core.config import settings
 
     monkeypatch.setattr(settings, "OPENROUTER_API_KEY", "sk-or-v1-live-sample-key")
