@@ -1,7 +1,8 @@
 """Main entry point for SmartScan Stay FastAPI application."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -11,11 +12,28 @@ from app.features.concierge.router import router as concierge_router
 from app.features.knowledge.router import router as knowledge_router
 from app.features.voice_ingest.router import router as voice_router
 
+MAX_REQUEST_BODY_SIZE = 25 * 1024 * 1024  # 25 MiB
+
 app = FastAPI(
     title="SmartScan Stay API",
     description="High-performance backend API for SmartScan Stay digital concierge.",
     version="1.0.0",
 )
+
+# Early payload size check before multipart parsing / streaming
+@app.middleware("http")
+async def enforce_max_payload_size(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_REQUEST_BODY_SIZE:
+                return JSONResponse(
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                    content={"detail": "Аудио файлът надвишава допустимия размер от 25MB."},
+                )
+        except ValueError:
+            pass
+    return await call_next(request)
 
 # SlowAPI Rate Limiting State & Handler
 app.state.limiter = limiter
