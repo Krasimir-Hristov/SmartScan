@@ -76,16 +76,29 @@ export async function proxyToBackend(
 
   try {
     const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
-    let body: Blob | undefined;
-    if (hasBody) {
-      const blob = await request.blob();
-      if (blob.size > MAX_PROXY_BODY_SIZE) {
-        return NextResponse.json(
-          { error: 'Payload exceeds maximum limit of 25MB' },
-          { status: 413, statusText: 'Payload Too Large' }
-        );
+    let body: BodyInit | undefined;
+    if (hasBody && request.body) {
+      const reader = request.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let totalBytes = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          totalBytes += value.byteLength;
+          if (totalBytes > MAX_PROXY_BODY_SIZE) {
+            await reader.cancel();
+            return NextResponse.json(
+              { error: 'Payload exceeds maximum limit of 25MB' },
+              { status: 413, statusText: 'Payload Too Large' }
+            );
+          }
+          chunks.push(value);
+        }
       }
-      body = blob;
+
+      body = Buffer.concat(chunks);
     }
 
     const backendResponse = await fetch(url.toString(), {
