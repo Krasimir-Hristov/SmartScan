@@ -228,3 +228,63 @@ def test_ingest_text_endpoint_success() -> None:
     assert data["success"] is True
     assert data["cards_count"] >= 1
     assert len(data["cards"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_ingest_knowledge_text_aborts_on_embedding_failure() -> None:
+    """Verifies that mismatched embeddings length aborts before DB insert."""
+    mock_supabase = MagicMock()
+    mock_table = MagicMock()
+    mock_supabase.table.return_value = mock_table
+
+    with patch(
+        "app.features.knowledge.service.get_supabase_client",
+        return_value=mock_supabase,
+    ), patch(
+        "app.features.knowledge.service.structure_knowledge_cards_gemini",
+        new_callable=AsyncMock,
+        return_value=[
+            StructuredCard(title="Wi-Fi", category="wifi", content="Password is guest1234"),
+        ],
+    ), patch(
+        "app.features.knowledge.service.generate_embeddings",
+        new_callable=AsyncMock,
+        return_value=[],  # Empty embeddings returned on failure
+    ):
+        with pytest.raises(RuntimeError, match="Failed to generate embedding vectors"):
+            await ingest_knowledge_text(
+                space_id="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+                raw_text="Wi-Fi password is guest1234",
+            )
+        mock_table.insert.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_ingest_knowledge_text_sanitizes_db_error() -> None:
+    """Verifies that DB exception text is not exposed in the raised service error."""
+    mock_supabase = MagicMock()
+    mock_table = MagicMock()
+    mock_supabase.table.return_value = mock_table
+    mock_table.insert.return_value.execute.side_effect = Exception("psql_internal_constraint_leak")
+
+    with patch(
+        "app.features.knowledge.service.get_supabase_client",
+        return_value=mock_supabase,
+    ), patch(
+        "app.features.knowledge.service.structure_knowledge_cards_gemini",
+        new_callable=AsyncMock,
+        return_value=[
+            StructuredCard(title="Wi-Fi", category="wifi", content="Password is guest1234"),
+        ],
+    ), patch(
+        "app.features.knowledge.service.generate_embeddings",
+        new_callable=AsyncMock,
+        return_value=[[0.1] * 1536],
+    ):
+        with pytest.raises(RuntimeError) as exc_info:
+            await ingest_knowledge_text(
+                space_id="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+                raw_text="Wi-Fi password is guest1234",
+            )
+        assert str(exc_info.value) == "Database insertion failed"
+        assert "psql_internal_constraint_leak" not in str(exc_info.value)

@@ -216,26 +216,26 @@ async def ingest_knowledge_text(
     if not client:
         raise RuntimeError("Database client unavailable")
 
+    # Step 2: Generate 1536-dimensional embeddings for all cards in one batch
+    card_texts = [f"{c.title}: {c.content}" for c in cards]
+    embeddings = await generate_embeddings(card_texts)
+    if len(embeddings) != len(cards):
+        raise RuntimeError("Failed to generate embedding vectors for all knowledge cards")
+
+    # Step 3: Insert into knowledge_chunks with embedding vector
+    rows_to_insert = [
+        {
+            "space_id": space_id,
+            "title": card.title,
+            "content": card.content,
+            "category": card.category,
+            "embedding": embeddings[i],
+            "metadata": {"source": "live_text_ingest"},
+        }
+        for i, card in enumerate(cards)
+    ]
+
     try:
-        # Step 2: Generate 1536-dimensional embeddings for all cards in one batch
-        card_texts = [f"{c.title}: {c.content}" for c in cards]
-        embeddings = await generate_embeddings(card_texts)
-
-        # Step 3: Insert into knowledge_chunks with embedding vector
-        rows_to_insert = []
-        for i, card in enumerate(cards):
-            vec = embeddings[i] if i < len(embeddings) else None
-            rows_to_insert.append(
-                {
-                    "space_id": space_id,
-                    "title": card.title,
-                    "content": card.content,
-                    "category": card.category,
-                    "embedding": vec,
-                    "metadata": {"source": "live_text_ingest"},
-                }
-            )
-
         def _insert_rows():
             return client.table("knowledge_chunks").insert(rows_to_insert).execute()
 
@@ -244,7 +244,7 @@ async def ingest_knowledge_text(
 
     except Exception as exc:
         logger.error("Failed to insert knowledge chunks: %s", exc)
-        raise RuntimeError(f"Database insertion failed: {exc}") from exc
+        raise RuntimeError("Database insertion failed") from exc
 
 
 async def get_space_knowledge_chips(space_id: str) -> list[KnowledgeChipDTO]:

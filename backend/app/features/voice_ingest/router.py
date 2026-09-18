@@ -41,19 +41,19 @@ async def transcribe_voice_endpoint(
         )
 
     try:
-        content = await file.read()
-        if len(content) < 100:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Аудио файлът е празен.",
-            )
-
-        # Max 25 MB file limit
-        if len(content) > 25 * 1024 * 1024:
+        max_bytes = 25 * 1024 * 1024
+        chunk = await file.read(max_bytes + 1)
+        if len(chunk) > max_bytes:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 detail="Аудио файлът надвишава допустимия размер от 25MB.",
             )
+        if len(chunk) < 100:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Аудио файлът е празен.",
+            )
+        content = chunk
 
         filename = file.filename or "recording.webm"
         raw_mime = (file.content_type or "audio/webm").split(";")[0].strip().lower()

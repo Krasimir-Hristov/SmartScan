@@ -64,7 +64,7 @@ async def ingest_text_endpoint(
         logger.error("Runtime error in ingest_text_endpoint: %s", run_err)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(run_err),
+            detail="Възникна грешка при запазването на знанието в базата данни.",
         ) from run_err
     except Exception as exc:
         logger.error("Error in ingest_text_endpoint: %s", exc)
