@@ -14,3 +14,8 @@ def sanitize_user_input(user_text: str) -> str:
         return ""
     cleaned = TAG_SANITIZER_REGEX.sub("", user_text)
     return cleaned.strip()
+
+
+from xml.sax.saxutils import escape as xml_escape
+
+__all__ = ["TAG_SANITIZER_REGEX", "sanitize_user_input", "xml_escape"]

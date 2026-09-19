@@ -38,9 +38,11 @@ class Settings(BaseSettings):
     SUPABASE_SECRET_KEY: str = Field(default="")
     SUPABASE_JWKS_URL: str = Field(default="")
 
-    # OpenRouter LLM credentials
+    # OpenRouter LLM & Embedding credentials
     OPENROUTER_API_KEY: str = Field(default="")
     OPENROUTER_MODEL: str = Field(default="google/gemini-2.5-flash")
+    OPENROUTER_EMBEDDING_MODEL: str = Field(default="openai/text-embedding-3-small")
+    EMBEDDING_DIMENSIONS: int = Field(default=1536)
 
     @property
     def cors_origins(self) -> list[str]:

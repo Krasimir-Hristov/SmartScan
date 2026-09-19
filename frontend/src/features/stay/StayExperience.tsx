@@ -54,8 +54,8 @@ export const StayExperience: React.FC<StayExperienceProps> = ({
         {/* Quiet Hours & Siesta Protocol */}
         <QuietHoursCard quietHours={data.quietHours} />
 
-        {/* 24/7 AI Concierge Input Bar with Quick Prompt Chips */}
-        <ConciergeBar spaceId={data.id} />
+        {/* 24/7 AI Concierge Input Bar with Dynamic Quick Prompt Chips */}
+        <ConciergeBar spaceId={data.id} stayData={data} />
 
         {/* Footer Brand Credit */}
         <footer className="mt-4 pb-6 flex flex-col items-center justify-center gap-1.5 text-center">

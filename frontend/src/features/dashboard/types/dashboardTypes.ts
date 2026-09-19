@@ -55,7 +55,14 @@ export interface CreateKnowledgeInput {
   spaceId: string;
   title: string;
   content: string;
-  category?: 'rules' | 'appliances' | 'parking' | 'recommendations' | 'general';
+  category?:
+    | 'rules'
+    | 'appliances'
+    | 'parking'
+    | 'recommendations'
+    | 'general'
+    | 'wifi'
+    | 'access';
 }
 
 export interface ActionResult<T = unknown> {

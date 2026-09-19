@@ -25,6 +25,12 @@ export interface QuietHours {
   siestaEnd?: string;
 }
 
+export interface KnowledgeChipItem {
+  id: string;
+  title: string;
+  category: string;
+}
+
 export interface SpaceStayData {
   id: string;
   slug: string;
@@ -36,4 +42,5 @@ export interface SpaceStayData {
   schedule: StaySchedule;
   quietHours?: QuietHours;
   hostName?: string;
+  knowledgeChips?: KnowledgeChipItem[];
 }

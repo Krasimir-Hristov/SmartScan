@@ -47,7 +47,6 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   const isMatch =
     Boolean(userEmail) &&
     typedEmail.trim().toLowerCase() === userEmail.trim().toLowerCase();
-    typedEmail.trim().toLowerCase() === userEmail.trim().toLowerCase();
 
   const handleDelete = async () => {
     if (!isMatch || isDeleting) return;

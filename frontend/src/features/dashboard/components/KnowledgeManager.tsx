@@ -1,27 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import {
-  Sparkles,
-  BookOpen,
-  Plus,
-  Trash2,
-  Tag,
-  Loader2,
-  Flame,
-  Car,
-  Utensils,
-  ShieldCheck,
-  Check,
-} from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { Sparkles, Check, Mic, Square, Loader2 } from 'lucide-react';
 import type { KnowledgeChunk } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
+import { useVoiceRecorder } from '@/features/voice-ingest';
 import {
   addKnowledgeChunkAction,
   deleteKnowledgeChunkAction,
   getSpaceKnowledgeChunksAction,
 } from '../actions/spaceActions';
+import type { CreateKnowledgeInput } from '../types/dashboardTypes';
+import { KnowledgeChunkList } from './KnowledgeChunkList';
+import { KnowledgeForm } from './KnowledgeForm';
 
 export interface KnowledgeManagerProps {
   spaceId: string;
@@ -33,12 +25,8 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
   initialChunks = [],
 }) => {
   const t = useTranslations('dashboard');
+  const locale = useLocale();
   const [chunks, setChunks] = useState<KnowledgeChunk[]>(initialChunks);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState<
-    'rules' | 'appliances' | 'parking' | 'recommendations' | 'general'
-  >('appliances');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
@@ -46,11 +34,41 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
     text: string;
   } | null>(null);
 
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+
+  const {
+    isRecording,
+    isTranscribing,
+    durationSeconds,
+    error: voiceError,
+    startRecording,
+    stopRecording,
+  } = useVoiceRecorder({
+    language: locale,
+    onTranscript: (text) => {
+      setContent((prev) => (prev ? `${prev.trim()}\n${text}` : text));
+      setTitle((prev) => prev || t('noteDefaultTitle'));
+      triggerHaptic(50);
+    },
+    onError: () => {
+      triggerHaptic(100);
+    },
+  });
+
+  const handleToggleVoice = useCallback(() => {
+    if (isTranscribing) return;
+    triggerHaptic(40);
+    if (isRecording) {
+      void stopRecording();
+    } else {
+      void startRecording();
+    }
+  }, [isRecording, isTranscribing, startRecording, stopRecording]);
+
   React.useEffect(() => {
     let isCancelled = false;
-    // Always sync on mount and on every space switch: the initialChunks prop
-    // is server-rendered for a single space only and goes stale after
-    // additions, deletions or switching spaces.
+    // Always sync on mount and on every space switch
     getSpaceKnowledgeChunksAction(spaceId).then((result) => {
       if (!isCancelled && result.success && result.data) {
         setChunks(result.data);
@@ -61,26 +79,12 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
     };
   }, [spaceId]);
 
-  const handleAddChunk = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!content.trim()) {
-      setFeedback({
-        type: 'error',
-        text: t('feedbackRequired'),
-      });
-      return;
-    }
-
+  const handleAddChunk = async (input: CreateKnowledgeInput): Promise<boolean> => {
     setIsSubmitting(true);
     setFeedback(null);
 
     try {
-      const result = await addKnowledgeChunkAction({
-        spaceId,
-        title: title.trim() || t('noteDefaultTitle'),
-        content: content.trim(),
-        category,
-      });
+      const result = await addKnowledgeChunkAction(input);
 
       if (result.success && result.data) {
         setChunks((prev) => [result.data as KnowledgeChunk, ...prev]);
@@ -92,14 +96,17 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
         });
         triggerHaptic(50);
         setTimeout(() => setFeedback(null), 3000);
+        return true;
       } else {
         setFeedback({
           type: 'error',
           text: result.error || t('feedbackSaveError'),
         });
+        return false;
       }
     } catch {
       setFeedback({ type: 'error', text: t('feedbackServerError') });
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -129,34 +136,56 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
     }
   };
 
-  const getCategoryIcon = (cat: string) => {
-    switch (cat) {
-      case 'appliances':
-        return <Flame className='w-3.5 h-3.5 text-amber-400' />;
-      case 'parking':
-        return <Car className='w-3.5 h-3.5 text-blue-400' />;
-      case 'recommendations':
-        return <Utensils className='w-3.5 h-3.5 text-rose-400' />;
-      case 'rules':
-        return <ShieldCheck className='w-3.5 h-3.5 text-purple-400' />;
-      default:
-        return <Tag className='w-3.5 h-3.5 text-emerald-400' />;
-    }
-  };
-
   return (
     <div className='p-5 sm:p-7 rounded-3xl bg-[#121216] border border-white/8 flex flex-col gap-6 shadow-2xl'>
-      {/* Header */}
-      <div className='flex flex-col gap-1 pb-4 border-b border-white/8'>
-        <div className='flex items-center gap-2'>
-          <div className='w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400'>
-            <Sparkles className='w-4 h-4' />
+      {/* Header with prominent voice button ("микрофончето там отгоре") */}
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/8'>
+        <div className='flex flex-col gap-1'>
+          <div className='flex items-center gap-2'>
+            <div className='w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400'>
+              <Sparkles className='w-4 h-4' />
+            </div>
+            <h2 className='font-display text-lg font-bold text-white'>
+              {t('knowledgeTitle')}
+            </h2>
           </div>
-          <h2 className='font-display text-lg font-bold text-white'>
-            {t('knowledgeTitle')}
-          </h2>
+          <p className='text-xs text-zinc-400'>{t('knowledgeSub')}</p>
         </div>
-        <p className='text-xs text-zinc-400'>{t('knowledgeSub')}</p>
+
+        {/* Top voice button */}
+        <button
+          type='button'
+          onClick={handleToggleVoice}
+          disabled={isTranscribing}
+          aria-label={isRecording ? t('voiceStopBtn') : t('voiceRecordBtn')}
+          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 self-start sm:self-auto disabled:cursor-not-allowed disabled:opacity-50 ${
+            isRecording
+              ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse hover:bg-red-500/30'
+              : isTranscribing
+              ? 'bg-zinc-800 text-zinc-400 border border-white/10 cursor-wait'
+              : 'bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400'
+          }`}
+        >
+          {isTranscribing ? (
+            <>
+              <Loader2 className='w-3.5 h-3.5 animate-spin' />
+              <span>{t('voiceProcessing')}</span>
+            </>
+          ) : isRecording ? (
+            <>
+              <Square className='w-3 h-3 fill-current' />
+              <span>
+                {t('voiceStopBtn')} ({Math.floor(durationSeconds / 60)}:
+                {(durationSeconds % 60).toString().padStart(2, '0')})
+              </span>
+            </>
+          ) : (
+            <>
+              <Mic className='w-3.5 h-3.5' />
+              <span>{t('voiceRecordBtn')}</span>
+            </>
+          )}
+        </button>
       </div>
 
       {feedback && (
@@ -174,88 +203,22 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
         </div>
       )}
 
-      {/* Input Form */}
-      <form onSubmit={handleAddChunk} className='flex flex-col gap-3.5'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-          <div className='flex flex-col gap-1.5'>
-            <label htmlFor='knowledge-title' className='text-xs text-zinc-400'>
-              {t('noteTitleLabel')}
-            </label>
-            <input
-              id='knowledge-title'
-              type='text'
-              placeholder={t('noteTitlePlaceholder')}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-emerald-500'
-            />
-          </div>
-
-          <div className='flex flex-col gap-1.5'>
-            <label
-              htmlFor='knowledge-category'
-              className='text-xs text-zinc-400'
-            >
-              {t('categoryLabel')}
-            </label>
-            <select
-              id='knowledge-category'
-              value={category}
-              onChange={(e) =>
-                setCategory(
-                  e.target.value as
-                    | 'rules'
-                    | 'appliances'
-                    | 'parking'
-                    | 'recommendations'
-                    | 'general',
-                )
-              }
-              className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer'
-            >
-              <option value='appliances'>{t('catAppliances')}</option>
-              <option value='parking'>{t('catParking')}</option>
-              <option value='rules'>{t('catRules')}</option>
-              <option value='recommendations'>{t('catRecommendations')}</option>
-              <option value='general'>{t('catGeneral')}</option>
-            </select>
-          </div>
-        </div>
-
-        <div className='flex flex-col gap-1.5'>
-          <label htmlFor='knowledge-content' className='text-xs text-zinc-400'>
-            {t('noteContentLabel')}
-          </label>
-          <textarea
-            id='knowledge-content'
-            required
-            rows={4}
-            placeholder={t('noteContentPlaceholder')}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-emerald-500 resize-none leading-relaxed'
-          />
-        </div>
-
-        <button
-          type='submit'
-          disabled={isSubmitting}
-          aria-label={t('addCard')}
-          className='inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer self-start'
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className='w-3.5 h-3.5 animate-spin' />
-              <span>{t('adding')}</span>
-            </>
-          ) : (
-            <>
-              <Plus className='w-3.5 h-3.5' />
-              <span>{t('addCard')}</span>
-            </>
-          )}
-        </button>
-      </form>
+      {/* Input Form with integrated speech dictation */}
+      <KnowledgeForm
+        spaceId={spaceId}
+        isSubmitting={isSubmitting}
+        title={title}
+        setTitle={setTitle}
+        content={content}
+        setContent={setContent}
+        onSubmit={handleAddChunk}
+        onValidationError={(msg) => setFeedback({ type: 'error', text: msg })}
+        isRecording={isRecording}
+        isTranscribing={isTranscribing}
+        durationSeconds={durationSeconds}
+        voiceError={voiceError}
+        onToggleVoice={handleToggleVoice}
+      />
 
       {/* Saved Knowledge List */}
       <div className='flex flex-col gap-3 pt-4 border-t border-white/8'>
@@ -265,46 +228,11 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
           </span>
         </div>
 
-        {chunks.length === 0 ? (
-          <div className='p-6 rounded-2xl bg-zinc-900/40 border border-dashed border-white/10 text-center flex flex-col items-center gap-2 text-zinc-500 text-xs'>
-            <BookOpen className='w-5 h-5 text-zinc-600' />
-            <p>{t('noCards')}</p>
-          </div>
-        ) : (
-          <div className='flex flex-col gap-2.5 max-h-360px overflow-y-auto pr-1'>
-            {chunks.map((chunk) => (
-              <div
-                key={chunk.id}
-                className='p-3.5 rounded-2xl bg-zinc-900/60 border border-white/8 hover:border-white/15 flex flex-col gap-1.5 transition-colors group'
-              >
-                <div className='flex items-center justify-between gap-2'>
-                  <div className='flex items-center gap-2'>
-                    {getCategoryIcon(chunk.category)}
-                    <span className='text-xs font-semibold text-white'>
-                      {chunk.title}
-                    </span>
-                  </div>
-                  <button
-                    type='button'
-                    onClick={() => handleDeleteChunk(chunk.id)}
-                    disabled={deletingId === chunk.id}
-                    aria-label={t('deleteCard')}
-                    className='opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer disabled:cursor-not-allowed'
-                  >
-                    {deletingId === chunk.id ? (
-                      <Loader2 className='w-3.5 h-3.5 animate-spin' />
-                    ) : (
-                      <Trash2 className='w-3.5 h-3.5' />
-                    )}
-                  </button>
-                </div>
-                <p className='text-xs text-zinc-400 leading-relaxed'>
-                  {chunk.content}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        <KnowledgeChunkList
+          chunks={chunks}
+          deletingId={deletingId}
+          onDeleteChunk={handleDeleteChunk}
+        />
       </div>
     </div>
   );

@@ -64,12 +64,47 @@ export async function proxyToBackend(
     cleanHeaders.set('x-internal-auth', proxySecret);
   }
 
+  // Reject incoming payloads exceeding 25 MiB at public ingress layer before forwarding
+  const contentLength = Number(request.headers.get('content-length') || '0');
+  const MAX_PROXY_BODY_SIZE = 25 * 1024 * 1024; // 25 MiB
+  if (contentLength > MAX_PROXY_BODY_SIZE) {
+    return NextResponse.json(
+      { error: 'Payload exceeds maximum limit of 25MB' },
+      { status: 413, statusText: 'Payload Too Large' }
+    );
+  }
+
   try {
     const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
+    let body: BodyInit | undefined;
+    if (hasBody && request.body) {
+      const reader = request.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let totalBytes = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          totalBytes += value.byteLength;
+          if (totalBytes > MAX_PROXY_BODY_SIZE) {
+            await reader.cancel();
+            return NextResponse.json(
+              { error: 'Payload exceeds maximum limit of 25MB' },
+              { status: 413, statusText: 'Payload Too Large' }
+            );
+          }
+          chunks.push(value);
+        }
+      }
+
+      body = Buffer.concat(chunks);
+    }
+
     const backendResponse = await fetch(url.toString(), {
       method: request.method,
       headers: cleanHeaders,
-      body: hasBody ? await request.blob() : undefined,
+      body,
       signal: request.signal,
     });
 
