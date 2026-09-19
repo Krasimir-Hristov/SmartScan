@@ -22,8 +22,8 @@
 | **Стъпка 3** | [**Step 03: Guest PWA Experience**](file:///d:/myProjects/smart_scan/docs/steps/step-03-guest-pwa-experience.md) | 🟢 Завършена | Zero-Image PWA под 200ms, 1-Click Wi-Fi с `navigator.vibrate(50)`, 4-площна SOS решетка, Zero-Empty-States. |
 | **Стъпка 4** | [**Step 04: Database & DAL**](file:///d:/myProjects/smart_scan/docs/steps/step-04-database-migrations-dal.md) | 🟢 Завършена | PostgreSQL + pgvector HNSW индекс, RLS политики, RPC функции, сървърен DAL (`server-only`). |
 | **Стъпка 5** | [**Step 05: FastAPI AI Concierge**](file:///d:/myProjects/smart_scan/docs/steps/step-05-fastapi-ai-concierge-proxy.md) | 🟢 Завършена | FastAPI Python 3.12, LangGraph `StateGraph`, OpenRouter SSE стрийминг, Prompt Injection защита, `proxy.ts` (CVE-2025-29927). |
-| **Стъпка 6** | *Step 06: Host Dashboard* | ⚪ Очаква | Пълен контролен панел на хазяина за редакция на данни, контакти и правила. |
-| **Стъпка 7** | *Step 07: Voice Ingest & Whisper* | ⚪ Очаква | Гласово въвеждане на бележки (MediaRecorder + Whisper v3 + структуриране с Gemini). |
+| **Стъпка 6** | [**Step 06: Host Dashboard**](file:///d:/myProjects/smart_scan/docs/steps/step-06-host-dashboard.md) | 🟢 Завършена | Пълен контролен панел на хазяина: SpaceEditor, SpaceSwitcher, QuietHoursControl, KnowledgeManager, GitHub-style сигурност. |
+| **Стъпка 7** | [**Step 07: Voice Ingest & Whisper**](file:///d:/myProjects/smart_scan/docs/steps/step-07-voice-ingest-whisper.md) | 🟢 Завършена | Гласов Ingest: MediaRecorder + Web Speech API + Whisper v3 + Gemini Flash карти + 1536D pgvector ембединги + Dynamic Chips. |
 | **Стъпка 8** | *Step 08: Physical QR Plaques* | ⚪ Очаква | Векторни A5/A6 PDF табелки за печат с `@react-pdf/renderer` (300+ DPI). |
 | **Стъпка 9** | *Step 09: Stripe Granular Billing* | ⚪ Очаква | Грануларно таксуване €9/месец на обект със сезонен паузинг и Stripe Customer Portal. |
 | **Стъпка 10**| *Step 10: Production Hardening* | ⚪ Очаква | E2E тестове, пълен одит на сигурността, Core Web Vitals одит. |
