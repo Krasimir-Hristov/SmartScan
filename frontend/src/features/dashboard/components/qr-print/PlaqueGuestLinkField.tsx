@@ -17,7 +17,9 @@ export const PlaqueGuestLinkField: React.FC<PlaqueGuestLinkFieldProps> = ({
 }) => {
   const t = useTranslations('plaqueModal');
   const [isCopied, setIsCopied] = useState(false);
-  const showOriginWarning = isLocalOrPreviewOrigin(origin);
+  // An empty origin means the canonical public domain could not be resolved:
+  // the QR code would contain a relative URL and therefore be unusable.
+  const showOriginWarning = !origin.trim() || isLocalOrPreviewOrigin(origin);
 
   const handleCopy = async () => {
     try {

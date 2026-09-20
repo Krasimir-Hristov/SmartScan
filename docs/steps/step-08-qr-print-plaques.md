@@ -2,8 +2,8 @@
 
 > **Статус**: 🟢 Завършена (вкл. финален hardening от ревюто)  
 > **Дата на завършване**: 19 септември 2026 г.  
-> **Дизайн & Архитектурни референции**: [`design/02_qr_print_plate/DESIGN.md`](file:///d:/myProjects/smart_scan/design/02_qr_print_plate/DESIGN.md), [`AGENTS.md`](file:///d:/myProjects/smart_scan/AGENTS.md) (Секции 3, 4, 6, 7).  
-> **Свързани документи**: [`ROADMAP.md`](file:///d:/myProjects/smart_scan/ROADMAP.md) (Стъпка 8), [`docs/README.md`](file:///d:/myProjects/smart_scan/docs/README.md).
+> **Дизайн & Архитектурни референции**: [`design/02_qr_print_plate/DESIGN.md`](../../design/02_qr_print_plate/DESIGN.md), [`AGENTS.md`](../../AGENTS.md) (Секции 3, 4, 6, 7).  
+> **Свързани документи**: [`ROADMAP.md`](../../ROADMAP.md) (Стъпка 8), [`docs/README.md`](../README.md).
 
 ---
 
@@ -39,6 +39,8 @@
 - **Единен източник на истина** `lib/plaqueConfig.ts` (езици, знамена, формати, размери, чисти helper-и) — премахнато е дублирането между preview-то и PDF-а.
 - **Стилове и метрики на PDF-а** са изнесени в `lib/plaquePdfStyles.ts`; всички нови файлове са **под 300 реда** (спазва CodeRabbit политиката).
 - **Премахнат неизползван emoji ключ** `flag` от `lib/i18n/config.ts` (0 емоджита в кода).
+- **`SpaceEditor` декомпозиция (CodeRabbit одит)**: гост-линк банерът, Wi-Fi блокът и Danger зоната са изнесени в `components/space-editor/` (`SpaceGuestLinkBanner`, `WifiCredentialsBlock`, `SpaceDangerZone`), а полетата — в `SpaceCredentialsFields` + чистия модел `spaceFormModel.ts`. `SpaceEditor` е **211 реда** (от 567).
+- **Общ лимит за дължина на името** (`lib/plaqueName.ts`): `PLAQUE_NAME_MAX_LENGTH` е изчислен от метриките на **най-строгия формат (A6)** — 22 знака — и се налага както в `maxLength` на име-полетата, така и в `createSpaceAction` / `updateSpaceAction` (името никога не се съкращава и не се пренася на втори ред/страница).
 - **`PropertyCard.tsx` отклонение**: планът предвиждаше бутон и там, но компонентът е неизползван mock без реални `Space` данни; бутонът остава само в `SpaceEditor.tsx`.
 
 

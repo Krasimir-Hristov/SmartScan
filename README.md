@@ -203,6 +203,22 @@ npm run dev
 ```
 Фронтендът ще стартира на: `http://localhost:3000`.
 
+> **Проверки на качеството преди commit:**
+> ```bash
+> npm run lint
+> npm run typecheck   # next typegen + tsc --noEmit
+> npm run build
+> ```
+>
+> `npm run typecheck` първо регенерира Next.js route типовете (`.next/types/**`) и след това
+> пуска строгата TypeScript проверка. Без първата стъпка на чисто checkout (или след изтрит
+> `.next`) се появяват грешки от вида
+> `Cannot find module './routes.js'` в `.next/types/validator.ts`, защото `.next/types/**` и
+> `next-env.d.ts` са генерирани и не се съхраняват в git.
+>
+> Ако редакторът показва такива грешки след добавяне/изтриване на route:
+> `npm run typecheck` ➔ `Ctrl+Shift+P` ➔ **TypeScript: Restart TS Server**.
+
 ---
 
 ### 4. Тестване на готовото решение
@@ -243,7 +259,8 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="sbp_publishable_..."
 BACKEND_INTERNAL_URL="http://127.0.0.1:8000"
 
 # Каноничен публичен домейн (кодира се в QR кодовете на физическите табелки).
-# Ако липсва, се ползва валидираният request host.
+# ЗАДЪЛЖИТЕЛЕН в production — иначе табелката се маркира като неизползваема.
+# Само в development при липса се ползва валидираният request host.
 NEXT_PUBLIC_SITE_URL="https://smartscan.stay"
 
 # Споделена тайна с FastAPI бекенда — СЪЩАТА стойност като BACKEND_PROXY_SECRET

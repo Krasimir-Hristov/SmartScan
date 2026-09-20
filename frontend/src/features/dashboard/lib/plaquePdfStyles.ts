@@ -1,5 +1,11 @@
 import { Font, StyleSheet } from '@react-pdf/renderer';
 import type { PlaqueFormat, PlaqueTheme } from './plaqueConfig';
+import {
+  PLAQUE_A6_PAGE_PADDING_PT,
+  PLAQUE_TITLE_LETTER_SPACING_PT,
+  PLAQUE_TITLE_MAX_WIDTH_RATIO,
+  PLAQUE_TITLE_SIZE_PT,
+} from './plaqueName';
 
 let fontsRegistered = false;
 
@@ -62,9 +68,9 @@ export const PLAQUE_PDF_METRICS: Record<PlaqueFormat, PlaquePdfMetrics> = {
     screwSize: 11,
   },
   A6: {
-    pagePadding: 20,
+    pagePadding: PLAQUE_A6_PAGE_PADDING_PT,
     qrBoxSize: 112,
-    titleSize: 16,
+    titleSize: PLAQUE_TITLE_SIZE_PT,
     subtitleSize: 7.5,
     langTextSize: 7,
     langRowMargin: 2.5,
@@ -197,9 +203,9 @@ export const createPlaquePdfStyles = (
       fontSize: metrics.titleSize,
       fontWeight: 'bold',
       textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      letterSpacing: PLAQUE_TITLE_LETTER_SPACING_PT,
       marginBottom: 4,
-      maxWidth: '90%',
+      maxWidth: `${PLAQUE_TITLE_MAX_WIDTH_RATIO * 100}%`,
     },
     spaceSubtitle: {
       color: palette.textSecondary,

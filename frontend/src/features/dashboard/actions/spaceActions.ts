@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { generateSpaceSlug } from '../utils/slugUtils';
+import {
+  PLAQUE_NAME_MAX_LENGTH,
+  isPlaqueNameWithinLimit,
+} from '../lib/plaqueName';
 import type { Space, KnowledgeChunk, StaySettings } from '@/lib/types/databaseTypes';
 import type {
   CreateSpaceInput,
@@ -10,6 +14,12 @@ import type {
   CreateKnowledgeInput,
   ActionResult,
 } from '../types/dashboardTypes';
+
+/**
+ * Printed plaques render the space name on a single line (see `lib/plaqueName.ts`),
+ * so the limit is enforced before the record is written — not only in the UI.
+ */
+const NAME_TOO_LONG_ERROR = `Името на обекта не може да надвишава ${PLAQUE_NAME_MAX_LENGTH} знака — по-дългите имена не се побират на физическата табелка.`;
 
 /**
  * Creates a new space for the authenticated host.
@@ -31,6 +41,10 @@ export async function createSpaceAction(
     const trimmedName = input.name?.trim();
     if (!trimmedName) {
       return { success: false, error: 'Името на обекта е задължително.' };
+    }
+
+    if (!isPlaqueNameWithinLimit(trimmedName)) {
+      return { success: false, error: NAME_TOO_LONG_ERROR };
     }
 
     // Generate guaranteed-unique short public code (Airbnb / Booking style, e.g. 'v-8k92pm')
@@ -121,6 +135,10 @@ export async function updateSpaceAction(
     const trimmedName = input.name?.trim();
     if (!trimmedName) {
       return { success: false, error: 'Името на обекта е задължително.' };
+    }
+
+    if (!isPlaqueNameWithinLimit(trimmedName)) {
+      return { success: false, error: NAME_TOO_LONG_ERROR };
     }
 
     const { data: existingSpace, error: fetchError } = await supabase

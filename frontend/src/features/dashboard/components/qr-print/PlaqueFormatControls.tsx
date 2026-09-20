@@ -64,9 +64,12 @@ export const PlaqueFormatControls: React.FC<PlaqueFormatControlsProps> = ({
           ))}
         </div>
 
-        <p className='text-[11px] text-zinc-400 mt-1'>
-          {t('formatA4Description')}
-        </p>
+        {/* The A4 note is only meaningful while A4 is selected. */}
+        {format === 'A4' && (
+          <p className='text-[11px] text-zinc-400 mt-1'>
+            {t('formatA4Description')}
+          </p>
+        )}
       </div>
 
       {/* Theme / paper style */}

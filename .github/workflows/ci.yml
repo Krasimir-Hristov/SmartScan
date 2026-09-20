@@ -6,10 +6,20 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege: CI only reads the repository.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref instead of burning minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   frontend-ci:
     name: Frontend Quality & Build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: frontend
@@ -31,8 +41,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: TypeScript Strict Type Check
-        run: npx tsc --noEmit
+      - name: Next.js Route Types & Strict Type Check
+        run: npm run typecheck
 
       - name: Next.js Production Build Test
         run: npm run build
@@ -43,6 +53,7 @@ jobs:
   backend-ci:
     name: Backend Lint & Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend

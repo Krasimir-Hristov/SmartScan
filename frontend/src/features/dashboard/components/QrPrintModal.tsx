@@ -24,7 +24,10 @@ export interface QrPrintModalProps {
   onClose: () => void;
   /** Only the fields that may ever reach the printed plaque. */
   space: Pick<Space, 'name' | 'slug'>;
-  /** Canonical public origin resolved on the server (falls back to the browser origin). */
+  /**
+   * Canonical public origin resolved on the server. The browser origin is only
+   * accepted as a development fallback — never for a printed QR code.
+   */
   canonicalOrigin?: string;
 }
 
@@ -52,7 +55,11 @@ export const QrPrintModal: React.FC<QrPrintModalProps> = ({
     getClientOrigin,
     getServerOrigin,
   );
-  const origin = canonicalOrigin || windowOrigin;
+  // A printed QR code must never encode an unverified origin: the browser
+  // origin is only acceptable while developing locally, where the server has no
+  // canonical domain to resolve.
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const origin = canonicalOrigin || (isDevelopment ? windowOrigin : '');
   const guestUrl = buildGuestUrl(origin, space.slug);
 
   const handleDownloadQr = useCallback(async () => {

@@ -6,6 +6,7 @@ import { X, Sparkles, Home, MapPin, Wifi, Phone, ShieldAlert, KeyRound, Loader2 
 import type { Space } from '@/lib/types/databaseTypes';
 import { createSpaceAction } from '../actions/spaceActions';
 import { QuietHoursControl } from './QuietHoursControl';
+import { PLAQUE_NAME_MAX_LENGTH } from '../lib/plaqueName';
 
 export interface SpaceCreateModalProps {
   isOpen: boolean;
@@ -185,6 +186,7 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
               id="modal-name"
               type="text"
               required
+              maxLength={PLAQUE_NAME_MAX_LENGTH}
               placeholder={t('stepNamePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}

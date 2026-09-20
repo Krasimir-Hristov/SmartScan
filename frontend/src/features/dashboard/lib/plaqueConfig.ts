@@ -3,9 +3,16 @@ import { locales, type LocaleCode } from '@/lib/i18n/config';
 export type PlaqueFormat = 'A4' | 'A5' | 'A6';
 export type PlaqueTheme = 'light' | 'dark';
 
+/**
+ * Every country code that ships with a vector flag. Derived from the locale
+ * table, so a language without a matching flag becomes a compile-time error
+ * instead of a silently empty flag in the printed PDF.
+ */
+export type PlaqueCountryCode = (typeof locales)[number]['countryCode'];
+
 export interface PlaqueLanguageCallout {
   code: LocaleCode;
-  countryCode: string;
+  countryCode: PlaqueCountryCode;
   langName: string;
   text: string;
 }
@@ -78,11 +85,17 @@ const PLAQUE_LANGUAGE_ORDER: readonly LocaleCode[] = [
   'fr',
 ];
 
+/** Fallback used only if a UI locale ever loses its flag mapping. */
+const FALLBACK_COUNTRY_CODE: PlaqueCountryCode = 'gb';
+
+const resolveCountryCode = (code: LocaleCode): PlaqueCountryCode =>
+  locales.find((locale) => locale.code === code)?.countryCode ??
+  FALLBACK_COUNTRY_CODE;
+
 export const PLAQUE_LANGUAGES: readonly PlaqueLanguageCallout[] =
   PLAQUE_LANGUAGE_ORDER.map((code) => ({
     code,
-    countryCode:
-      locales.find((locale) => locale.code === code)?.countryCode ?? code,
+    countryCode: resolveCountryCode(code),
     langName: code.toUpperCase(),
     text: CALLOUT_TEXTS[code],
   }));
@@ -162,11 +175,54 @@ export const sanitizeFileBaseName = (
   return clean || fallback;
 };
 
+/** Hostnames that are never publicly reachable (loopback & LAN names). */
+const NON_PUBLIC_HOSTNAMES = new Set([
+  'localhost',
+  '127.0.0.1',
+  '0.0.0.0',
+  '[::1]',
+  '::1',
+]);
+
+/** Hostname suffixes that identify local domains and preview deployments. */
+const NON_PUBLIC_HOST_SUFFIXES = [
+  '.localhost',
+  '.local',
+  '.test',
+  '.vercel.app',
+  '.netlify.app',
+];
+
+/**
+ * Extracts the hostname from a full origin (`https://host:port`) or from a bare
+ * `host:port` string. Returns `null` when the value cannot be parsed.
+ */
+const parseHostname = (value: string): string | null => {
+  for (const candidate of [value, `https://${value}`]) {
+    try {
+      const { hostname } = new URL(candidate);
+      if (hostname) return hostname.toLowerCase().replace(/\.$/, '');
+    } catch {
+      // Try the next shape (bare host vs. absolute URL)
+    }
+  }
+
+  return null;
+};
+
 /**
  * True for hostnames that must never end up inside a printed QR code
- * (localhost, LAN names, Vercel preview deployments, ...).
+ * (localhost, LAN names, Vercel/Netlify preview deployments, ...).
+ *
+ * Only the hostname is inspected and the preview indicators are anchored to its
+ * end, so an unrelated host such as `api.test.example.com` never matches.
  */
-export const isLocalOrPreviewOrigin = (origin: string): boolean =>
-  /(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|\.local|\.test|\.vercel\.app|\.netlify\.app)/i.test(
-    origin || '',
+export const isLocalOrPreviewOrigin = (origin: string): boolean => {
+  const hostname = parseHostname((origin || '').trim());
+  if (!hostname) return false;
+
+  return (
+    NON_PUBLIC_HOSTNAMES.has(hostname) ||
+    NON_PUBLIC_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix))
   );
+};

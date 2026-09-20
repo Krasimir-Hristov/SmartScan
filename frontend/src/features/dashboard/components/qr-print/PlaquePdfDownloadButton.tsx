@@ -57,7 +57,9 @@ export const PlaquePdfDownloadButton: React.FC<
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(downloadUrl);
+      // Safari resolves the blob asynchronously, so revoking it on the same
+      // macrotask can cancel the download before it starts.
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
 
       // 4. Success feedback
       setIsSuccess(true);

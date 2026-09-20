@@ -1,5 +1,6 @@
 import React from 'react';
 import { Circle, Line, Polygon, Rect, Svg } from '@react-pdf/renderer';
+import type { PlaqueCountryCode } from '../../lib/plaqueConfig';
 import { FLAG_ASPECT_RATIO } from '../../lib/plaquePdfStyles';
 
 const VIEW_BOX = '0 0 60 45';
@@ -7,7 +8,7 @@ const FLAG_WIDTH = 60;
 const FLAG_HEIGHT = 45;
 
 export interface PlaquePdfFlagProps {
-  countryCode: string;
+  countryCode: PlaqueCountryCode;
   width: number;
 }
 
@@ -136,50 +137,64 @@ const turkishFlag = (): React.ReactElement[] => [
   />,
 ];
 
-const getFlagShapes = (countryCode: string): React.ReactElement[] => {
-  switch (countryCode) {
-    case 'gb':
-      return unionJack();
-    case 'bg':
-      return horizontalTricolor('#FFFFFF', '#00966E', '#D62612');
-    case 'de':
-      return horizontalTricolor('#000000', '#DD0000', '#FFCE00');
-    case 'ro':
-      return verticalTricolor('#002B7F', '#FCD116', '#CE1126');
-    case 'gr':
-      return greekStripes();
-    case 'ru':
-      return horizontalTricolor('#FFFFFF', '#0039A6', '#D52B1E');
-    case 'tr':
-      return turkishFlag();
-    case 'es':
-      return [
-        <Rect key='top' x={0} y={0} width={60} height={11.25} fill='#AA151B' />,
-        <Rect
-          key='middle'
-          x={0}
-          y={11.25}
-          width={60}
-          height={22.5}
-          fill='#F1BF00'
-        />,
-        <Rect
-          key='bottom'
-          x={0}
-          y={33.75}
-          width={60}
-          height={11.25}
-          fill='#AA151B'
-        />,
-      ];
-    case 'it':
-      return verticalTricolor('#008C45', '#F4F5F0', '#CD212A');
-    case 'fr':
-      return verticalTricolor('#0055A4', '#FFFFFF', '#EF4135');
-    default:
-      return [];
-  }
+/** Visible neutral stand-in: an unmapped code must never render an empty SVG. */
+const unmappedFlag = (): React.ReactElement[] => [
+  <Rect
+    key='unmapped-field'
+    x={0}
+    y={0}
+    width={FLAG_WIDTH}
+    height={FLAG_HEIGHT}
+    fill='#E4E4E7'
+  />,
+  <Rect
+    key='unmapped-mark'
+    x={0}
+    y={FLAG_HEIGHT / 2 - 2.5}
+    width={FLAG_WIDTH}
+    height={5}
+    fill='#A1A1AA'
+  />,
+];
+
+/**
+ * One renderer per supported country code. The map is a total `Record`, so a new
+ * plaque language without its vector flag fails at compile time instead of
+ * silently printing an empty flag.
+ */
+const FLAG_RENDERERS: Record<PlaqueCountryCode, () => React.ReactElement[]> = {
+  gb: unionJack,
+  bg: () => horizontalTricolor('#FFFFFF', '#00966E', '#D62612'),
+  de: () => horizontalTricolor('#000000', '#DD0000', '#FFCE00'),
+  ro: () => verticalTricolor('#002B7F', '#FCD116', '#CE1126'),
+  gr: greekStripes,
+  ru: () => horizontalTricolor('#FFFFFF', '#0039A6', '#D52B1E'),
+  tr: turkishFlag,
+  es: () => [
+    <Rect key='top' x={0} y={0} width={60} height={11.25} fill='#AA151B' />,
+    <Rect
+      key='middle'
+      x={0}
+      y={11.25}
+      width={60}
+      height={22.5}
+      fill='#F1BF00'
+    />,
+    <Rect
+      key='bottom'
+      x={0}
+      y={33.75}
+      width={60}
+      height={11.25}
+      fill='#AA151B'
+    />,
+  ],
+  it: () => verticalTricolor('#008C45', '#F4F5F0', '#CD212A'),
+  fr: () => verticalTricolor('#0055A4', '#FFFFFF', '#EF4135'),
 };
+
+const getFlagShapes = (countryCode: PlaqueCountryCode): React.ReactElement[] =>
+  FLAG_RENDERERS[countryCode]?.() ?? unmappedFlag();
 
 /** Pure vector flags (no emoji, no external assets) for the printed PDF. */
 export const PlaquePdfFlag: React.FC<PlaquePdfFlagProps> = ({

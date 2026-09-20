@@ -12,14 +12,34 @@ export const metadata: Metadata = {
 const SAFE_HOST_PATTERN = /^[a-z0-9.-]+(:\d{1,5})?$/i;
 
 /**
+ * Normalises `NEXT_PUBLIC_SITE_URL` to its bare origin and rejects anything
+ * that is not an absolute http(s) URL, so a malformed value (unsupported
+ * protocol, path component, typo) can never leak into a printed QR code.
+ */
+const parseConfiguredOrigin = (configured: string | undefined): string => {
+  const value = (configured || '').trim();
+  if (!value) return '';
+
+  try {
+    const parsed = new URL(value);
+    const isHttp = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    return isHttp ? parsed.origin : '';
+  } catch {
+    return '';
+  }
+};
+
+/**
  * Resolves the canonical public origin that will be encoded inside printed QR
- * codes: the configured production URL first, then the validated request host.
+ * codes. Production must pin the domain through `NEXT_PUBLIC_SITE_URL`: request
+ * headers are client-controllable, so the validated request host is treated as
+ * a development convenience only.
  */
 const resolveSiteOrigin = async (): Promise<string> => {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL || '')
-    .trim()
-    .replace(/\/+$/, '');
+  const configured = parseConfiguredOrigin(process.env.NEXT_PUBLIC_SITE_URL);
   if (configured) return configured;
+
+  if (process.env.NODE_ENV === 'production') return '';
 
   const requestHeaders = await headers();
   const host = (
