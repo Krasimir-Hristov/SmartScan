@@ -17,12 +17,15 @@ export interface DashboardPageProps {
   user: DashboardUser;
   initialSpaces?: Space[];
   initialKnowledgeChunks?: KnowledgeChunk[];
+  /** Canonical public origin (env or request host) used for guest links & QR codes. */
+  siteOrigin?: string;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   user,
   initialSpaces = [],
   initialKnowledgeChunks = [],
+  siteOrigin = '',
 }) => {
   const t = useTranslations('dashboard');
   const [spaces, setSpaces] = useState<Space[]>(initialSpaces);
@@ -121,6 +124,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   space={selectedSpace}
                   onSpaceUpdated={handleSpaceUpdated}
                   onSpaceDeleted={handleSpaceDeleted}
+                  canonicalOrigin={siteOrigin}
                 />
               </div>
 

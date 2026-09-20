@@ -242,6 +242,10 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="sbp_publishable_..."
 # Internal Backend URL (За No-Middleware проксито proxy.ts)
 BACKEND_INTERNAL_URL="http://127.0.0.1:8000"
 
+# Каноничен публичен домейн (кодира се в QR кодовете на физическите табелки).
+# Ако липсва, се ползва валидираният request host.
+NEXT_PUBLIC_SITE_URL="https://smartscan.stay"
+
 # Споделена тайна с FastAPI бекенда — СЪЩАТА стойност като BACKEND_PROXY_SECRET
 # в backend/.env (server-only, никога с NEXT_PUBLIC_ префикс).
 BACKEND_PROXY_SECRET="генерирай с: openssl rand -hex 32"

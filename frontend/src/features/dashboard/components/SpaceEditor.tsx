@@ -17,17 +17,22 @@ import {
   Loader2,
   Sparkles,
   Trash2,
+  Printer,
 } from 'lucide-react';
 import type { Space, StaySettings } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import { updateSpaceAction } from '../actions/spaceActions';
 import { QuietHoursControl } from './QuietHoursControl';
 import { DeleteSpaceModal } from './DeleteSpaceModal';
+import { QrPrintModal } from './QrPrintModal';
+import { buildGuestUrl } from '../lib/plaqueConfig';
 
 export interface SpaceEditorProps {
   space: Space;
   onSpaceUpdated: (updatedSpace: Space) => void;
   onSpaceDeleted?: (spaceId: string) => void;
+  /** Canonical public origin used for guest links and printed QR codes. */
+  canonicalOrigin?: string;
 }
 
 const CHECKIN_OPTIONS = [
@@ -48,6 +53,7 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
   space,
   onSpaceUpdated,
   onSpaceDeleted,
+  canonicalOrigin = '',
 }) => {
   const t = useTranslations('dashboard');
   const settings = (space.stay_settings || {}) as StaySettings;
@@ -97,6 +103,7 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -106,10 +113,9 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
 
   const handleCopyGuestLink = async () => {
     try {
-      const fullUrl =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/stay/${space.slug}`
-          : `/stay/${space.slug}`;
+      const browserOrigin =
+        typeof window !== 'undefined' ? window.location.origin : '';
+      const fullUrl = buildGuestUrl(canonicalOrigin || browserOrigin, space.slug);
       await navigator.clipboard.writeText(fullUrl);
       setCopiedLink(true);
       triggerHaptic(50);
@@ -218,6 +224,19 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
                 <span>{t('copyLink')}</span>
               </>
             )}
+          </button>
+
+          <button
+            type='button'
+            onClick={() => {
+              setIsPrintModalOpen(true);
+              triggerHaptic(50);
+            }}
+            aria-label={t('printPlaque')}
+            className='inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer'
+          >
+            <Printer className='w-3.5 h-3.5 text-emerald-400' />
+            <span>{t('printPlaque')}</span>
           </button>
 
           <Link
@@ -531,6 +550,16 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
           spaceName={space.name}
           onClose={() => setIsDeleteModalOpen(false)}
           onSpaceDeleted={onSpaceDeleted}
+        />
+      )}
+
+      {/* Interactive Physical QR Print Plate Modal */}
+      {isPrintModalOpen && (
+        <QrPrintModal
+          isOpen={isPrintModalOpen}
+          space={space}
+          canonicalOrigin={canonicalOrigin}
+          onClose={() => setIsPrintModalOpen(false)}
         />
       )}
     </div>
