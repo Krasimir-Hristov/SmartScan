@@ -29,13 +29,23 @@ export async function GET(request: Request) {
     }
   }
 
+  let safeNext = '/dashboard';
+  try {
+    const parsedNext = new URL(next, redirectOrigin);
+    if (parsedNext.origin === redirectOrigin && parsedNext.pathname.startsWith('/')) {
+      safeNext = parsedNext.pathname + parsedNext.search + parsedNext.hash;
+    }
+  } catch {
+    safeNext = '/dashboard';
+  }
+
   if (code) {
     try {
       const supabase = await createClient();
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (!error) {
-        return NextResponse.redirect(`${redirectOrigin}${next}`);
+        return NextResponse.redirect(`${redirectOrigin}${safeNext}`);
       }
     } catch {
       return NextResponse.redirect(`${redirectOrigin}/?error=auth-failed`);

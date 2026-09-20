@@ -79,6 +79,7 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
         triggerHaptic(50);
         onSpaceCreated(result.data);
         resetForm();
+        onClose();
       } else {
         setErrorMessage(result.error || t('errorGeneral'));
       }
@@ -92,13 +93,18 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6'>
       <div
-        className='absolute inset-0 bg-zinc-950/80 backdrop-blur-sm'
+        className='absolute inset-0 bg-zinc-950/80 backdrop-blur-sm cursor-pointer'
         onClick={handleClose}
       />
-      <div className='relative w-full max-w-2xl max-h-[90vh] bg-[#121216] border border-white/10 rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar flex flex-col'>
+      <div
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='create-space-title'
+        className='relative w-full max-w-2xl max-h-[90vh] bg-[#121216] border border-white/10 rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar flex flex-col'
+      >
         <div className='sticky top-0 z-10 flex items-center justify-between px-6 py-5 bg-[#121216]/95 backdrop-blur-md border-b border-white/5'>
           <div className='flex flex-col gap-1'>
-            <h2 className='text-xl font-display font-bold text-white flex items-center gap-2'>
+            <h2 id='create-space-title' className='text-xl font-display font-bold text-white flex items-center gap-2'>
               <Sparkles className='w-5 h-5 text-emerald-400' />
               <span>{t('createSpace')}</span>
             </h2>

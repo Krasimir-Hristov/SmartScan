@@ -25,7 +25,7 @@ export interface SpaceFormValues {
 export type SpaceFormField = keyof SpaceFormValues;
 
 /** Builds the initial form state from a space row (pure, no side effects). */
-export const createSpaceFormValues = (space: Space): SpaceFormValues => {
+export function createSpaceFormValues(space: Space): SpaceFormValues {
   const settings = (space.stay_settings || {}) as StaySettings;
 
   return {
@@ -50,66 +50,70 @@ export const createSpaceFormValues = (space: Space): SpaceFormValues => {
     checkOutTime: settings.checkOutTime || '11:00',
     keyboxCode: settings.keyboxCode || '',
   };
-};
+}
 
 /** Maps the form state onto the create action payload (pure). */
-export const toCreateSpaceInput = (
-  values: SpaceFormValues,
-): CreateSpaceInput => ({
-  name: values.name.trim(),
-  taxiAddress: values.taxiAddress.trim() || undefined,
-  wifiSsid: values.wifiSsid.trim() || undefined,
-  wifiPassword: values.wifiPassword.trim() || undefined,
-  taxiPhone: values.taxiPhone.trim() || undefined,
-  whatsappPhone: values.whatsappPhone.trim() || undefined,
-  emergencyNumber: values.emergencyNumber.trim() || '112',
-  nightSilenceStart: values.hasNightSilence ? values.nightSilenceStart : '',
-  nightSilenceEnd: values.hasNightSilence ? values.nightSilenceEnd : '',
-  afternoonRestStart: values.hasAfternoonRest ? values.afternoonRestStart : '',
-  afternoonRestEnd: values.hasAfternoonRest ? values.afternoonRestEnd : '',
-  checkInTime: values.checkInTime || '15:00',
-  checkOutTime: values.checkOutTime || '11:00',
-  keyboxCode: values.keyboxCode.trim() || undefined,
-});
+export function toCreateSpaceInput(values: SpaceFormValues): CreateSpaceInput {
+  return {
+    name: values.name.trim(),
+    taxiAddress: values.taxiAddress.trim() || undefined,
+    wifiSsid: values.wifiSsid.trim() || undefined,
+    wifiPassword: values.wifiPassword.trim() || undefined,
+    taxiPhone: values.taxiPhone.trim() || undefined,
+    whatsappPhone: values.whatsappPhone.trim() || undefined,
+    emergencyNumber: values.emergencyNumber.trim() || '112',
+    nightSilenceStart: values.hasNightSilence ? values.nightSilenceStart : '',
+    nightSilenceEnd: values.hasNightSilence ? values.nightSilenceEnd : '',
+    afternoonRestStart: values.hasAfternoonRest ? values.afternoonRestStart : '',
+    afternoonRestEnd: values.hasAfternoonRest ? values.afternoonRestEnd : '',
+    checkInTime: values.checkInTime || '15:00',
+    checkOutTime: values.checkOutTime || '11:00',
+    keyboxCode: values.keyboxCode.trim() || undefined,
+  };
+}
 
 /** Maps the form state onto the update action payload (pure). */
-export const toUpdateSpaceInput = (
+export function toUpdateSpaceInput(
   spaceId: string,
   values: SpaceFormValues,
-): UpdateSpaceInput => ({
-  id: spaceId,
-  name: values.name.trim(),
-  taxiAddress: values.taxiAddress.trim() || undefined,
-  wifiSsid: values.wifiSsid.trim() || undefined,
-  wifiPassword: values.wifiPassword.trim() || undefined,
-  taxiPhone: values.taxiPhone.trim() || undefined,
-  whatsappPhone: values.whatsappPhone.trim() || undefined,
-  emergencyNumber: values.emergencyNumber.trim() || '112',
-  nightSilenceStart: values.hasNightSilence ? values.nightSilenceStart : '',
-  nightSilenceEnd: values.hasNightSilence ? values.nightSilenceEnd : '',
-  afternoonRestStart: values.hasAfternoonRest ? values.afternoonRestStart : '',
-  afternoonRestEnd: values.hasAfternoonRest ? values.afternoonRestEnd : '',
-  checkInTime: values.checkInTime || '15:00',
-  checkOutTime: values.checkOutTime || '11:00',
-  keyboxCode: values.keyboxCode.trim() || undefined,
-});
+): UpdateSpaceInput {
+  return {
+    id: spaceId,
+    name: values.name.trim(),
+    taxiAddress: values.taxiAddress.trim() || undefined,
+    wifiSsid: values.wifiSsid.trim() || undefined,
+    wifiPassword: values.wifiPassword.trim() || undefined,
+    taxiPhone: values.taxiPhone.trim() || undefined,
+    whatsappPhone: values.whatsappPhone.trim() || undefined,
+    emergencyNumber: values.emergencyNumber.trim() || '112',
+    nightSilenceStart: values.hasNightSilence ? values.nightSilenceStart : '',
+    nightSilenceEnd: values.hasNightSilence ? values.nightSilenceEnd : '',
+    afternoonRestStart: values.hasAfternoonRest ? values.afternoonRestStart : '',
+    afternoonRestEnd: values.hasAfternoonRest ? values.afternoonRestEnd : '',
+    checkInTime: values.checkInTime || '15:00',
+    checkOutTime: values.checkOutTime || '11:00',
+    keyboxCode: values.keyboxCode.trim() || undefined,
+  };
+}
 
 /** Builds an empty form state for creating a new space. */
-export const createEmptySpaceFormValues = (): SpaceFormValues => ({
-  name: '',
-  taxiAddress: '',
-  wifiSsid: '',
-  wifiPassword: '',
-  taxiPhone: '',
-  whatsappPhone: '',
-  emergencyNumber: '112',
-  hasNightSilence: true,
-  nightSilenceStart: '23:00',
-  nightSilenceEnd: '08:00',
-  hasAfternoonRest: false,
-  afternoonRestStart: '14:30',
-  afternoonRestEnd: '17:30',
-  checkInTime: '15:00',
-  checkOutTime: '11:00',
-  keyboxCode: '',
-});
+export function createEmptySpaceFormValues(): SpaceFormValues {
+  return {
+    name: '',
+    taxiAddress: '',
+    wifiSsid: '',
+    wifiPassword: '',
+    taxiPhone: '',
+    whatsappPhone: '',
+    emergencyNumber: '112',
+    hasNightSilence: true,
+    nightSilenceStart: '23:00',
+    nightSilenceEnd: '08:00',
+    hasAfternoonRest: false,
+    afternoonRestStart: '14:30',
+    afternoonRestEnd: '17:30',
+    checkInTime: '15:00',
+    checkOutTime: '11:00',
+    keyboxCode: '',
+  };
+}
