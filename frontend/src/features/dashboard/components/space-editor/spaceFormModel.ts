@@ -1,5 +1,5 @@
 import type { Space, StaySettings } from '@/lib/types/databaseTypes';
-import type { UpdateSpaceInput } from '../../types/dashboardTypes';
+import type { CreateSpaceInput, UpdateSpaceInput } from '../../types/dashboardTypes';
 
 /** Editable values of the space credentials form. */
 export interface SpaceFormValues {
@@ -52,6 +52,26 @@ export const createSpaceFormValues = (space: Space): SpaceFormValues => {
   };
 };
 
+/** Maps the form state onto the create action payload (pure). */
+export const toCreateSpaceInput = (
+  values: SpaceFormValues,
+): CreateSpaceInput => ({
+  name: values.name.trim(),
+  taxiAddress: values.taxiAddress.trim() || undefined,
+  wifiSsid: values.wifiSsid.trim() || undefined,
+  wifiPassword: values.wifiPassword.trim() || undefined,
+  taxiPhone: values.taxiPhone.trim() || undefined,
+  whatsappPhone: values.whatsappPhone.trim() || undefined,
+  emergencyNumber: values.emergencyNumber.trim() || '112',
+  nightSilenceStart: values.hasNightSilence ? values.nightSilenceStart : '',
+  nightSilenceEnd: values.hasNightSilence ? values.nightSilenceEnd : '',
+  afternoonRestStart: values.hasAfternoonRest ? values.afternoonRestStart : '',
+  afternoonRestEnd: values.hasAfternoonRest ? values.afternoonRestEnd : '',
+  checkInTime: values.checkInTime || '15:00',
+  checkOutTime: values.checkOutTime || '11:00',
+  keyboxCode: values.keyboxCode.trim() || undefined,
+});
+
 /** Maps the form state onto the update action payload (pure). */
 export const toUpdateSpaceInput = (
   spaceId: string,
@@ -72,4 +92,24 @@ export const toUpdateSpaceInput = (
   checkInTime: values.checkInTime || '15:00',
   checkOutTime: values.checkOutTime || '11:00',
   keyboxCode: values.keyboxCode.trim() || undefined,
+});
+
+/** Builds an empty form state for creating a new space. */
+export const createEmptySpaceFormValues = (): SpaceFormValues => ({
+  name: '',
+  taxiAddress: '',
+  wifiSsid: '',
+  wifiPassword: '',
+  taxiPhone: '',
+  whatsappPhone: '',
+  emergencyNumber: '112',
+  hasNightSilence: true,
+  nightSilenceStart: '23:00',
+  nightSilenceEnd: '08:00',
+  hasAfternoonRest: false,
+  afternoonRestStart: '14:30',
+  afternoonRestEnd: '17:30',
+  checkInTime: '15:00',
+  checkOutTime: '11:00',
+  keyboxCode: '',
 });

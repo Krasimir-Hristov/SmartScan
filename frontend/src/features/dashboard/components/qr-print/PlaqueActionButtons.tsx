@@ -36,6 +36,7 @@ export interface PlaqueActionButtonsProps {
   theme: PlaqueTheme;
   isDownloadingQr: boolean;
   hasQrError: boolean;
+  isDisabled?: boolean;
   onPrint: () => void;
   onDownloadQr: () => void;
   generateQrPayload: () => Promise<PlaqueQrPayload>;
@@ -48,6 +49,7 @@ export const PlaqueActionButtons: React.FC<PlaqueActionButtonsProps> = ({
   theme,
   isDownloadingQr,
   hasQrError,
+  isDisabled = false,
   onPrint,
   onDownloadQr,
   generateQrPayload,
@@ -59,8 +61,9 @@ export const PlaqueActionButtons: React.FC<PlaqueActionButtonsProps> = ({
       <button
         type='button'
         onClick={onPrint}
+        disabled={isDisabled}
         aria-label={t('directPrint')}
-        className='w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 cursor-pointer'
+        className='w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50'
       >
         <Printer className='w-4 h-4' />
         <span>{t('directPrint')}</span>
@@ -69,7 +72,7 @@ export const PlaqueActionButtons: React.FC<PlaqueActionButtonsProps> = ({
       <button
         type='button'
         onClick={onDownloadQr}
-        disabled={isDownloadingQr}
+        disabled={isDownloadingQr || isDisabled}
         aria-label={t('downloadQr')}
         className='w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50'
       >
@@ -92,6 +95,7 @@ export const PlaqueActionButtons: React.FC<PlaqueActionButtonsProps> = ({
         slug={slug}
         format={format}
         theme={theme}
+        isDisabled={isDisabled}
         generateQrPayload={generateQrPayload}
       />
     </div>

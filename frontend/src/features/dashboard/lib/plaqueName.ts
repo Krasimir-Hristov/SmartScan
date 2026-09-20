@@ -30,15 +30,15 @@ export const PLAQUE_TITLE_LETTER_SPACING_PT = 0.5;
 /** Share of the content width the title may occupy (`maxWidth: '90%'`). */
 export const PLAQUE_TITLE_MAX_WIDTH_RATIO = 0.9;
 
-/** Mean advance width (in em) of Roboto Bold uppercase glyphs. */
-const ROBOTO_BOLD_UPPERCASE_MEAN_ADVANCE_EM = 0.6246;
+/** Worst-case advance width (in em) of Roboto Bold uppercase glyphs (e.g. 'W', 'Щ'). */
+const ROBOTO_BOLD_UPPERCASE_WORST_ADVANCE_EM = 0.892;
 
 const PLAQUE_TITLE_AVAILABLE_WIDTH_PT =
   (PLAQUE_A6_PAGE_WIDTH_PT - 2 * PLAQUE_A6_PAGE_PADDING_PT) *
   PLAQUE_TITLE_MAX_WIDTH_RATIO;
 
 const PLAQUE_TITLE_CHARACTER_WIDTH_PT =
-  PLAQUE_TITLE_SIZE_PT * ROBOTO_BOLD_UPPERCASE_MEAN_ADVANCE_EM +
+  PLAQUE_TITLE_SIZE_PT * ROBOTO_BOLD_UPPERCASE_WORST_ADVANCE_EM +
   PLAQUE_TITLE_LETTER_SPACING_PT;
 
 /** Maximum number of characters that fits on one A6 title line. */

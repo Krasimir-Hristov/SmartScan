@@ -226,3 +226,27 @@ export const isLocalOrPreviewOrigin = (origin: string): boolean => {
     NON_PUBLIC_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix))
   );
 };
+
+/**
+ * Ensures the origin is a valid HTTP(S) URL. Falls back to window origin only
+ * in development if the canonical origin is missing. Returns null if invalid,
+ * effectively preventing printed QRs or copied links with invalid origins.
+ */
+export const getValidGuestLinkOrigin = (
+  canonicalOrigin: string,
+  windowOrigin: string,
+  isDevelopment: boolean,
+): string | null => {
+  const originToTest = canonicalOrigin || (isDevelopment ? windowOrigin : '');
+  if (!originToTest) return null;
+
+  try {
+    const parsed = new URL(originToTest);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.origin;
+    }
+  } catch {
+    // Invalid URL
+  }
+  return null;
+};

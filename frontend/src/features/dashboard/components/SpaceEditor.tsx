@@ -6,7 +6,7 @@ import { Check, Loader2, Save } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import { updateSpaceAction } from '../actions/spaceActions';
-import { buildGuestUrl } from '../lib/plaqueConfig';
+import { buildGuestUrl, getValidGuestLinkOrigin } from '../lib/plaqueConfig';
 import { DeleteSpaceModal } from './DeleteSpaceModal';
 import { QrPrintModal } from './QrPrintModal';
 import { SpaceCredentialsFields } from './space-editor/SpaceCredentialsFields';
@@ -59,10 +59,19 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
     try {
       const browserOrigin =
         typeof window !== 'undefined' ? window.location.origin : '';
-      const fullUrl = buildGuestUrl(
-        canonicalOrigin || browserOrigin,
-        space.slug,
+      const validOrigin = getValidGuestLinkOrigin(
+        canonicalOrigin,
+        browserOrigin,
+        process.env.NODE_ENV !== 'production',
       );
+      if (!validOrigin) {
+        setStatusMessage({
+          type: 'error',
+          text: t('errorServer'),
+        });
+        return;
+      }
+      const fullUrl = buildGuestUrl(validOrigin, space.slug);
       await navigator.clipboard.writeText(fullUrl);
       setCopiedLink(true);
       triggerHaptic(50);

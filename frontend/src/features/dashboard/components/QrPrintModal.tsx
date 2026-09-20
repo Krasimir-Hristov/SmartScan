@@ -15,6 +15,7 @@ import {
   DEFAULT_PLAQUE_FORMAT,
   DEFAULT_PLAQUE_THEME,
   buildGuestUrl,
+  getValidGuestLinkOrigin,
   type PlaqueFormat,
   type PlaqueTheme,
 } from '../lib/plaqueConfig';
@@ -59,8 +60,12 @@ export const QrPrintModal: React.FC<QrPrintModalProps> = ({
   // origin is only acceptable while developing locally, where the server has no
   // canonical domain to resolve.
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  const origin = canonicalOrigin || (isDevelopment ? windowOrigin : '');
-  const guestUrl = buildGuestUrl(origin, space.slug);
+  const validOrigin = getValidGuestLinkOrigin(
+    canonicalOrigin,
+    windowOrigin,
+    isDevelopment,
+  );
+  const guestUrl = validOrigin ? buildGuestUrl(validOrigin, space.slug) : '';
 
   const handleDownloadQr = useCallback(async () => {
     triggerHaptic(50);
@@ -98,7 +103,7 @@ export const QrPrintModal: React.FC<QrPrintModalProps> = ({
             onThemeChange={setTheme}
           />
 
-          <PlaqueGuestLinkField guestUrl={guestUrl} origin={origin} />
+          <PlaqueGuestLinkField guestUrl={guestUrl} origin={validOrigin || ''} />
 
           <PlaqueActionButtons
             spaceName={space.name}
@@ -107,6 +112,7 @@ export const QrPrintModal: React.FC<QrPrintModalProps> = ({
             theme={theme}
             isDownloadingQr={isDownloading}
             hasQrError={hasQrError}
+            isDisabled={!validOrigin}
             onPrint={handlePrint}
             onDownloadQr={handleDownloadQr}
             generateQrPayload={generateQrPayload}
