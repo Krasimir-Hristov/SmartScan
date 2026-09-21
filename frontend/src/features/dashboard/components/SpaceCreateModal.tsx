@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { X, Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
@@ -13,6 +13,7 @@ import {
   type SpaceFormField,
   type SpaceFormValues,
 } from './space-editor/spaceFormModel';
+import { useModalFocus } from '../hooks/useModalFocus';
 
 export interface SpaceCreateModalProps {
   isOpen: boolean;
@@ -30,6 +31,21 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [values, setValues] = useState<SpaceFormValues>(createEmptySpaceFormValues);
   const [copiedWifi, setCopiedWifi] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useModalFocus(isOpen, dialogRef);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -97,10 +113,12 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
         onClick={handleClose}
       />
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role='dialog'
         aria-modal='true'
         aria-labelledby='create-space-title'
-        className='relative w-full max-w-2xl max-h-[90vh] bg-[#121216] border border-white/10 rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar flex flex-col'
+        className='relative w-full max-w-2xl max-h-[90vh] bg-[#121216] border border-white/10 rounded-3xl shadow-2xl overflow-y-auto custom-scrollbar flex flex-col focus:outline-none'
       >
         <div className='sticky top-0 z-10 flex items-center justify-between px-6 py-5 bg-[#121216]/95 backdrop-blur-md border-b border-white/5'>
           <div className='flex flex-col gap-1'>
