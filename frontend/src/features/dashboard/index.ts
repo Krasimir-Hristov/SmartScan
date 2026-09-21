@@ -8,6 +8,13 @@ export { SpaceSwitcher } from './components/SpaceSwitcher';
 export { UserProfileDropdown } from './components/UserProfileDropdown';
 export { DeleteAccountModal } from './components/DeleteAccountModal';
 export { DeleteSpaceModal } from './components/DeleteSpaceModal';
+export { QrPrintModal } from './components/QrPrintModal';
+export { PlaqueVisualPreview } from './components/PlaqueVisualPreview';
+export type {
+  PlaqueFormat,
+  PlaqueTheme,
+  PlaquePrintSpec,
+} from './lib/plaqueConfig';
 export type {
   DashboardUser,
   MetricItem,
