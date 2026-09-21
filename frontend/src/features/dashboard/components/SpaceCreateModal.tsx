@@ -33,6 +33,16 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
   const [copiedWifi, setCopiedWifi] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  const resetForm = () => {
+    setValues(createEmptySpaceFormValues());
+    setErrorMessage(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   useModalFocus(isOpen, dialogRef);
 
   useEffect(() => {
@@ -48,16 +58,6 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const resetForm = () => {
-    setValues(createEmptySpaceFormValues());
-    setErrorMessage(null);
-  };
-
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
 
   const handleFieldChange = <K extends SpaceFormField>(
     field: K,
