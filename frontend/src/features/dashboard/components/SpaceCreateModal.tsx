@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { X, Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
@@ -33,15 +33,15 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
   const [copiedWifi, setCopiedWifi] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setValues(createEmptySpaceFormValues());
     setErrorMessage(null);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     resetForm();
     onClose();
-  };
+  }, [resetForm, onClose]);
 
   useModalFocus(isOpen, dialogRef);
 
@@ -54,8 +54,7 @@ export const SpaceCreateModal: React.FC<SpaceCreateModalProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 
