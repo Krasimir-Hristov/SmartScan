@@ -23,13 +23,22 @@ class Settings(BaseSettings):
     def _require_proxy_secret_in_production(self) -> "Settings":
         """Fail fast: without the proxy secret, production rate limiting degrades
         to a single shared bucket (all guests behind one server IP)."""
-        if (
-            self.ENVIRONMENT.strip().lower() == "production"
-            and not self.BACKEND_PROXY_SECRET.strip()
-        ):
-            raise ValueError(
-                "BACKEND_PROXY_SECRET must be set when ENVIRONMENT is 'production'."
-            )
+        if self.ENVIRONMENT.strip().lower() == "production":
+            if not self.BACKEND_PROXY_SECRET.strip():
+                raise ValueError(
+                    "BACKEND_PROXY_SECRET must be set when ENVIRONMENT is 'production'."
+                )
+            missing = []
+            if not self.STRIPE_SECRET_KEY.strip():
+                missing.append("STRIPE_SECRET_KEY")
+            if not self.STRIPE_WEBHOOK_SECRET.strip():
+                missing.append("STRIPE_WEBHOOK_SECRET")
+            if not self.STRIPE_PRICE_ID_STAY.strip():
+                missing.append("STRIPE_PRICE_ID_STAY")
+            if missing:
+                raise ValueError(
+                    f"Missing required Stripe settings in production: {', '.join(missing)}"
+                )
         return self
 
     # Supabase credentials

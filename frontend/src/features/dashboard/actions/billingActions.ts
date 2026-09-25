@@ -6,6 +6,46 @@ import { ActionResult } from '../types/dashboardTypes';
 const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
 const BACKEND_PROXY_SECRET = process.env.BACKEND_PROXY_SECRET || '';
 
+interface BillingPayload {
+  space_id: string;
+  return_url?: string;
+}
+
+/**
+ * Shared helper for authenticated billing POST requests to the backend.
+ */
+async function postBilling<T>(endpoint: string, payload: BillingPayload): Promise<T> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  const response = await fetch(`${BACKEND_INTERNAL_URL}/api/py/billing/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': user.id,
+      'x-user-email': user.email || '',
+      'x-internal-auth': BACKEND_PROXY_SECRET,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errData: unknown = await response.json().catch(() => ({}));
+    let detail = 'Error connecting to billing service.';
+    if (errData && typeof errData === 'object' && 'detail' in errData && typeof errData.detail === 'string') {
+      detail = errData.detail;
+    }
+    throw new Error(detail);
+  }
+
+  const data: unknown = await response.json();
+  return data as T;
+}
+
 /**
  * Creates a Stripe Checkout session by calling the backend API.
  */
@@ -14,38 +54,16 @@ export async function createCheckoutSessionAction(
   returnUrl?: string
 ): Promise<ActionResult<{ checkout_url: string }>> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: 'Unauthorized' };
+    const data = await postBilling<unknown>('checkout', { space_id: spaceId, return_url: returnUrl });
+    
+    if (!data || typeof data !== 'object' || !('checkout_url' in data) || typeof data.checkout_url !== 'string') {
+      throw new Error('Invalid response from checkout service');
     }
 
-    // Call FastAPI backend securely
-    const response = await fetch(`${BACKEND_INTERNAL_URL}/api/py/billing/checkout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': user.id,
-        'x-user-email': user.email || '',
-        'x-internal-auth': BACKEND_PROXY_SECRET,
-      },
-      body: JSON.stringify({
-        space_id: spaceId,
-        return_url: returnUrl,
-      }),
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.detail || 'Възникна грешка при създаването на плащане.');
-    }
-
-    const data = await response.json();
     return { success: true, data: { checkout_url: data.checkout_url } };
   } catch (error: unknown) {
     console.error('Checkout action error:', error);
-    return { success: false, error: (error instanceof Error ? error.message : String(error)) || 'Сървърна грешка.' };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
 
@@ -57,37 +75,15 @@ export async function createCustomerPortalAction(
   returnUrl?: string
 ): Promise<ActionResult<{ portal_url: string }>> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: 'Unauthorized' };
+    const data = await postBilling<unknown>('portal', { space_id: spaceId, return_url: returnUrl });
+    
+    if (!data || typeof data !== 'object' || !('portal_url' in data) || typeof data.portal_url !== 'string') {
+      throw new Error('Invalid response from portal service');
     }
 
-    // Call FastAPI backend securely
-    const response = await fetch(`${BACKEND_INTERNAL_URL}/api/py/billing/portal`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': user.id,
-        'x-user-email': user.email || '',
-        'x-internal-auth': BACKEND_PROXY_SECRET,
-      },
-      body: JSON.stringify({
-        space_id: spaceId,
-        return_url: returnUrl,
-      }),
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.detail || 'Възникна грешка при отварянето на портала.');
-    }
-
-    const data = await response.json();
     return { success: true, data: { portal_url: data.portal_url } };
   } catch (error: unknown) {
     console.error('Portal action error:', error);
-    return { success: false, error: (error instanceof Error ? error.message : String(error)) || 'Сървърна грешка.' };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }

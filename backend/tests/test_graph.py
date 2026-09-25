@@ -52,6 +52,7 @@ async def test_langgraph_nodes_execution():
         "property_context": "",
         "static_details": {},
         "stream_output": "",
+        "locale": "en",
     }
 
     # Test sanitize_node
@@ -76,6 +77,7 @@ async def test_concierge_graph_streaming():
         "property_context": "",
         "static_details": {},
         "stream_output": "",
+        "locale": "en",
     }
 
     chunks_received = []

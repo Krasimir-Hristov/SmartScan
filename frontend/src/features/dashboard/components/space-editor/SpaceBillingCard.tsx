@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, AlertTriangle, ExternalLink, Loader2, ArrowRight } from 'lucide-react';
+import { CreditCard, ExternalLink, Loader2, ArrowRight } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   createCheckoutSessionAction,
   createCustomerPortalAction,
@@ -16,6 +17,7 @@ export interface SpaceBillingCardProps {
 export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('dashboard.billing');
 
   const status = space.subscription_status || 'trialing';
   
@@ -24,37 +26,37 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
     switch (status) {
       case 'active':
         return {
-          label: 'Активен абонамент',
-          description: 'Профилът е активен и платен. (€1.00/месец)',
+          label: t('activeLabel'),
+          description: t('activeDesc'),
           badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
           dotClass: 'bg-emerald-400 animate-pulse',
         };
       case 'trialing':
         return {
-          label: 'Пробен период',
-          description: 'Използвате безплатния период. Абонирайте се, за да запазите достъпа си.',
+          label: t('trialingLabel'),
+          description: t('trialingDesc'),
           badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
           dotClass: 'bg-amber-400 animate-pulse',
         };
       case 'paused':
         return {
-          label: 'Паузиран',
-          description: 'Абонаментът е паузиран. Обектът не е публично достъпен.',
+          label: t('pausedLabel'),
+          description: t('pausedDesc'),
           badgeClass: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
           dotClass: 'bg-zinc-400',
         };
       case 'past_due':
         return {
-          label: 'Неуспешно плащане',
-          description: 'Моля, обновете платежния си метод.',
+          label: t('pastDueLabel'),
+          description: t('pastDueDesc'),
           badgeClass: 'bg-red-500/10 text-red-400 border-red-500/30',
           dotClass: 'bg-red-400',
         };
       case 'canceled':
       default:
         return {
-          label: 'Прекратен',
-          description: 'Абонаментът е изтекъл или прекратен.',
+          label: t('canceledLabel'),
+          description: t('canceledDesc'),
           badgeClass: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
           dotClass: 'bg-zinc-400',
         };
@@ -62,7 +64,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
   };
 
   const display = getStatusDisplay();
-  const needsSubscription = status === 'trialing' || status === 'canceled';
+  const needsSubscription = (status === 'trialing' && !space.stripe_subscription_id) || status === 'canceled';
 
   const handleAction = async () => {
     triggerHaptic(50);
@@ -76,7 +78,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
         if (res.success && res.data?.checkout_url) {
           window.location.href = res.data.checkout_url;
         } else {
-          setError(res.error || 'Грешка при пренасочване към плащане.');
+          setError(res.error || 'Checkout connection error.');
         }
       } else {
         // Go to Customer Portal
@@ -84,11 +86,11 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
         if (res.success && res.data?.portal_url) {
           window.location.href = res.data.portal_url;
         } else {
-          setError(res.error || 'Грешка при отваряне на портала.');
+          setError(res.error || 'Portal connection error.');
         }
       }
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : String(err)) || 'Възникна неочаквана грешка.');
+      setError((err instanceof Error ? err.message : String(err)) || 'Error connecting to Stripe.');
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +108,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-white">Абонамент и Плащане</h3>
+                <h3 className="text-sm font-semibold text-white">{t('title')}</h3>
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${display.badgeClass}`}
                 >
@@ -125,7 +127,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
             type="button"
             onClick={handleAction}
             disabled={isLoading}
-            className={`group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 disabled:opacity-50 disabled:cursor-not-allowed
+            className={`cursor-pointer group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 disabled:opacity-50 disabled:cursor-not-allowed
               ${
                 needsSubscription
                   ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 focus:ring-emerald-500'
@@ -137,11 +139,11 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : needsSubscription ? (
               <>
-                Абонирай се <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                {t('subscribe')} <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </>
             ) : (
               <>
-                Управление <ExternalLink className="w-4 h-4" />
+                {t('manage')} <ExternalLink className="w-4 h-4" />
               </>
             )}
           </button>

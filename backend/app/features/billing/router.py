@@ -1,10 +1,14 @@
 """FastAPI router for Stripe Billing endpoints."""
 
+import hmac
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
+from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.features.billing.schemas import (
+    BillingUser,
     CheckoutResponse,
     CreateCheckoutRequest,
     CreatePortalRequest,
@@ -19,29 +23,38 @@ from app.features.billing.service import (
 router = APIRouter(prefix="/billing", tags=["Billing"])
 
 
-# Mock dependencies for now; in reality, we verify the user via proxy token or Supabase JWT
-# Since proxy.ts forwards x-user-id and x-user-email, we can extract them from headers.
+# Verify the user via proxy token (x-internal-auth)
 async def get_current_user(
+    x_internal_auth: Annotated[str | None, Header()] = None,
     x_user_id: Annotated[str | None, Header()] = None,
     x_user_email: Annotated[str | None, Header()] = None,
-) -> dict:
-    if not x_user_id:
+) -> BillingUser:
+    if not x_internal_auth or not x_user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return {"id": x_user_id, "email": x_user_email or ""}
+
+    # Authenticate requests by comparing the x-internal-auth header with BACKEND_PROXY_SECRET
+    if not hmac.compare_digest(
+        x_internal_auth.encode("utf-8"), settings.BACKEND_PROXY_SECRET.encode("utf-8")
+    ):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    return BillingUser(id=x_user_id, email=x_user_email or "")
 
 
 @router.post("/checkout", response_model=CheckoutResponse)
+@limiter.limit("5/minute")
 async def checkout(
-    request: CreateCheckoutRequest,
-    user: dict = Depends(get_current_user),  # noqa: B008
+    request: Request,
+    payload: CreateCheckoutRequest,
+    user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
     """Creates a Stripe Checkout Session for subscribing a space."""
     try:
         response = await create_checkout_session(
-            space_id=request.space_id,
-            host_id=user["id"],
-            user_email=user["email"],
-            return_url=request.return_url,
+            space_id=payload.space_id,
+            host_id=user.id,
+            user_email=user.email or "",
+            return_url=payload.return_url,
         )
         return response
     except ValueError as e:
@@ -51,16 +64,18 @@ async def checkout(
 
 
 @router.post("/portal", response_model=PortalResponse)
+@limiter.limit("5/minute")
 async def portal(
-    request: CreatePortalRequest,
-    user: dict = Depends(get_current_user),  # noqa: B008
+    request: Request,
+    payload: CreatePortalRequest,
+    user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
     """Creates a Stripe Customer Portal Session for managing subscriptions."""
     try:
         response = await create_portal_session(
-            space_id=request.space_id,
-            host_id=user["id"],
-            return_url=request.return_url,
+            space_id=payload.space_id,
+            host_id=user.id,
+            return_url=payload.return_url,
         )
         return response
     except ValueError as e:

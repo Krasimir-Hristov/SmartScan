@@ -1,5 +1,6 @@
 """Service for Stripe Billing operations (Checkout, Portal, Webhooks)."""
 
+import asyncio
 import logging
 
 import stripe
@@ -23,13 +24,24 @@ async def create_checkout_session(
         raise ValueError("Database connection error.")
 
     # 1. Verify space ownership
-    response = supabase.table("spaces").select("*").eq("id", space_id).execute()
+    def _fetch_space():
+        return supabase.table("spaces").select("*").eq("id", space_id).execute()
+
+    response = await asyncio.to_thread(_fetch_space)
     if not response.data:
         raise ValueError("Space not found.")
     space = response.data[0]
 
     if space["host_id"] != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
+
+    # Guard: prevent creating a subscription-mode Checkout session for a space that already has a subscription
+    sub_status = space.get("subscription_status")
+    if space.get("stripe_subscription_id") and sub_status not in [
+        "canceled",
+        "trialing_without_sub",
+    ]:
+        raise ValueError("Space already has an active subscription.")
 
     # 2. Determine success/cancel URLs
     base_url = settings.FRONTEND_URL.rstrip("/")
@@ -58,12 +70,14 @@ async def create_checkout_session(
         elif user_email and user_email.strip():
             kwargs["customer_email"] = user_email.strip()
 
-        session = stripe.checkout.Session.create(**kwargs)
+        def _create_stripe_session():
+            return stripe.checkout.Session.create(**kwargs)
+
+        session = await asyncio.to_thread(_create_stripe_session)
         return CheckoutResponse(checkout_url=session.url, session_id=session.id)
     except Exception as e:  # noqa: BLE001
         logger.error(f"Error creating Stripe checkout session: {e}")
-        # Връщаме точната грешка към фронтенда, за да разберем веднага какво не харесва Stripe
-        raise ValueError(f"Stripe Error: {e!s}")
+        raise ValueError("Could not create checkout session.")
 
 
 async def create_portal_session(
@@ -75,12 +89,15 @@ async def create_portal_session(
         raise ValueError("Database connection error.")
 
     # 1. Verify space ownership
-    response = (
-        supabase.table("spaces")
-        .select("host_id, stripe_customer_id")
-        .eq("id", space_id)
-        .execute()
-    )
+    def _fetch_space_portal():
+        return (
+            supabase.table("spaces")
+            .select("host_id, stripe_customer_id")
+            .eq("id", space_id)
+            .execute()
+        )
+
+    response = await asyncio.to_thread(_fetch_space_portal)
     if not response.data:
         raise ValueError("Space not found.")
     space = response.data[0]
@@ -97,10 +114,14 @@ async def create_portal_session(
     portal_return_url = return_url or f"{base_url}/dashboard"
 
     try:
-        session = stripe.billing_portal.Session.create(
-            customer=stripe_customer_id,
-            return_url=portal_return_url,
-        )
+
+        def _create_portal_session():
+            return stripe.billing_portal.Session.create(
+                customer=stripe_customer_id,
+                return_url=portal_return_url,
+            )
+
+        session = await asyncio.to_thread(_create_portal_session)
         return PortalResponse(portal_url=session.url)
     except Exception as e:  # noqa: BLE001
         logger.error(f"Error creating Stripe portal session: {e}")
@@ -118,19 +139,14 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
             payload_bytes, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
     except ValueError as e:
-        # Invalid payload
         logger.warning(f"Invalid payload: {e}")
         raise ValueError("Invalid payload")
     except stripe.SignatureVerificationError as e:
-        # Invalid signature
         logger.warning(f"Invalid signature: {e}")
         raise ValueError("Invalid signature")
 
     event_type = event["type"]
     data_object = event["data"]["object"]
-
-    # В новите версии на stripe библиотеката обектът не е dict.
-    # Трябва да го конвертираме, за да ползваме .get() безопасно.
     data_dict = (
         data_object.to_dict() if hasattr(data_object, "to_dict") else data_object
     )
@@ -145,21 +161,24 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
                 logger.info(
                     f"Updating DB for space_id: {space_id} with sub_id: {subscription_id}"
                 )
-                # Mark space as active
-                result = (
-                    supabase.table("spaces")
-                    .update(
-                        {
-                            "subscription_status": "active",
-                            "stripe_subscription_id": subscription_id,
-                            "stripe_customer_id": customer_id,
-                            "stripe_price_id": settings.STRIPE_PRICE_ID_STAY,
-                            "trial_ends_at": None,
-                        }
+
+                def _update_checkout():
+                    return (
+                        supabase.table("spaces")
+                        .update(
+                            {
+                                "subscription_status": "active",
+                                "stripe_subscription_id": subscription_id,
+                                "stripe_customer_id": customer_id,
+                                "stripe_price_id": settings.STRIPE_PRICE_ID_STAY,
+                                "trial_ends_at": None,
+                            }
+                        )
+                        .eq("id", space_id)
+                        .execute()
                     )
-                    .eq("id", space_id)
-                    .execute()
-                )
+
+                result = await asyncio.to_thread(_update_checkout)
                 logger.info(f"Supabase update result: {result}")
                 logger.info(f"Space {space_id} subscription activated.")
             else:
@@ -173,28 +192,47 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
         ]:
             subscription_id = data_dict.get("id")
             status = data_dict.get("status")
-            customer_id = data_dict.get("customer")
+            meta_space_id = data_dict.get("metadata", {}).get("space_id")
 
-            # Map Stripe statuses to our allowed Enum: 'trialing', 'active', 'past_due', 'paused', 'canceled'
-            # Stripe statuses: trialing, active, past_due, canceled, unpaid, incomplete, incomplete_expired, paused
             mapped_status = status
             if status in ["unpaid", "incomplete", "incomplete_expired"]:
                 mapped_status = "past_due"
 
             if subscription_id:
-                # We locate the space by stripe_subscription_id
-                supabase.table("spaces").update(
-                    {
-                        "subscription_status": mapped_status,
-                    }
-                ).eq("stripe_subscription_id", subscription_id).execute()
-                logger.info(
-                    f"Subscription {subscription_id} updated to {mapped_status}."
-                )
+
+                def _update_subscription():
+                    return (
+                        supabase.table("spaces")
+                        .update({"subscription_status": mapped_status})
+                        .eq("stripe_subscription_id", subscription_id)
+                        .execute()
+                    )
+
+                result = await asyncio.to_thread(_update_subscription)
+
+                if not result.data and meta_space_id:
+                    # Fall back to metadata space_id if the stripe_subscription_id was not yet saved or matching
+                    def _update_fallback():
+                        return (
+                            supabase.table("spaces")
+                            .update({"subscription_status": mapped_status})
+                            .eq("id", meta_space_id)
+                            .execute()
+                        )
+
+                    result = await asyncio.to_thread(_update_fallback)
+
+                if result.data:
+                    logger.info(
+                        f"Subscription {subscription_id} updated to {mapped_status}."
+                    )
+                else:
+                    logger.warning(
+                        f"No matching space found to update subscription {subscription_id}."
+                    )
 
     except Exception as e:  # noqa: BLE001
         logger.error(f"Error processing webhook event {event_type}: {e}")
-        # We still return 200 so Stripe doesn't infinitely retry unless it's a critical DB crash
         raise ValueError("Database update failed during webhook")
 
     return {"status": "success", "event_type": event_type}
