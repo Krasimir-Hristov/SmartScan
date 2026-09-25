@@ -12,6 +12,8 @@ from app.core.rate_limit import limiter
 from app.features.concierge.router import router as concierge_router
 from app.features.knowledge.router import router as knowledge_router
 from app.features.voice_ingest.router import router as voice_router
+from app.features.billing.router import router as billing_router
+
 
 MAX_REQUEST_BODY_SIZE = 25 * 1024 * 1024  # 25 MiB
 
@@ -105,6 +107,8 @@ async def health_check() -> dict[str, str]:
 app.include_router(concierge_router, prefix="/api/py")
 app.include_router(knowledge_router, prefix="/api/py")
 app.include_router(voice_router, prefix="/api/py")
+app.include_router(billing_router, prefix="/api/py")
+
 
 
 @app.get("/", include_in_schema=False)

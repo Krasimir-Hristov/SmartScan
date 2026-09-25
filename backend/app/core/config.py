@@ -44,6 +44,14 @@ class Settings(BaseSettings):
     OPENROUTER_EMBEDDING_MODEL: str = Field(default="openai/text-embedding-3-small")
     EMBEDDING_DIMENSIONS: int = Field(default=1536)
 
+    # Frontend URL (for Stripe redirects)
+    FRONTEND_URL: str = Field(default="http://localhost:3000")
+
+    # Stripe
+    STRIPE_SECRET_KEY: str = Field(default="")
+    STRIPE_WEBHOOK_SECRET: str = Field(default="")
+    STRIPE_PRICE_ID_STAY: str = Field(default="")
+
     @property
     def cors_origins(self) -> list[str]:
         return [
