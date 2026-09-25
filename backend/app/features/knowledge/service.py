@@ -139,7 +139,7 @@ async def get_relevant_knowledge_chunks(
                     "match_space_knowledge",
                     {
                         "filter_space_id": space_id,
-                        "query_embedding": query_vec,
+                        "query_embedding": query_vec,  # type: ignore
                         "match_threshold": 0.35,
                         "match_count": 4,
                     },
