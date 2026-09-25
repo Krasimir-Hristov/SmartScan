@@ -96,6 +96,9 @@ app.add_middleware(
 )
 
 
+from app.features.spaces.router import router as spaces_router
+
+
 @app.get("/api/py/health", tags=["Health"])
 async def health_check() -> dict[str, str]:
     """Health check endpoint to verify backend service liveness."""
@@ -111,6 +114,7 @@ app.include_router(concierge_router, prefix="/api/py")
 app.include_router(knowledge_router, prefix="/api/py")
 app.include_router(voice_router, prefix="/api/py")
 app.include_router(billing_router, prefix="/api/py")
+app.include_router(spaces_router, prefix="/api/py")
 
 
 @app.get("/", include_in_schema=False)

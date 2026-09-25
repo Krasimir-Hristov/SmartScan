@@ -2,6 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+
+const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
+const BACKEND_PROXY_SECRET = process.env.BACKEND_PROXY_SECRET || '';
 import { generateSpaceSlug } from '../utils/slugUtils';
 import {
   PLAQUE_NAME_MAX_LENGTH,
@@ -359,36 +362,30 @@ export async function deleteSpaceAction(
 ): Promise<ActionResult<boolean>> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return { success: false, error: 'Нямате оторизация.' };
+    if (!user) {
+      return { success: false, error: 'Unauthorized.' };
     }
 
-    const { data: deletedSpace, error: deleteError } = await supabase
-      .from('spaces')
-      .delete()
-      .eq('id', spaceId)
-      .eq('host_id', user.id)
-      .select('id')
-      .maybeSingle();
+    const response = await fetch(`${BACKEND_INTERNAL_URL}/api/py/spaces/${spaceId}`, {
+      method: 'DELETE',
+      headers: {
+        'x-user-id': user.id,
+        'x-internal-auth': BACKEND_PROXY_SECRET,
+      }
+    });
 
-    if (deleteError) {
-      return { success: false, error: deleteError.message };
-    }
-
-    // Zero deleted rows (wrong id / not owned) must not be reported as success.
-    if (!deletedSpace) {
-      return { success: false, error: 'Обектът не е намерен или вече е изтрит.' };
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      return { success: false, error: errData.detail || 'Failed to delete space securely.' };
     }
 
     revalidatePath('/dashboard');
     return { success: true, data: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка при изтриване.';
+    const message = err instanceof Error ? err.message : 'Error deleting space.';
     return { success: false, error: message };
   }
+
 }
