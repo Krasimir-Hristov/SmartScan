@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, ArrowRight, Loader2, RefreshCcw, ExternalLink } from 'lucide-react';
+import { CreditCard, AlertTriangle, ExternalLink } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import {
@@ -87,8 +87,8 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
           setError(res.error || 'Грешка при отваряне на портала.');
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Възникна неочаквана грешка.');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : String(err)) || 'Възникна неочаквана грешка.');
     } finally {
       setIsLoading(false);
     }
