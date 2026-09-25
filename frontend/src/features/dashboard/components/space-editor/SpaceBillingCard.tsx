@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, AlertTriangle, ExternalLink } from 'lucide-react';
+import { CreditCard, AlertTriangle, ExternalLink, Loader2, ArrowRight } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import {
