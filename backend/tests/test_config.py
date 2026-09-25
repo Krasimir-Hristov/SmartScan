@@ -1,9 +1,8 @@
 """Tests for production configuration fail-fast validation."""
 
 import pytest
-from pydantic import ValidationError
-
 from app.core.config import Settings
+from pydantic import ValidationError
 
 
 def test_production_requires_proxy_secret() -> None:

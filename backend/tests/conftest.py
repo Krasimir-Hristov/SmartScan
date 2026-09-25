@@ -1,7 +1,6 @@
 ﻿"""Shared pytest fixtures and test configuration."""
 
 import pytest
-
 from app.core.config import settings
 
 

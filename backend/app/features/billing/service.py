@@ -1,9 +1,8 @@
 """Service for Stripe Billing operations (Checkout, Portal, Webhooks)."""
 
 import logging
-import stripe
-from typing import Optional
 
+import stripe
 from app.core.config import settings
 from app.core.database import get_supabase_client
 from app.features.billing.schemas import CheckoutResponse, PortalResponse
@@ -15,7 +14,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 async def create_checkout_session(
-    space_id: str, host_id: str, user_email: str, return_url: Optional[str] = None
+    space_id: str, host_id: str, user_email: str, return_url: str | None = None
 ) -> CheckoutResponse:
     """Creates a Stripe Checkout Session for a space subscription."""
     supabase = get_supabase_client()
@@ -58,14 +57,14 @@ async def create_checkout_session(
 
         session = stripe.checkout.Session.create(**kwargs)
         return CheckoutResponse(checkout_url=session.url, session_id=session.id)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error creating Stripe checkout session: {e}")
         # Връщаме точната грешка към фронтенда, за да разберем веднага какво не харесва Stripe
-        raise ValueError(f"Stripe Error: {str(e)}")
+        raise ValueError(f"Stripe Error: {e!s}")
 
 
 async def create_portal_session(
-    space_id: str, host_id: str, return_url: Optional[str] = None
+    space_id: str, host_id: str, return_url: str | None = None
 ) -> PortalResponse:
     """Creates a Stripe Customer Portal Session for managing the subscription."""
     supabase = get_supabase_client()
@@ -95,7 +94,7 @@ async def create_portal_session(
             return_url=portal_return_url,
         )
         return PortalResponse(portal_url=session.url)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error creating Stripe portal session: {e}")
         raise ValueError("Could not create customer portal session.")
 
@@ -165,7 +164,7 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
                 }).eq("stripe_subscription_id", subscription_id).execute()
                 logger.info(f"Subscription {subscription_id} updated to {mapped_status}.")
                 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error processing webhook event {event_type}: {e}")
         # We still return 200 so Stripe doesn't infinitely retry unless it's a critical DB crash
         raise ValueError("Database update failed during webhook")

@@ -4,8 +4,6 @@ import math
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.features.knowledge.embeddings import _generate_mock_vector, generate_embeddings
 from app.features.knowledge.schemas import StructuredCard
 from app.features.knowledge.service import (
@@ -18,6 +16,7 @@ from app.features.knowledge.structuring import (
     structure_knowledge_cards_gemini,
 )
 from app.main import app
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

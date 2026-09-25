@@ -1,13 +1,13 @@
 """Schemas for Stripe Billing endpoints."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
 class CreateCheckoutRequest(BaseModel):
     """Request to create a Stripe Checkout session."""
     space_id: str = Field(..., description="ID of the space to subscribe to.")
-    return_url: Optional[str] = Field(None, description="Custom URL to redirect to after checkout.")
+    return_url: str | None = Field(None, description="Custom URL to redirect to after checkout.")
 
 
 class CheckoutResponse(BaseModel):
@@ -19,7 +19,7 @@ class CheckoutResponse(BaseModel):
 class CreatePortalRequest(BaseModel):
     """Request to create a Stripe Customer Portal session."""
     space_id: str = Field(..., description="ID of the space (to resolve customer ID).")
-    return_url: Optional[str] = Field(None, description="Custom URL to redirect to after portal.")
+    return_url: str | None = Field(None, description="Custom URL to redirect to after portal.")
 
 
 class PortalResponse(BaseModel):
