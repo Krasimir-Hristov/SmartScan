@@ -24,7 +24,9 @@ class PayloadTooLargeError(Exception):
 class BodySizeLimitMiddleware:
     """ASGI middleware enforcing MAX_REQUEST_BODY_SIZE before multipart parsing."""
 
-    def __init__(self, app: ASGIApp, max_body_size: int = MAX_REQUEST_BODY_SIZE) -> None:
+    def __init__(
+        self, app: ASGIApp, max_body_size: int = MAX_REQUEST_BODY_SIZE
+    ) -> None:
         self.app = app
         self.max_body_size = max_body_size
 
@@ -39,7 +41,9 @@ class BodySizeLimitMiddleware:
                     if int(value) > self.max_body_size:
                         response = JSONResponse(
                             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                            content={"detail": "Аудио файлът надвишава допустимия размер от 25MB."},
+                            content={
+                                "detail": "Аудио файлът надвишава допустимия размер от 25MB."
+                            },
                         )
                         await response(scope, receive, send)
                         return
@@ -107,7 +111,6 @@ app.include_router(concierge_router, prefix="/api/py")
 app.include_router(knowledge_router, prefix="/api/py")
 app.include_router(voice_router, prefix="/api/py")
 app.include_router(billing_router, prefix="/api/py")
-
 
 
 @app.get("/", include_in_schema=False)

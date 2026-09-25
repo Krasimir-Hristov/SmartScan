@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
 
+
 # Mock dependencies for now; in reality, we verify the user via proxy token or Supabase JWT
 # Since proxy.ts forwards x-user-id and x-user-email, we can extract them from headers.
 async def get_current_user(
@@ -75,9 +76,9 @@ async def stripe_webhook(
     """Handles Stripe Webhook events."""
     if not stripe_signature:
         raise HTTPException(status_code=400, detail="Missing signature")
-    
+
     payload_bytes = await request.body()
-    
+
     try:
         result = await process_webhook_event(payload_bytes, stripe_signature)
         return result

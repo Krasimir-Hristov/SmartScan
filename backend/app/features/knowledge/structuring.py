@@ -58,7 +58,11 @@ def _parse_cards_json(raw_json: str) -> list[StructuredCard]:
             return []
 
     if not isinstance(parsed, list):
-        if isinstance(parsed, dict) and "cards" in parsed and isinstance(parsed["cards"], list):
+        if (
+            isinstance(parsed, dict)
+            and "cards" in parsed
+            and isinstance(parsed["cards"], list)
+        ):
             parsed = parsed["cards"]
         else:
             return []
@@ -113,11 +117,16 @@ def _create_fallback_card(text: str) -> list[StructuredCard]:
     elif any(k in lower for k in ["паркинг", "кола", "гараж", "park", "car"]):
         category = "parking"
         title = "Паркиране"
-    elif any(k in lower for k in ["отопление", "климатик", "парно", "бойлер", "печка", "heat"]):
+    elif any(
+        k in lower
+        for k in ["отопление", "климатик", "парно", "бойлер", "печка", "heat"]
+    ):
         category = "appliances"
         title = "Уреди и отопление"
     elif any(k in lower for k in ["боклук", "смет", "ресторант", "механа", "храна"]):
-        category = "rules" if "боклук" in lower or "смет" in lower else "recommendations"
+        category = (
+            "rules" if "боклук" in lower or "смет" in lower else "recommendations"
+        )
         title = "Правила" if category == "rules" else "Препоръка"
 
     return [

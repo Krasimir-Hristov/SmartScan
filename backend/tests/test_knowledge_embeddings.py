@@ -52,10 +52,15 @@ async def test_generate_embeddings_openrouter_mock() -> None:
         ]
     }
 
-    with patch("app.core.config.settings.OPENROUTER_API_KEY", "sk-or-v1-live-secret-test"), patch(
-        "httpx.AsyncClient.post",
-        new_callable=AsyncMock,
-        return_value=mock_response,
+    with (
+        patch(
+            "app.core.config.settings.OPENROUTER_API_KEY", "sk-or-v1-live-secret-test"
+        ),
+        patch(
+            "httpx.AsyncClient.post",
+            new_callable=AsyncMock,
+            return_value=mock_response,
+        ),
     ):
         embeddings = await generate_embeddings(["Text A", "Text B"])
         assert len(embeddings) == 2
@@ -95,7 +100,9 @@ def test_create_fallback_card_heuristic() -> None:
 async def test_structure_knowledge_cards_gemini_fallback() -> None:
     """Verifies graceful fallback when API key is not live."""
     with patch("app.core.config.settings.OPENROUTER_API_KEY", ""):
-        cards = await structure_knowledge_cards_gemini("Паролата за интернета е MountainGuest")
+        cards = await structure_knowledge_cards_gemini(
+            "Паролата за интернета е MountainGuest"
+        )
     assert len(cards) >= 1
     assert cards[0].category == "wifi"
 
@@ -124,20 +131,28 @@ async def test_ingest_knowledge_text_db_insert() -> None:
 
     mock_embeddings = [[0.01] * 1536, [0.02] * 1536]
 
-    with patch(
-        "app.features.knowledge.service.get_supabase_client",
-        return_value=mock_supabase,
-    ), patch(
-        "app.features.knowledge.service.structure_knowledge_cards_gemini",
-        new_callable=AsyncMock,
-        return_value=[
-            StructuredCard(title="Wi-Fi", category="wifi", content="Password is guest1234"),
-            StructuredCard(title="Cat", category="rules", content="Watch for neighbor cat"),
-        ],
-    ), patch(
-        "app.features.knowledge.service.generate_embeddings",
-        new_callable=AsyncMock,
-        return_value=mock_embeddings,
+    with (
+        patch(
+            "app.features.knowledge.service.get_supabase_client",
+            return_value=mock_supabase,
+        ),
+        patch(
+            "app.features.knowledge.service.structure_knowledge_cards_gemini",
+            new_callable=AsyncMock,
+            return_value=[
+                StructuredCard(
+                    title="Wi-Fi", category="wifi", content="Password is guest1234"
+                ),
+                StructuredCard(
+                    title="Cat", category="rules", content="Watch for neighbor cat"
+                ),
+            ],
+        ),
+        patch(
+            "app.features.knowledge.service.generate_embeddings",
+            new_callable=AsyncMock,
+            return_value=mock_embeddings,
+        ),
     ):
         cards = await ingest_knowledge_text(
             space_id="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
@@ -236,19 +251,25 @@ async def test_ingest_knowledge_text_aborts_on_embedding_failure() -> None:
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
 
-    with patch(
-        "app.features.knowledge.service.get_supabase_client",
-        return_value=mock_supabase,
-    ), patch(
-        "app.features.knowledge.service.structure_knowledge_cards_gemini",
-        new_callable=AsyncMock,
-        return_value=[
-            StructuredCard(title="Wi-Fi", category="wifi", content="Password is guest1234"),
-        ],
-    ), patch(
-        "app.features.knowledge.service.generate_embeddings",
-        new_callable=AsyncMock,
-        return_value=[],  # Empty embeddings returned on failure
+    with (
+        patch(
+            "app.features.knowledge.service.get_supabase_client",
+            return_value=mock_supabase,
+        ),
+        patch(
+            "app.features.knowledge.service.structure_knowledge_cards_gemini",
+            new_callable=AsyncMock,
+            return_value=[
+                StructuredCard(
+                    title="Wi-Fi", category="wifi", content="Password is guest1234"
+                ),
+            ],
+        ),
+        patch(
+            "app.features.knowledge.service.generate_embeddings",
+            new_callable=AsyncMock,
+            return_value=[],  # Empty embeddings returned on failure
+        ),
     ):
         with pytest.raises(RuntimeError, match="Failed to generate embedding vectors"):
             await ingest_knowledge_text(
@@ -264,21 +285,29 @@ async def test_ingest_knowledge_text_sanitizes_db_error() -> None:
     mock_supabase = MagicMock()
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value.execute.side_effect = Exception("psql_internal_constraint_leak")
+    mock_table.insert.return_value.execute.side_effect = Exception(
+        "psql_internal_constraint_leak"
+    )
 
-    with patch(
-        "app.features.knowledge.service.get_supabase_client",
-        return_value=mock_supabase,
-    ), patch(
-        "app.features.knowledge.service.structure_knowledge_cards_gemini",
-        new_callable=AsyncMock,
-        return_value=[
-            StructuredCard(title="Wi-Fi", category="wifi", content="Password is guest1234"),
-        ],
-    ), patch(
-        "app.features.knowledge.service.generate_embeddings",
-        new_callable=AsyncMock,
-        return_value=[[0.1] * 1536],
+    with (
+        patch(
+            "app.features.knowledge.service.get_supabase_client",
+            return_value=mock_supabase,
+        ),
+        patch(
+            "app.features.knowledge.service.structure_knowledge_cards_gemini",
+            new_callable=AsyncMock,
+            return_value=[
+                StructuredCard(
+                    title="Wi-Fi", category="wifi", content="Password is guest1234"
+                ),
+            ],
+        ),
+        patch(
+            "app.features.knowledge.service.generate_embeddings",
+            new_callable=AsyncMock,
+            return_value=[[0.1] * 1536],
+        ),
     ):
         with pytest.raises(RuntimeError) as exc_info:
             await ingest_knowledge_text(

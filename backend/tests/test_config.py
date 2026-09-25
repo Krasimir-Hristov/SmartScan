@@ -29,4 +29,3 @@ def test_environment_check_is_case_insensitive() -> None:
 def test_production_rejects_whitespace_proxy_secret() -> None:
     with pytest.raises(ValidationError):
         Settings(ENVIRONMENT="production", BACKEND_PROXY_SECRET="   ")
-

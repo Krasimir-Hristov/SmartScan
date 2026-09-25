@@ -26,7 +26,7 @@ async def create_checkout_session(
     if not response.data:
         raise ValueError("Space not found.")
     space = response.data[0]
-    
+
     if space["host_id"] != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
 
@@ -44,7 +44,9 @@ async def create_checkout_session(
             "success_url": f"{success_url}?session_id={{CHECKOUT_SESSION_ID}}",
             "cancel_url": cancel_url,
             "client_reference_id": space_id,
-            "subscription_data": {"metadata": {"space_id": space_id, "host_id": host_id}},
+            "subscription_data": {
+                "metadata": {"space_id": space_id, "host_id": host_id}
+            },
             "metadata": {"space_id": space_id, "host_id": host_id},
         }
 
@@ -72,11 +74,16 @@ async def create_portal_session(
         raise ValueError("Database connection error.")
 
     # 1. Verify space ownership
-    response = supabase.table("spaces").select("host_id, stripe_customer_id").eq("id", space_id).execute()
+    response = (
+        supabase.table("spaces")
+        .select("host_id, stripe_customer_id")
+        .eq("id", space_id)
+        .execute()
+    )
     if not response.data:
         raise ValueError("Space not found.")
     space = response.data[0]
-    
+
     if space["host_id"] != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
 
@@ -121,9 +128,11 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
     event_type = event["type"]
     data_object = event["data"]["object"]
 
-    # В новите версии на stripe библиотеката обектът не е dict. 
+    # В новите версии на stripe библиотеката обектът не е dict.
     # Трябва да го конвертираме, за да ползваме .get() безопасно.
-    data_dict = data_object.to_dict() if hasattr(data_object, "to_dict") else data_object
+    data_dict = (
+        data_object.to_dict() if hasattr(data_object, "to_dict") else data_object
+    )
 
     try:
         if event_type == "checkout.session.completed":
@@ -132,25 +141,39 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
             subscription_id = data_dict.get("subscription")
 
             if space_id and subscription_id:
-                logger.info(f"Updating DB for space_id: {space_id} with sub_id: {subscription_id}")
+                logger.info(
+                    f"Updating DB for space_id: {space_id} with sub_id: {subscription_id}"
+                )
                 # Mark space as active
-                result = supabase.table("spaces").update({
-                    "subscription_status": "active",
-                    "stripe_subscription_id": subscription_id,
-                    "stripe_customer_id": customer_id,
-                    "stripe_price_id": settings.STRIPE_PRICE_ID_STAY,
-                    "trial_ends_at": None,
-                }).eq("id", space_id).execute()
+                result = (
+                    supabase.table("spaces")
+                    .update(
+                        {
+                            "subscription_status": "active",
+                            "stripe_subscription_id": subscription_id,
+                            "stripe_customer_id": customer_id,
+                            "stripe_price_id": settings.STRIPE_PRICE_ID_STAY,
+                            "trial_ends_at": None,
+                        }
+                    )
+                    .eq("id", space_id)
+                    .execute()
+                )
                 logger.info(f"Supabase update result: {result}")
                 logger.info(f"Space {space_id} subscription activated.")
             else:
-                logger.warning(f"Missing space_id ({space_id}) or subscription_id ({subscription_id}) in webhook data.")
+                logger.warning(
+                    f"Missing space_id ({space_id}) or subscription_id ({subscription_id}) in webhook data."
+                )
 
-        elif event_type in ["customer.subscription.updated", "customer.subscription.deleted"]:
+        elif event_type in [
+            "customer.subscription.updated",
+            "customer.subscription.deleted",
+        ]:
             subscription_id = data_dict.get("id")
             status = data_dict.get("status")
             customer_id = data_dict.get("customer")
-            
+
             # Map Stripe statuses to our allowed Enum: 'trialing', 'active', 'past_due', 'paused', 'canceled'
             # Stripe statuses: trialing, active, past_due, canceled, unpaid, incomplete, incomplete_expired, paused
             mapped_status = status
@@ -159,11 +182,15 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
 
             if subscription_id:
                 # We locate the space by stripe_subscription_id
-                supabase.table("spaces").update({
-                    "subscription_status": mapped_status,
-                }).eq("stripe_subscription_id", subscription_id).execute()
-                logger.info(f"Subscription {subscription_id} updated to {mapped_status}.")
-                
+                supabase.table("spaces").update(
+                    {
+                        "subscription_status": mapped_status,
+                    }
+                ).eq("stripe_subscription_id", subscription_id).execute()
+                logger.info(
+                    f"Subscription {subscription_id} updated to {mapped_status}."
+                )
+
     except Exception as e:  # noqa: BLE001
         logger.error(f"Error processing webhook event {event_type}: {e}")
         # We still return 200 so Stripe doesn't infinitely retry unless it's a critical DB crash

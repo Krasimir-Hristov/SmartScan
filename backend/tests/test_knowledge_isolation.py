@@ -66,9 +66,7 @@ async def test_space_context_query_enforces_is_active() -> None:
         }
     )
 
-    with patch(
-        "app.features.knowledge.service.get_supabase_client", return_value=fake
-    ):
+    with patch("app.features.knowledge.service.get_supabase_client", return_value=fake):
         ctx = await get_space_stay_context(SPACE_UUID)
 
     assert fake.table_name == "spaces"
@@ -85,9 +83,7 @@ async def test_space_context_neutral_when_inactive_or_missing() -> None:
     instead of leaking stay settings (real PostgREST .single() raises on 0 rows)."""
     fake = FakeQuery(execute_error=Exception("JSON object requested, no rows"))
 
-    with patch(
-        "app.features.knowledge.service.get_supabase_client", return_value=fake
-    ):
+    with patch("app.features.knowledge.service.get_supabase_client", return_value=fake):
         ctx = await get_space_stay_context(SPACE_UUID)
 
     assert ctx.name == "SmartScan Stay"
@@ -111,9 +107,7 @@ async def test_knowledge_chunks_query_enforces_is_active_join() -> None:
         ]
     )
 
-    with patch(
-        "app.features.knowledge.service.get_supabase_client", return_value=fake
-    ):
+    with patch("app.features.knowledge.service.get_supabase_client", return_value=fake):
         chunks = await get_relevant_knowledge_chunks(SPACE_UUID, "паркинг")
 
     assert fake.table_name == "knowledge_chunks"
