@@ -1,6 +1,8 @@
 """Tests for AI Concierge LangGraph graph and schemas."""
 
 import pytest
+from pydantic import ValidationError
+
 from app.features.concierge.graph import (
     ConciergeState,
     concierge_workflow,
@@ -8,7 +10,6 @@ from app.features.concierge.graph import (
     sanitize_node,
 )
 from app.features.concierge.schemas import ChatMessage, ConciergeChatRequest
-from pydantic import ValidationError
 
 
 def test_chat_message_schema():

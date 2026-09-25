@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
+
 from app.features.knowledge.service import (
     get_relevant_knowledge_chunks,
     get_space_stay_context,

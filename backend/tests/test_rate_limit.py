@@ -8,9 +8,10 @@ BACKEND_PROXY_SECRET matches (x-internal-auth header, constant-time compare).
 from typing import Any
 from unittest.mock import patch
 
+from starlette.requests import Request as StarletteRequest
+
 from app.core.config import settings
 from app.core.rate_limit import get_chat_rate_limit_key, get_client_ip
-from starlette.requests import Request as StarletteRequest
 
 PROXY_SECRET = "test-proxy-secret"
 SPACE_UUID = "3f2b8c1a-7d4e-4f6a-9b2c-1e5d8a7f0c93"

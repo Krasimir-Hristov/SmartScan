@@ -2,6 +2,8 @@
 
 from typing import Annotated
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+
 from app.features.billing.schemas import (
     CheckoutResponse,
     CreateCheckoutRequest,
@@ -13,7 +15,6 @@ from app.features.billing.service import (
     create_portal_session,
     process_webhook_event,
 )
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
 
