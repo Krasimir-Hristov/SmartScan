@@ -117,7 +117,7 @@
   "pricing": {
     "badge": "TRANSPARENT PRICING",
     "title": "One Flat Fee per Property. Zero Hidden Overage Charges.",
-    "subtitle": "Everything you need to host effortlessly. Free 14-day trial with full access to all features.",
+    "subtitle": "Everything you need to host effortlessly. Join the beta and get full access to all features.",
     "monthly": "Monthly Billing",
     "annual": "Annual Billing",
     "annualSave": "Save 0%",
@@ -136,7 +136,7 @@
     "feature4": "High-res print-ready acrylic QR plaque PDF (A4/A5/A6 300+ DPI)",
     "feature5": "Failsafe host WhatsApp & direct emergency escalation",
     "feature6": "Free seasonal pausing (preserve data during off-season)",
-    "feature7": "14-day free trial with full access (no credit card required)"
+    "feature7": "Full access to all AI features during the testing phase"
   },
   "footer": {
     "overview": "Overview",
@@ -363,7 +363,7 @@
       "activeLabel": "Active Subscription",
       "activeDesc": "Space is active and accessible. (€1.00/month)",
       "trialingLabel": "Trial Period",
-      "trialingDesc": "You are on a free trial. Subscribe to prevent access interruption.",
+      "trialingDesc": "You are in the testing phase. Subscribe to prevent access interruption.",
       "pausedLabel": "Paused",
       "pausedDesc": "Subscription is paused. Space is not publicly accessible.",
       "pastDueLabel": "Past Due",
@@ -372,7 +372,10 @@
       "canceledDesc": "Subscription has expired or been canceled.",
       "title": "Subscription & Billing",
       "subscribe": "Subscribe",
-      "manage": "Manage"
+      "manage": "Manage",
+      "checkoutError": "Checkout connection error.",
+      "portalError": "Portal connection error.",
+      "stripeError": "Error connecting to Stripe."
     }
   },
   "stay": {

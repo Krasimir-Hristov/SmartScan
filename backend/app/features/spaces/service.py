@@ -36,7 +36,7 @@ async def delete_space(space_id: str, host_id: str) -> bool:
         raise ValueError(msg)
 
     space = cast(dict[str, Any], response.data[0])
-    
+
     if space.get("host_id") != host_id:
         msg = "Unauthorized. You do not own this space."
         raise ValueError(msg)
@@ -50,21 +50,45 @@ async def delete_space(space_id: str, host_id: str) -> bool:
                 return stripe.Subscription.delete(stripe_sub_id)  # type: ignore
 
             await asyncio.to_thread(_cancel_sub)
-            logger.info("Canceled Stripe subscription %s for space %s", stripe_sub_id, space_id)
+            logger.info(
+                "Canceled Stripe subscription %s for space %s", stripe_sub_id, space_id
+            )
+        except stripe.InvalidRequestError as e:
+            if getattr(e, "code", None) == "resource_missing":
+                logger.info(
+                    "Stripe subscription %s already missing, proceeding to delete space.",
+                    stripe_sub_id,
+                )
+            else:
+                logger.exception(
+                    "Stripe error canceling subscription %s", stripe_sub_id
+                )
+                raise
         except Exception:
-            logger.exception("Failed to cancel Stripe subscription %s", stripe_sub_id)
-            # Even if Stripe fails (e.g. already canceled, invalid ID),
-            # we should still allow the user to delete the space or handle it gracefully.
-            # In this case, we proceed to delete the space to avoid locking the user.
+            logger.exception(
+                "Unexpected error canceling Stripe subscription %s", stripe_sub_id
+            )
+            raise
 
     # 3. Delete from Supabase
     def _delete_space() -> APIResponse:
-        return supabase.table("spaces").delete().eq("id", space_id).execute()
+        return (
+            supabase.table("spaces")
+            .delete()
+            .eq("id", space_id)
+            .eq("host_id", host_id)
+            .select("id")
+            .execute()
+        )
 
     try:
-        await asyncio.to_thread(_delete_space)
+        del_resp = await asyncio.to_thread(_delete_space)
+        if not del_resp.data:
+            raise ValueError("Space not found or unauthorized.")
     except Exception as e:
-        msg = f"Database error deleting space: {e}"
-        raise ValueError(msg) from e
+        if isinstance(e, ValueError):
+            raise
+        logger.error(f"Database error deleting space {space_id}: {e}")
+        raise ValueError("Could not delete space from database.") from e
 
     return True

@@ -78,7 +78,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
         if (res.success && res.data?.checkout_url) {
           window.location.href = res.data.checkout_url;
         } else {
-          setError(res.error || 'Checkout connection error.');
+          setError(res.error || t('checkoutError'));
         }
       } else {
         // Go to Customer Portal
@@ -86,11 +86,11 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
         if (res.success && res.data?.portal_url) {
           window.location.href = res.data.portal_url;
         } else {
-          setError(res.error || 'Portal connection error.');
+          setError(res.error || t('portalError'));
         }
       }
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : String(err)) || 'Error connecting to Stripe.');
+      setError((err instanceof Error ? err.message : String(err)) || t('stripeError'));
     } finally {
       setIsLoading(false);
     }

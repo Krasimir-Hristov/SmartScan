@@ -30,7 +30,7 @@ async def create_checkout_session(
     response = await asyncio.to_thread(_fetch_space)
     if not response.data:
         raise ValueError("Space not found.")
-    space = response.data[0]
+    space = __import__('typing').cast(dict[str, __import__('typing').Any], response.data[0])
 
     if space["host_id"] != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
@@ -39,7 +39,6 @@ async def create_checkout_session(
     sub_status = space.get("subscription_status")
     if space.get("stripe_subscription_id") and sub_status not in [
         "canceled",
-        "trialing_without_sub",
     ]:
         raise ValueError("Space already has an active subscription.")
 
@@ -100,7 +99,7 @@ async def create_portal_session(
     response = await asyncio.to_thread(_fetch_space_portal)
     if not response.data:
         raise ValueError("Space not found.")
-    space = response.data[0]
+    space = __import__('typing').cast(dict[str, __import__('typing').Any], response.data[0])
 
     if space["host_id"] != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
@@ -192,7 +191,8 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
         ]:
             subscription_id = data_dict.get("id")
             status = data_dict.get("status")
-            meta_space_id = data_dict.get("metadata", {}).get("space_id")
+            metadata = data_dict.get("metadata") or {}
+            meta_space_id = metadata.get("space_id")
 
             mapped_status = status
             if status in ["unpaid", "incomplete", "incomplete_expired"]:

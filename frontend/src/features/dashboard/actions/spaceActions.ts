@@ -2,9 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { fetchBackend } from './backendClient';
 
-const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
-const BACKEND_PROXY_SECRET = process.env.BACKEND_PROXY_SECRET || '';
 import { generateSpaceSlug } from '../utils/slugUtils';
 import {
   PLAQUE_NAME_MAX_LENGTH,
@@ -361,29 +360,13 @@ export async function deleteSpaceAction(
   spaceId: string
 ): Promise<ActionResult<boolean>> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, error: 'Unauthorized.' };
-    }
-
-    const response = await fetch(`${BACKEND_INTERNAL_URL}/api/py/spaces/${spaceId}`, {
+    await fetchBackend<unknown>(spaces/, {
       method: 'DELETE',
-      headers: {
-        'x-user-id': user.id,
-        'x-internal-auth': BACKEND_PROXY_SECRET,
-      }
     });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      return { success: false, error: errData.detail || 'Failed to delete space securely.' };
-    }
 
     revalidatePath('/dashboard');
     return { success: true, data: true };
-  } catch (err) {
+  } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error deleting space.';
     return { success: false, error: message };
   }
