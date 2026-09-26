@@ -11,6 +11,7 @@ import {
   Car,
   Utensils,
   ShieldCheck,
+  PawPrint,
 } from 'lucide-react';
 import type { KnowledgeChunk } from '@/lib/types/databaseTypes';
 
@@ -37,6 +38,8 @@ export const KnowledgeChunkList: React.FC<KnowledgeChunkListProps> = ({
         return <Utensils className="w-3.5 h-3.5 text-rose-400" />;
       case 'rules':
         return <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />;
+      case 'pets':
+        return <PawPrint className="w-3.5 h-3.5 text-emerald-400" />;
       default:
         return <Tag className="w-3.5 h-3.5 text-emerald-400" />;
     }

@@ -2,7 +2,11 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Home, MapPin, CheckCircle2 } from 'lucide-react';
+import {
+  Home,
+  MapPin,
+  CheckCircle2,
+} from 'lucide-react';
 import type { Space, StaySettings } from '@/lib/types/databaseTypes';
 
 export interface SpaceSelectorProps {
@@ -18,6 +22,41 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
   onSelectSpace,
 }) => {
   const t = useTranslations('dashboard');
+
+  const getStatusBadge = (status: string | null | undefined) => {
+    const current = status || 'trialing';
+    switch (current) {
+      case 'active':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{t('billing.activeLabel')}</span>
+          </span>
+        );
+      case 'trialing':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span>{t('billing.trialingLabel')}</span>
+          </span>
+        );
+      case 'past_due':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+            <span>{t('billing.pastDueLabel')}</span>
+          </span>
+        );
+      case 'canceled':
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-500/15 text-zinc-400 border border-zinc-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+            <span>{t('billing.canceledLabel')}</span>
+          </span>
+        );
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -53,9 +92,9 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                       isSelected
                         ? 'bg-emerald-500/20 text-emerald-400'
                         : 'bg-zinc-800 text-zinc-400 group-hover:bg-emerald-500/10 group-hover:text-emerald-400'
@@ -63,7 +102,7 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
                   >
                     <Home className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="font-display text-sm font-bold text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
                       {space.name}
                     </h3>
@@ -80,15 +119,21 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
                     <span>{t('statusActive')}</span>
                   </span>
                 ) : (
-                  <span className="w-2 h-2 rounded-full bg-zinc-600 group-hover:bg-emerald-400 mt-1.5 shrink-0 transition-colors" />
+                  getStatusBadge(space.subscription_status)
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-zinc-500">
-                <span className="font-mono text-zinc-400">/stay/{space.slug}</span>
-                <span className="text-emerald-400 group-hover:text-emerald-300 font-semibold flex items-center gap-0.5 transition-colors">
+              <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-zinc-500 gap-2">
+                <span className="font-mono text-zinc-400 text-[11px] truncate">
+                  /stay/{space.slug}
+                </span>
+
+                {/* Open Space Editor */}
+                <span className="text-emerald-400 group-hover:text-emerald-300 font-semibold flex items-center gap-0.5 transition-colors text-[11px] shrink-0">
                   <span>{t('manage')}</span>
-                  <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                  <span className="group-hover:translate-x-0.5 transition-transform">
+                    &rarr;
+                  </span>
                 </span>
               </div>
             </div>

@@ -21,6 +21,13 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
 
   const status = space.subscription_status || 'trialing';
   
+  // Format trial date if available
+  const formattedTrialDate = space.trial_ends_at 
+    ? new Date(space.trial_ends_at).toLocaleDateString(undefined, { 
+        year: 'numeric', month: 'short', day: 'numeric' 
+      }) 
+    : '';
+
   // Basic display logic depending on status
   const getStatusDisplay = () => {
     switch (status) {
@@ -34,7 +41,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
       case 'trialing':
         return {
           label: t('trialingLabel'),
-          description: t('trialingDesc'),
+          description: formattedTrialDate ? t('trialingDescExtended', { date: formattedTrialDate }) : t('trialingDesc'),
           badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
           dotClass: 'bg-amber-400 animate-pulse',
         };
@@ -56,7 +63,7 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
       default:
         return {
           label: t('canceledLabel'),
-          description: t('canceledDesc'),
+          description: t('canceledDescExtended'),
           badgeClass: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
           dotClass: 'bg-zinc-400',
         };
@@ -116,7 +123,9 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
                   {display.label}
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">{display.description}</p>
+              <p className="text-xs text-zinc-400 mt-1 max-w-lg leading-relaxed">
+                {display.description}
+              </p>
             </div>
           </div>
         </div>
