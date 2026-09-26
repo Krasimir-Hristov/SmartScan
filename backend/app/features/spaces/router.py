@@ -31,3 +31,24 @@ async def delete_space_endpoint(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+class PurgeAccountResponse(BaseModel):
+    success: bool
+
+
+@router.delete("/host/purge", response_model=PurgeAccountResponse)
+@limiter.limit("2/minute")
+async def purge_host_account_endpoint(
+    request: Request,
+    user: BillingUser = Depends(get_current_user),  # noqa: B008
+):
+    """Securely purges all spaces and cancels all Stripe subscriptions for a host before account deletion."""
+    from app.features.spaces.service import purge_host_account
+    try:
+        success = await purge_host_account(host_id=user.id)
+        return PurgeAccountResponse(success=success)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail="Internal server error")

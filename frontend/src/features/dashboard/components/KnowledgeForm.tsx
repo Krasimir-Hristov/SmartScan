@@ -40,7 +40,7 @@ export const KnowledgeForm: React.FC<KnowledgeFormProps> = ({
   const t = useTranslations('dashboard');
 
   const [category, setCategory] = useState<
-    'rules' | 'appliances' | 'parking' | 'recommendations' | 'general'
+    'rules' | 'appliances' | 'parking' | 'recommendations' | 'general' | 'pets'
   >('appliances');
   const [activePlaceholder, setActivePlaceholder] = useState<string | null>(null);
 
@@ -135,7 +135,8 @@ export const KnowledgeForm: React.FC<KnowledgeFormProps> = ({
                   | 'appliances'
                   | 'parking'
                   | 'recommendations'
-                  | 'general',
+                  | 'general'
+                  | 'pets',
               )
             }
             className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer'
@@ -143,6 +144,7 @@ export const KnowledgeForm: React.FC<KnowledgeFormProps> = ({
             <option value='appliances'>{t('catAppliances')}</option>
             <option value='parking'>{t('catParking')}</option>
             <option value='rules'>{t('catRules')}</option>
+            <option value='pets'>{t('catPets')}</option>
             <option value='recommendations'>{t('catRecommendations')}</option>
             <option value='general'>{t('catGeneral')}</option>
           </select>

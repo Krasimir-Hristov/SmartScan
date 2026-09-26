@@ -3,6 +3,7 @@
 import { createClient as createServerSupabase } from '@/lib/supabase/server';
 import { createClient as createAdminSupabase } from '@supabase/supabase-js';
 import type { Database } from '@/lib/types/databaseTypes';
+import { fetchBackend } from './backendClient';
 
 export interface DeleteAccountResult {
   success: boolean;
@@ -49,7 +50,18 @@ export async function deleteAccountAction(
 
     const hostId = user.id;
 
-    // 1. Privileged account deletion via Supabase Auth Admin
+    // 1. Backend Purge (Cancels Stripe subscriptions & deletes spaces)
+    try {
+      await fetchBackend('spaces/host/purge', { method: 'DELETE' });
+    } catch (backendError) {
+      const msg = backendError instanceof Error ? backendError.message : 'Unknown backend error';
+      return {
+        success: false,
+        error: `Failed to safely purge account billing: ${msg}`,
+      };
+    }
+
+    // 2. Privileged account deletion via Supabase Auth Admin
     const adminClient = createAdminSupabase<Database>(supabaseUrl, secretKey, {
       auth: {
         autoRefreshToken: false,
@@ -68,19 +80,6 @@ export async function deleteAccountAction(
       return {
         success: false,
         error: 'Failed to delete user account: ' + adminDeleteError.message,
-      };
-    }
-
-    // 2. Delete all host's spaces (cascades to knowledge_chunks)
-    const { error: deleteSpacesError } = await supabase
-      .from('spaces')
-      .delete()
-      .eq('host_id', hostId);
-
-    if (deleteSpacesError) {
-      return {
-        success: false,
-        error: 'Failed to remove user spaces: ' + deleteSpacesError.message,
       };
     }
 

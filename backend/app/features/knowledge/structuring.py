@@ -26,7 +26,8 @@ RULES FOR ATOMIC STRUCTURING:
    - "access" (keybox codes, door pins, keys, entry instructions)
    - "appliances" (heating, AC, boiler, stove, dishwasher, sauna, jacuzzi)
    - "parking" (where to park, garage spots, street parking rules)
-   - "rules" (quiet hours, pets, smoking, garbage disposal, check-out tasks)
+   - "rules" (quiet hours, smoking, garbage disposal, check-out tasks)
+   - "pets" (rules about pets, allowed/prohibited, pet fees, neighbor pets, dog parks)
    - "recommendations" (restaurants, cafes, ski rentals, beaches, sights)
    - "general" (anything else)
 5. Generate clear, descriptive titles (e.g., "Wi-Fi мрежа и парола", "Код за ключа на входната врата", "Внимавайте с котката на съседа").
@@ -75,6 +76,7 @@ def _parse_cards_json(raw_json: str) -> list[StructuredCard]:
         "general",
         "access",
         "parking",
+        "pets",
     }
     cards: list[StructuredCard] = []
 
@@ -123,6 +125,19 @@ def _create_fallback_card(text: str) -> list[StructuredCard]:
     ):
         category = "appliances"
         title = "Уреди и отопление"
+    elif any(
+        k in lower
+        for k in [
+            "домашен любимец",
+            "домашни любимци",
+            "куче",
+            "котка",
+            "любимци",
+            "животни",
+        ]
+    ) or bool(re.search(r"\b(pet|pets|dog|dogs|cat|cats)\b", lower)):
+        category = "pets"
+        title = "Домашни любимци"
     elif any(k in lower for k in ["боклук", "смет", "ресторант", "механа", "храна"]):
         category = (
             "rules" if "боклук" in lower or "смет" in lower else "recommendations"

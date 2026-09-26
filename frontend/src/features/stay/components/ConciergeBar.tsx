@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   Sparkles,
@@ -12,11 +11,6 @@ import {
   RotateCcw,
   AlertCircle,
   Globe,
-  Car,
-  Flame,
-  Trash2,
-  UtensilsCrossed,
-  HelpCircle,
 } from 'lucide-react';
 import { useConciergeChat } from '../hooks/useConciergeChat';
 import type { SpaceStayData } from '../types/stayTypes';
@@ -26,64 +20,28 @@ export interface ConciergeBarProps {
   stayData?: SpaceStayData;
 }
 
-interface DynamicChip {
-  id: string;
-  title: string;
-  category: string;
-}
-
-const getCategoryIcon = (category: string) => {
-  const cat = category.toLowerCase();
-  if (cat.includes('heat') || cat.includes('климатик') || cat.includes('парно')) return Flame;
-  if (cat.includes('park') || cat.includes('паркинг') || cat.includes('транспорт')) return Car;
-  if (cat.includes('trash') || cat.includes('смет') || cat.includes('боклук')) return Trash2;
-  if (cat.includes('dine') || cat.includes('food') || cat.includes('хран') || cat.includes('ресторант')) return UtensilsCrossed;
-  return HelpCircle;
-};
-
-export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData }) => {
+export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
   const t = useTranslations('stay');
   const locale = useLocale();
   const [inputQuery, setInputQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, isStreaming, error, sendMessage, stopGeneration, clearChat } =
-    useConciergeChat({ spaceId, locale, connectionErrorMessage: t('chatConnectionError') });
-
-  // Fetch host knowledge card topics as dynamic chips with TanStack Query
-  const { data: knowledgeChips = [] } = useQuery<DynamicChip[]>({
-    queryKey: ['knowledgeChips', spaceId],
-    queryFn: async () => {
-      try {
-        const res = await fetch(`/api/py/knowledge/chips?space_id=${encodeURIComponent(spaceId)}`);
-        if (!res.ok) return [];
-        const data: unknown = await res.json();
-        return Array.isArray(data) ? (data as DynamicChip[]) : [];
-      } catch {
-        return [];
-      }
-    },
-    initialData: stayData?.knowledgeChips,
-    staleTime: 5 * 60 * 1000,
+  const {
+    messages,
+    isStreaming,
+    error,
+    sendMessage,
+    stopGeneration,
+    clearChat,
+  } = useConciergeChat({
+    spaceId,
+    locale,
+    connectionErrorMessage: t('chatConnectionError'),
   });
-
-  // Dynamically assemble chips for verified host data (Taxi + Host Knowledge Cards)
-  const chips = useMemo(() => {
-    const list: Array<{ id: string; label: string; icon: React.ComponentType<{ className?: string }> }> = [];
-    if (stayData?.contacts?.taxiPhone?.trim()) {
-      list.push({ id: 'taxi', label: t('chipTaxi'), icon: Car });
-    }
-    for (const kc of knowledgeChips) {
-      list.push({ id: kc.id, label: kc.title, icon: getCategoryIcon(kc.category) });
-    }
-    return list;
-  }, [stayData?.contacts?.taxiPhone, knowledgeChips, t]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
-
-  const handleChipClick = (label: string) => sendMessage(label);
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -95,26 +53,29 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData })
 
   return (
     <section
-      aria-labelledby="concierge-heading"
-      className="relative overflow-hidden rounded-2xl bg-[#121216] border border-emerald-500/30 p-4 sm:p-5 shadow-2xl flex flex-col gap-4"
+      aria-labelledby='concierge-heading'
+      className='relative overflow-hidden rounded-2xl bg-[#121216] border border-emerald-500/30 p-4 sm:p-5 shadow-2xl flex flex-col gap-4'
     >
       {/* Subtle top ambient glow */}
       <div
-        className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-20 bg-emerald-500/15 blur-2xl"
-        aria-hidden="true"
+        className='pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-20 bg-emerald-500/15 blur-2xl'
+        aria-hidden='true'
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-xs shadow-emerald-500/30">
-            <Bot className="w-4 h-4 text-emerald-400" />
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2.5'>
+          <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-xs shadow-emerald-500/30'>
+            <Bot className='w-4 h-4 text-emerald-400' />
           </div>
-          <div className="flex flex-col">
-            <span id="concierge-heading" className="text-xs font-bold text-white font-display tracking-tight">
+          <div className='flex flex-col'>
+            <span
+              id='concierge-heading'
+              className='text-xs font-bold text-white font-display tracking-tight'
+            >
               {t('conciergeTitle')}
             </span>
-            <span className="text-[10px] text-zinc-400 font-mono">
+            <span className='text-[10px] text-zinc-400 font-mono'>
               {t('conciergeSubtitle')}
             </span>
           </div>
@@ -122,61 +83,54 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData })
 
         {messages.length > 0 && (
           <button
-            type="button"
+            type='button'
             onClick={clearChat}
             aria-label={t('clearChat')}
-            className="flex items-center gap-1 text-[11px] text-zinc-400 hover:text-white px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+            className='flex items-center gap-1 text-[11px] text-zinc-400 hover:text-white px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 transition-colors cursor-pointer'
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className='w-3 h-3' />
             <span>{t('clearChat')}</span>
           </button>
         )}
       </div>
 
       {/* Multilingual Polyglot CTA Banner */}
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-[11px] leading-snug">
-        <Globe className="w-3.5 h-3.5 shrink-0 text-emerald-400 animate-pulse" />
+      <div className='flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-[11px] leading-snug'>
+        <Globe className='w-3.5 h-3.5 shrink-0 text-emerald-400 animate-pulse' />
         <span>{t('polyglotCtaBanner')}</span>
       </div>
 
-      {/* Quick Prompt Chips */}
-      {chips.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {chips.map((chip) => {
-            const Icon = chip.icon;
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                disabled={isStreaming}
-                onClick={() => handleChipClick(chip.label)}
-                aria-label={chip.label}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950/80 border border-white/[0.08] hover:border-emerald-500/40 text-zinc-300 hover:text-white text-xs font-medium transition-all duration-150 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Icon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="truncate">{chip.label}</span>
-              </button>
-            );
-          })}
+      {/* Welcome Call to Action Prompt */}
+      {messages.length === 0 && (
+        <div className='flex flex-col gap-1.5 p-3.5 rounded-xl bg-linear-to-b from-white/4 to-transparent border border-white/5'>
+          <div className='flex items-center gap-2 text-emerald-400'>
+            <Sparkles className='w-4 h-4 shrink-0' />
+            <span className='text-xs font-semibold text-white'>
+              {t('ctaPromptTitle')}
+            </span>
+          </div>
+          <p className='text-[11px] text-zinc-400 leading-relaxed'>
+            {t('ctaPromptDesc')}
+          </p>
         </div>
       )}
 
       {/* Optional Error Alert Banner */}
       {error && (
-        <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 text-rose-400 text-xs">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-          <span className="leading-snug">{error}</span>
+        <div className='flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 text-rose-400 text-xs'>
+          <AlertCircle className='w-4 h-4 shrink-0 text-rose-400' />
+          <span className='leading-snug'>{error}</span>
         </div>
       )}
 
       {/* Chat Messages Log */}
       {messages.length > 0 && (
         <div
-          role="log"
-          aria-live="polite"
-          aria-relevant="additions"
+          role='log'
+          aria-live='polite'
+          aria-relevant='additions'
           aria-busy={isStreaming}
-          className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1 scroll-smooth"
+          className='flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1 scroll-smooth'
         >
           {messages.map((msg) => {
             if (msg.role === 'assistant' && !msg.content && msg.isStreaming) {
@@ -190,28 +144,28 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData })
                 }`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mt-0.5">
-                    <Sparkles className="w-3 h-3" />
+                  <div className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mt-0.5'>
+                    <Sparkles className='w-3 h-3' />
                   </div>
                 )}
                 <div
                   className={`max-w-[85%] rounded-xl px-3.5 py-2.5 leading-relaxed whitespace-pre-line ${
                     msg.role === 'user'
                       ? 'bg-emerald-600 text-white font-medium rounded-br-xs shadow-sm'
-                      : 'bg-zinc-950/90 border border-white/[0.08] text-zinc-200 rounded-bl-xs'
+                      : 'bg-zinc-950/90 border border-white/8 text-zinc-200 rounded-bl-xs'
                   }`}
                 >
                   {msg.content}
                   {msg.role === 'assistant' && msg.isStreaming && (
                     <span
-                      className="inline-block w-1.5 h-3.5 bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs"
-                      aria-hidden="true"
+                      className='inline-block w-1.5 h-3.5 bg-emerald-400 ml-1 animate-pulse align-middle rounded-xs'
+                      aria-hidden='true'
                     />
                   )}
                 </div>
                 {msg.role === 'user' && (
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 border border-white/10 mt-0.5">
-                    <User className="w-3 h-3" />
+                  <div className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 border border-white/10 mt-0.5'>
+                    <User className='w-3 h-3' />
                   </div>
                 )}
               </div>
@@ -222,48 +176,48 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId, stayData })
             messages.length > 0 &&
             messages[messages.length - 1].role === 'assistant' &&
             !messages[messages.length - 1].content && (
-              <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  <Sparkles className="w-3 h-3 animate-spin" />
+              <div className='flex items-center gap-2 text-xs text-zinc-400'>
+                <div className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'>
+                  <Sparkles className='w-3 h-3 animate-spin' />
                 </div>
-                <span className="italic text-[11px] text-emerald-400 animate-pulse font-mono">
+                <span className='italic text-[11px] text-emerald-400 animate-pulse font-mono'>
                   {t('aiTyping')}
                 </span>
               </div>
             )}
 
-          <div ref={messagesEndRef} aria-hidden="true" />
+          <div ref={messagesEndRef} aria-hidden='true' />
         </div>
       )}
 
       {/* Input Field Bar */}
-      <form onSubmit={handleSend} className="relative flex items-center">
+      <form onSubmit={handleSend} className='relative flex items-center'>
         <input
-          type="text"
+          type='text'
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
           placeholder={t('askPlaceholder')}
           aria-label={t('askPlaceholder')}
           disabled={isStreaming}
-          className="w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-zinc-950/90 border border-white/[0.08] focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/50 text-white text-base sm:text-xs placeholder:text-zinc-500 outline-none transition-all disabled:opacity-60"
+          className='w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-zinc-950/90 border border-white/8 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/50 text-white text-base sm:text-xs placeholder:text-zinc-500 outline-none transition-all disabled:opacity-60'
         />
         {isStreaming ? (
           <button
-            type="button"
+            type='button'
             onClick={stopGeneration}
             aria-label={t('stopAria')}
-            className="absolute right-1.5 p-1.5 rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer"
+            className='absolute right-1.5 p-1.5 rounded-lg bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer'
           >
-            <Square className="w-3.5 h-3.5 fill-current" />
+            <Square className='w-3.5 h-3.5 fill-current' />
           </button>
         ) : (
           <button
-            type="submit"
+            type='submit'
             disabled={!inputQuery.trim()}
             aria-label={t('sendAria')}
-            className="absolute right-1.5 p-1.5 rounded-lg bg-emerald-500 text-zinc-950 hover:bg-emerald-400 disabled:opacity-30 disabled:hover:bg-emerald-500 transition-colors cursor-pointer disabled:cursor-not-allowed"
+            className='absolute right-1.5 p-1.5 rounded-lg bg-emerald-500 text-zinc-950 hover:bg-emerald-400 disabled:opacity-30 disabled:hover:bg-emerald-500 transition-colors cursor-pointer disabled:cursor-not-allowed'
           >
-            <Send className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Send className='w-3.5 h-3.5 stroke-[2.5]' />
           </button>
         )}
       </form>

@@ -9,6 +9,7 @@ export { UserProfileDropdown } from './components/UserProfileDropdown';
 export { DeleteAccountModal } from './components/DeleteAccountModal';
 export { DeleteSpaceModal } from './components/DeleteSpaceModal';
 export { QrPrintModal } from './components/QrPrintModal';
+export { SubscriptionsModal } from './components/SubscriptionsModal';
 export { PlaqueVisualPreview } from './components/PlaqueVisualPreview';
 export type {
   PlaqueFormat,

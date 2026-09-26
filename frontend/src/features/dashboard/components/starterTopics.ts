@@ -1,9 +1,30 @@
 export interface StarterTopicConfig {
   id: string;
-  chipKey: 'starterHeatingChip' | 'starterTrashChip' | 'starterParkingChip' | 'starterDiningChip' | 'starterRulesChip';
-  titleKey: 'starterHeatingTitle' | 'starterTrashTitle' | 'starterParkingTitle' | 'starterDiningTitle' | 'starterRulesTitle';
-  category: 'rules' | 'appliances' | 'parking' | 'recommendations' | 'general';
-  placeholderKey: 'starterHeatingPlaceholder' | 'starterTrashPlaceholder' | 'starterParkingPlaceholder' | 'starterDiningPlaceholder' | 'starterRulesPlaceholder';
+  chipKey:
+    | 'starterHeatingChip'
+    | 'starterTrashChip'
+    | 'starterParkingChip'
+    | 'starterDiningChip'
+    | 'starterRulesChip'
+    | 'starterPetsChip'
+    | 'starterGeneralChip';
+  titleKey:
+    | 'starterHeatingTitle'
+    | 'starterTrashTitle'
+    | 'starterParkingTitle'
+    | 'starterDiningTitle'
+    | 'starterRulesTitle'
+    | 'starterPetsTitle'
+    | 'starterGeneralTitle';
+  category: 'rules' | 'appliances' | 'parking' | 'recommendations' | 'general' | 'pets';
+  placeholderKey:
+    | 'starterHeatingPlaceholder'
+    | 'starterTrashPlaceholder'
+    | 'starterParkingPlaceholder'
+    | 'starterDiningPlaceholder'
+    | 'starterRulesPlaceholder'
+    | 'starterPetsPlaceholder'
+    | 'starterGeneralPlaceholder';
 }
 
 export const STARTER_TOPICS: StarterTopicConfig[] = [
@@ -42,4 +63,20 @@ export const STARTER_TOPICS: StarterTopicConfig[] = [
     category: 'rules',
     placeholderKey: 'starterRulesPlaceholder',
   },
+  {
+    id: 'pets',
+    chipKey: 'starterPetsChip',
+    titleKey: 'starterPetsTitle',
+    category: 'pets',
+    placeholderKey: 'starterPetsPlaceholder',
+  },
+  {
+    id: 'general',
+    chipKey: 'starterGeneralChip',
+    titleKey: 'starterGeneralTitle',
+    category: 'general',
+    placeholderKey: 'starterGeneralPlaceholder',
+  },
 ];
+
+

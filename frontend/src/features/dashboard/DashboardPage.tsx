@@ -61,7 +61,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   return (
     <div className="min-h-dvh bg-[#09090b] text-zinc-100 flex flex-col antialiased selection:bg-emerald-500 selection:text-zinc-950 font-sans">
       {/* Dashboard Sticky Navbar */}
-      <DashboardNavbar user={user} />
+      <DashboardNavbar user={user} spaces={spaces} />
 
       {/* Main Content Area */}
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex flex-col gap-6 sm:gap-8">
