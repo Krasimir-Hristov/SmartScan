@@ -65,7 +65,11 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
         const focusableElements = Array.from(
           modalRef.current.querySelectorAll<HTMLElement>(focusableSelector)
         );
-        if (focusableElements.length === 0) return;
+        if (focusableElements.length === 0) {
+          event.preventDefault();
+          modalRef.current.focus();
+          return;
+        }
 
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
@@ -185,8 +189,9 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
     >
       <div
         ref={modalRef}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg rounded-3xl bg-zinc-950 border border-white/10 shadow-2xl p-5 sm:p-6 flex flex-col gap-4 sm:gap-5 max-h-[88dvh] overflow-hidden"
+        className="relative w-full max-w-lg rounded-3xl bg-zinc-950 border border-white/10 shadow-2xl p-5 sm:p-6 flex flex-col gap-4 sm:gap-5 max-h-[88dvh] overflow-hidden focus:outline-none"
       >
         {/* Ambient Top Glow */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />

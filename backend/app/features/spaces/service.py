@@ -144,6 +144,7 @@ async def purge_host_account(host_id: str) -> bool:
                 supabase.table("spaces")
                 .select("id, stripe_subscription_id")
                 .eq("host_id", host_id)
+                .order("id")
                 .range(s, e)
                 .execute()
             )
