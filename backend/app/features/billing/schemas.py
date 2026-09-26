@@ -65,3 +65,13 @@ class PortalResponse(BaseModel):
 class BillingUser(BaseModel):
     id: str
     email: str | None = None
+
+
+class SpaceBillingRecord(BaseModel):
+    """Database record for space billing validation."""
+
+    id: str
+    host_id: str
+    subscription_status: str | None = None
+    stripe_subscription_id: str | None = None
+    stripe_customer_id: str | None = None

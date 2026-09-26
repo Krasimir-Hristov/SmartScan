@@ -70,6 +70,27 @@ async def delete_space(space_id: str, host_id: str) -> bool:
             )
             raise
 
+    # 2.5 Persist canceled state to decouple before full deletion
+    if stripe_sub_id and isinstance(stripe_sub_id, str):
+
+        def _decouple_space() -> APIResponse:
+            return (
+                supabase.table("spaces")
+                .update(
+                    {"stripe_subscription_id": None, "subscription_status": "canceled"}
+                )
+                .eq("id", space_id)
+                .execute()
+            )
+
+        try:
+            await asyncio.to_thread(_decouple_space)
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "Failed to decouple subscription from space %s. Deletion might be incomplete if it fails next.",
+                space_id,
+            )
+
     # 3. Delete from Supabase
     def _delete_space() -> APIResponse:
         return (

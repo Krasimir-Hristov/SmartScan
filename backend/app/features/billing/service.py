@@ -7,7 +7,11 @@ import stripe
 
 from app.core.config import settings
 from app.core.database import get_supabase_client
-from app.features.billing.schemas import CheckoutResponse, PortalResponse
+from app.features.billing.schemas import (
+    CheckoutResponse,
+    PortalResponse,
+    SpaceBillingRecord,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +34,14 @@ async def create_checkout_session(
     response = await asyncio.to_thread(_fetch_space)
     if not response.data:
         raise ValueError("Space not found.")
-    space = __import__('typing').cast(dict[str, __import__('typing').Any], response.data[0])
+    space = SpaceBillingRecord.model_validate(response.data[0])
 
-    if space["host_id"] != host_id:
+    if space.host_id != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
 
     # Guard: prevent creating a subscription-mode Checkout session for a space that already has a subscription
-    sub_status = space.get("subscription_status")
-    if space.get("stripe_subscription_id") and sub_status not in [
+    sub_status = space.subscription_status
+    if space.stripe_subscription_id and sub_status not in [
         "canceled",
     ]:
         raise ValueError("Space already has an active subscription.")
@@ -63,7 +67,7 @@ async def create_checkout_session(
         }
 
         # Add customer or customer_email safely
-        stripe_cust_id = space.get("stripe_customer_id")
+        stripe_cust_id = space.stripe_customer_id
         if stripe_cust_id and stripe_cust_id.strip():
             kwargs["customer"] = stripe_cust_id.strip()
         elif user_email and user_email.strip():
@@ -99,12 +103,12 @@ async def create_portal_session(
     response = await asyncio.to_thread(_fetch_space_portal)
     if not response.data:
         raise ValueError("Space not found.")
-    space = __import__('typing').cast(dict[str, __import__('typing').Any], response.data[0])
+    space = SpaceBillingRecord.model_validate(response.data[0])
 
-    if space["host_id"] != host_id:
+    if space.host_id != host_id:
         raise ValueError("Unauthorized. You do not own this space.")
 
-    stripe_customer_id = space.get("stripe_customer_id")
+    stripe_customer_id = space.stripe_customer_id
     if not stripe_customer_id:
         raise ValueError("This space does not have an active customer profile yet.")
 
@@ -217,6 +221,7 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
                             supabase.table("spaces")
                             .update({"subscription_status": mapped_status})
                             .eq("id", meta_space_id)
+                            .is_("stripe_subscription_id", "null")
                             .execute()
                         )
 

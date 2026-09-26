@@ -363,7 +363,7 @@
       "activeLabel": "Active Subscription",
       "activeDesc": "Space is active and accessible. (€1.00/month)",
       "trialingLabel": "Trial Period",
-      "trialingDesc": "You are in the testing phase. Subscribe to prevent access interruption.",
+      "trialingDesc": "Your space is currently in the testing phase.",
       "pausedLabel": "Paused",
       "pausedDesc": "Subscription is paused. Space is not publicly accessible.",
       "pastDueLabel": "Past Due",
