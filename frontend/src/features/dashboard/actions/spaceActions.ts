@@ -360,7 +360,7 @@ export async function deleteSpaceAction(
   spaceId: string
 ): Promise<ActionResult<boolean>> {
   try {
-    await fetchBackend<unknown>(spaces/, {
+    await fetchBackend<unknown>(`spaces/${encodeURIComponent(spaceId)}`, {
       method: 'DELETE',
     });
 
