@@ -77,7 +77,7 @@ async def delete_space(space_id: str, host_id: str) -> bool:
             return (
                 supabase.table("spaces")
                 .update(
-                    {"stripe_subscription_id": None, "subscription_status": "canceled"}
+                    {"stripe_subscription_id": f"deleted_{stripe_sub_id}", "subscription_status": "canceled"}
                 )
                 .eq("id", space_id)
                 .execute()

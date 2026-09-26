@@ -95,7 +95,7 @@ async def create_portal_session(
     def _fetch_space_portal():
         return (
             supabase.table("spaces")
-            .select("host_id, stripe_customer_id")
+            .select("*")
             .eq("id", space_id)
             .execute()
         )
@@ -222,6 +222,7 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
                             .update({"subscription_status": mapped_status})
                             .eq("id", meta_space_id)
                             .is_("stripe_subscription_id", "null")
+                            .neq("subscription_status", "canceled")
                             .execute()
                         )
 
