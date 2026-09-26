@@ -9,9 +9,7 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-OPENROUTER_TRANSCRIPTIONS_URL = (
-    "https://openrouter.ai/api/v1/audio/transcriptions"
-)
+OPENROUTER_TRANSCRIPTIONS_URL = "https://openrouter.ai/api/v1/audio/transcriptions"
 WHISPER_MODEL = "openai/whisper-large-v3"
 
 

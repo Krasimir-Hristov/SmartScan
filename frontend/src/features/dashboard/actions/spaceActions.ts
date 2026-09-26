@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { fetchBackend } from './backendClient';
+
 import { generateSpaceSlug } from '../utils/slugUtils';
 import {
   PLAQUE_NAME_MAX_LENGTH,
@@ -358,37 +360,15 @@ export async function deleteSpaceAction(
   spaceId: string
 ): Promise<ActionResult<boolean>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: 'Нямате оторизация.' };
-    }
-
-    const { data: deletedSpace, error: deleteError } = await supabase
-      .from('spaces')
-      .delete()
-      .eq('id', spaceId)
-      .eq('host_id', user.id)
-      .select('id')
-      .maybeSingle();
-
-    if (deleteError) {
-      return { success: false, error: deleteError.message };
-    }
-
-    // Zero deleted rows (wrong id / not owned) must not be reported as success.
-    if (!deletedSpace) {
-      return { success: false, error: 'Обектът не е намерен или вече е изтрит.' };
-    }
+    await fetchBackend<unknown>(`spaces/${encodeURIComponent(spaceId)}`, {
+      method: 'DELETE',
+    });
 
     revalidatePath('/dashboard');
     return { success: true, data: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка при изтриване.';
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error deleting space.';
     return { success: false, error: message };
   }
+
 }

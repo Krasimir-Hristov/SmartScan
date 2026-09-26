@@ -12,6 +12,8 @@ import { QrPrintModal } from './QrPrintModal';
 import { SpaceCredentialsFields } from './space-editor/SpaceCredentialsFields';
 import { SpaceDangerZone } from './space-editor/SpaceDangerZone';
 import { SpaceGuestLinkBanner } from './space-editor/SpaceGuestLinkBanner';
+import { SpaceBillingCard } from './space-editor/SpaceBillingCard';
+
 import {
   createSpaceFormValues,
   toUpdateSpaceInput,
@@ -191,6 +193,8 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
           copiedWifi={copiedWifi}
           onCopyWifiPassword={handleCopyWifiPassword}
         />
+
+        <SpaceBillingCard space={space} />
 
         <SpaceDangerZone onRequestDelete={() => setIsDeleteModalOpen(true)} />
       </form>

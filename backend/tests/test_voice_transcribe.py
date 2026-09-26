@@ -11,7 +11,9 @@ client = TestClient(app)
 
 def test_transcribe_voice_missing_file():
     response = client.post("/api/py/voice/transcribe")
-    assert response.status_code == 422  # FastAPI validation error for missing form field
+    assert (
+        response.status_code == 422
+    )  # FastAPI validation error for missing form field
 
 
 def test_transcribe_voice_empty_file():
@@ -26,6 +28,7 @@ def test_transcribe_voice_empty_file():
 def test_transcribe_voice_mock_success(monkeypatch):
     # Ensure offline mode for deterministic test
     from app.core.config import settings
+
     monkeypatch.setattr(settings, "OPENROUTER_API_KEY", "test-key-mock")
 
     dummy_audio = io.BytesIO(b"RIFF" + b"\x00" * 200)
@@ -72,7 +75,9 @@ def test_transcribe_voice_with_language_param(monkeypatch):
 
     # Test 1: Valid " EL " is normalized to "el"
     dummy_audio = io.BytesIO(b"RIFF" + b"\x00" * 200)
-    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+    with patch(
+        "httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp
+    ) as mock_post:
         response = client.post(
             "/api/py/voice/transcribe",
             files={"file": ("sample.webm", dummy_audio, "audio/webm")},
@@ -84,7 +89,9 @@ def test_transcribe_voice_with_language_param(monkeypatch):
 
     # Test 2: Invalid "12" is rejected and omitted
     dummy_audio_2 = io.BytesIO(b"RIFF" + b"\x00" * 200)
-    with patch("httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp) as mock_post:
+    with patch(
+        "httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp
+    ) as mock_post:
         response = client.post(
             "/api/py/voice/transcribe",
             files={"file": ("sample.webm", dummy_audio_2, "audio/webm")},
@@ -93,4 +100,3 @@ def test_transcribe_voice_with_language_param(monkeypatch):
         assert response.status_code == 200
         call_data = mock_post.call_args[1]["data"]
         assert "language" not in call_data
-

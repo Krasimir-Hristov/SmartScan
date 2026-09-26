@@ -97,7 +97,12 @@ async def generate_embeddings(texts: list[str]) -> list[list[float]]:
             if not isinstance(item, dict):
                 continue
             idx = item.get("index")
-            if not isinstance(idx, int) or idx < 0 or idx >= len(texts) or idx in seen_indices:
+            if (
+                not isinstance(idx, int)
+                or idx < 0
+                or idx >= len(texts)
+                or idx in seen_indices
+            ):
                 continue
             vec = item.get("embedding")
             if isinstance(vec, list) and len(vec) == settings.EMBEDDING_DIMENSIONS:
@@ -105,7 +110,11 @@ async def generate_embeddings(texts: list[str]) -> list[list[float]]:
                 seen_indices.add(idx)
 
         if any(v is None for v in out):
-            logger.warning("Incomplete embedding batch received from OpenRouter (%d/%d valid).", len(seen_indices), len(texts))
+            logger.warning(
+                "Incomplete embedding batch received from OpenRouter (%d/%d valid).",
+                len(seen_indices),
+                len(texts),
+            )
             return []
 
         return [v for v in out if v is not None]

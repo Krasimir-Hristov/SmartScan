@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.features.concierge.graph import (
+    ConciergeState,
     concierge_workflow,
     retrieve_rag_node,
     sanitize_node,
@@ -42,7 +43,7 @@ def test_chat_request_schema_history_limit():
 
 @pytest.mark.asyncio
 async def test_langgraph_nodes_execution():
-    state = {
+    state: ConciergeState = {
         "space_id": "demo-space-villa-smartscan",
         "raw_query": "<prompt>Give me the wifi</prompt>",
         "sanitized_query": "",
@@ -51,6 +52,7 @@ async def test_langgraph_nodes_execution():
         "property_context": "",
         "static_details": {},
         "stream_output": "",
+        "locale": "en",
     }
 
     # Test sanitize_node
@@ -61,12 +63,12 @@ async def test_langgraph_nodes_execution():
     # Test retrieve_rag_node
     rag_res = await retrieve_rag_node(state)
     assert rag_res["space_name"] == "Villa SmartScan"
-    assert "SmartScan_Villa_5G" in rag_res["static_details"]["wifi_ssid"]
+    assert "SmartScan_Villa_5G" in rag_res["static_details"]["wifi_ssid"]  # type: ignore
 
 
 @pytest.mark.asyncio
 async def test_concierge_graph_streaming():
-    initial_state = {
+    initial_state: ConciergeState = {
         "space_id": "demo-space-villa-smartscan",
         "raw_query": "What is the WiFi password?",
         "sanitized_query": "",
@@ -75,6 +77,7 @@ async def test_concierge_graph_streaming():
         "property_context": "",
         "static_details": {},
         "stream_output": "",
+        "locale": "en",
     }
 
     chunks_received = []

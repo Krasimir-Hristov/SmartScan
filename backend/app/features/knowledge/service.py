@@ -18,7 +18,6 @@ from app.features.knowledge.structuring import structure_knowledge_cards_gemini
 logger = logging.getLogger(__name__)
 
 
-
 def _safe_str(val: object, default: str = "") -> str:
     return val if isinstance(val, str) else default
 
@@ -52,8 +51,16 @@ async def get_space_stay_context(space_id: str) -> SpaceStayContext:
         return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
 
     try:
+
         def _fetch_space():
-            return client.table("spaces").select("id, name, stay_settings").eq("id", space_id).eq("is_active", True).single().execute()
+            return (
+                client.table("spaces")
+                .select("id, name, stay_settings")
+                .eq("id", space_id)
+                .eq("is_active", True)
+                .single()
+                .execute()
+            )
 
         res = await asyncio.to_thread(_fetch_space)
         data = _extract_dict(res.data)
@@ -98,7 +105,11 @@ async def get_relevant_knowledge_chunks(
         matched = [
             chunk
             for chunk in DEMO_VILLA_CONTEXT.rag_chunks
-            if any(word in chunk.content.lower() or word in chunk.title.lower() for word in q_lower.split() if len(word) > 2)
+            if any(
+                word in chunk.content.lower() or word in chunk.title.lower()
+                for word in q_lower.split()
+                if len(word) > 2
+            )
         ]
         return matched if matched else DEMO_VILLA_CONTEXT.rag_chunks
 
@@ -113,19 +124,22 @@ async def get_relevant_knowledge_chunks(
         # Step 1: Generate query embedding vector (1536 floats)
         query_vectors = await generate_embeddings([query])
         if not query_vectors or not query_vectors[0]:
-            logger.warning("Failed to generate embedding for query in space %s", space_id)
+            logger.warning(
+                "Failed to generate embedding for query in space %s", space_id
+            )
             return []
 
         query_vec = query_vectors[0]
 
         # Step 2: Execute Supabase RPC match_space_knowledge if available
         if hasattr(client, "rpc"):
+
             def _execute_rpc():
                 return client.rpc(
                     "match_space_knowledge",
                     {
                         "filter_space_id": space_id,
-                        "query_embedding": query_vec,
+                        "query_embedding": query_vec,  # type: ignore
                         "match_threshold": 0.35,
                         "match_count": 4,
                     },
@@ -220,7 +234,9 @@ async def ingest_knowledge_text(
     card_texts = [f"{c.title}: {c.content}" for c in cards]
     embeddings = await generate_embeddings(card_texts)
     if len(embeddings) != len(cards):
-        raise RuntimeError("Failed to generate embedding vectors for all knowledge cards")
+        raise RuntimeError(
+            "Failed to generate embedding vectors for all knowledge cards"
+        )
 
     # Step 3: Insert into knowledge_chunks with embedding vector
     rows_to_insert = [
@@ -236,6 +252,7 @@ async def ingest_knowledge_text(
     ]
 
     try:
+
         def _insert_rows():
             return client.table("knowledge_chunks").insert(rows_to_insert).execute()
 
@@ -264,6 +281,7 @@ async def get_space_knowledge_chips(space_id: str) -> list[KnowledgeChipDTO]:
         return []
 
     try:
+
         def _fetch():
             return (
                 client.table("knowledge_chunks")

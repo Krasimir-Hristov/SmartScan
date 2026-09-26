@@ -11,9 +11,17 @@ from app.features.voice_ingest.service import transcribe_audio_whisper
 logger = logging.getLogger(__name__)
 
 SUPPORTED_AUDIO_MIMES = {
-    "audio/webm", "audio/mp4", "audio/mpeg", "audio/mp3",
-    "audio/wav", "audio/x-wav", "audio/ogg", "audio/flac",
-    "audio/aac", "audio/m4a", "audio/x-m4a",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/ogg",
+    "audio/flac",
+    "audio/aac",
+    "audio/m4a",
+    "audio/x-m4a",
 }
 
 router = APIRouter(prefix="/voice", tags=["Voice Transcription"])
@@ -29,7 +37,9 @@ router = APIRouter(prefix="/voice", tags=["Voice Transcription"])
 async def transcribe_voice_endpoint(
     request: Request,
     file: UploadFile = File(..., description="Audio file blob recorded from browser"),  # noqa: B008
-    language: str | None = Form(default=None, description="ISO-639-1 language code hint"),
+    language: str | None = Form(
+        default=None, description="ISO-639-1 language code hint"
+    ),
 ) -> TranscribeResponse:
     """Accepts recorded audio blob from browser (e.g. Brave, Chrome, Safari)
     and transcribes it via Whisper with support for all tourist languages.

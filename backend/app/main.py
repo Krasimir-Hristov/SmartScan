@@ -9,6 +9,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.config import settings
 from app.core.rate_limit import limiter
+from app.features.billing.router import router as billing_router
 from app.features.concierge.router import router as concierge_router
 from app.features.knowledge.router import router as knowledge_router
 from app.features.voice_ingest.router import router as voice_router
@@ -23,7 +24,9 @@ class PayloadTooLargeError(Exception):
 class BodySizeLimitMiddleware:
     """ASGI middleware enforcing MAX_REQUEST_BODY_SIZE before multipart parsing."""
 
-    def __init__(self, app: ASGIApp, max_body_size: int = MAX_REQUEST_BODY_SIZE) -> None:
+    def __init__(
+        self, app: ASGIApp, max_body_size: int = MAX_REQUEST_BODY_SIZE
+    ) -> None:
         self.app = app
         self.max_body_size = max_body_size
 
@@ -38,7 +41,9 @@ class BodySizeLimitMiddleware:
                     if int(value) > self.max_body_size:
                         response = JSONResponse(
                             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                            content={"detail": "Аудио файлът надвишава допустимия размер от 25MB."},
+                            content={
+                                "detail": "Аудио файлът надвишава допустимия размер от 25MB."
+                            },
                         )
                         await response(scope, receive, send)
                         return
@@ -91,6 +96,9 @@ app.add_middleware(
 )
 
 
+from app.features.spaces.router import router as spaces_router
+
+
 @app.get("/api/py/health", tags=["Health"])
 async def health_check() -> dict[str, str]:
     """Health check endpoint to verify backend service liveness."""
@@ -105,6 +113,8 @@ async def health_check() -> dict[str, str]:
 app.include_router(concierge_router, prefix="/api/py")
 app.include_router(knowledge_router, prefix="/api/py")
 app.include_router(voice_router, prefix="/api/py")
+app.include_router(billing_router, prefix="/api/py")
+app.include_router(spaces_router, prefix="/api/py")
 
 
 @app.get("/", include_in_schema=False)

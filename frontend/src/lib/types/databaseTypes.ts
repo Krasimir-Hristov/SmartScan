@@ -44,6 +44,7 @@ export interface Database {
           space_type: SpaceType;
           is_active: boolean;
           stripe_subscription_id: string | null;
+          stripe_customer_id: string | null;
           stripe_price_id: string | null;
           subscription_status: SubscriptionStatus;
           trial_ends_at: string | null;
@@ -60,6 +61,7 @@ export interface Database {
           space_type?: SpaceType;
           is_active?: boolean;
           stripe_subscription_id?: string | null;
+          stripe_customer_id?: string | null;
           stripe_price_id?: string | null;
           subscription_status?: SubscriptionStatus;
           trial_ends_at?: string | null;
@@ -76,6 +78,7 @@ export interface Database {
           space_type?: SpaceType;
           is_active?: boolean;
           stripe_subscription_id?: string | null;
+          stripe_customer_id?: string | null;
           stripe_price_id?: string | null;
           subscription_status?: SubscriptionStatus;
           trial_ends_at?: string | null;

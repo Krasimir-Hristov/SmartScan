@@ -49,8 +49,16 @@ async def retrieve_rag_node(state: ConciergeState) -> dict[str, object]:
         else "Няма допълнителни бележки."
     )
 
-    night_quiet = f"{space_ctx.night_silence_start} - {space_ctx.night_silence_end}" if (space_ctx.night_silence_start and space_ctx.night_silence_end) else None
-    siesta_quiet = f"{space_ctx.afternoon_rest_start} - {space_ctx.afternoon_rest_end}" if (space_ctx.afternoon_rest_start and space_ctx.afternoon_rest_end) else None
+    night_quiet = (
+        f"{space_ctx.night_silence_start} - {space_ctx.night_silence_end}"
+        if (space_ctx.night_silence_start and space_ctx.night_silence_end)
+        else None
+    )
+    siesta_quiet = (
+        f"{space_ctx.afternoon_rest_start} - {space_ctx.afternoon_rest_end}"
+        if (space_ctx.afternoon_rest_start and space_ctx.afternoon_rest_end)
+        else None
+    )
 
     static_details = {
         "wifi_ssid": space_ctx.wifi_ssid or None,
@@ -75,7 +83,9 @@ async def retrieve_rag_node(state: ConciergeState) -> dict[str, object]:
 def _build_concierge_system_prompt(state: ConciergeState) -> str:
     details = state.get("static_details", {})
     locale = state.get("locale", "en")
-    safe_space_name = xml_escape(sanitize_user_input(state.get("space_name", "SmartScan Stay")))
+    safe_space_name = xml_escape(
+        sanitize_user_input(state.get("space_name", "SmartScan Stay"))
+    )
     safe_property_context = xml_escape(state.get("property_context", ""))
 
     def _val(k: str) -> str:
@@ -146,34 +156,75 @@ async def generate_stream_node(
         is_en = locale == "en" or any(
             w in q_lower
             for w in [
-                "where", "how", "what", "is", "the", "park", "heat", "warm", "trash", "wifi", "food", "eat", "password", "siesta", "quiet", "rest"
+                "where",
+                "how",
+                "what",
+                "is",
+                "the",
+                "park",
+                "heat",
+                "warm",
+                "trash",
+                "wifi",
+                "food",
+                "eat",
+                "password",
+                "siesta",
+                "quiet",
+                "rest",
             ]
         )
 
-        if any(w in q_lower for w in ["wifi", "вайфай", "интернет", "парол", "password"]):
-            w_ssid = details.get("wifi_ssid") or ("Not specified" if is_en else "Не е посочена")
-            w_pass = details.get("wifi_password") or ("Not specified" if is_en else "Не е посочена")
+        if any(
+            w in q_lower for w in ["wifi", "вайфай", "интернет", "парол", "password"]
+        ):
+            w_ssid = details.get("wifi_ssid") or (
+                "Not specified" if is_en else "Не е посочена"
+            )
+            w_pass = details.get("wifi_password") or (
+                "Not specified" if is_en else "Не е посочена"
+            )
             response_text = (
                 f"The Wi-Fi network is '{w_ssid}' and the password is: {w_pass}."
                 if is_en
                 else f"Паролата за Wi-Fi мрежата '{w_ssid}' е: {w_pass}."
             )
         elif any(w in q_lower for w in ["такси", "taxi", "cab"]):
-            taxi_val = details.get("taxi_phone") or ("Not specified" if is_en else "Не е посочен")
+            taxi_val = details.get("taxi_phone") or (
+                "Not specified" if is_en else "Не е посочен"
+            )
             response_text = (
                 f"You can call a local taxi at: {taxi_val}."
                 if is_en
                 else f"Можете да поръчате такси на телефон: {taxi_val}."
             )
-        elif any(w in q_lower for w in ["сиеста", "siesta", "тишина", "silence", "quiet", "rest", "почивка"]):
-            n_val = details.get("night_silence") or ("Not specified" if is_en else "Няма определени")
-            s_val = details.get("afternoon_rest") or ("Not specified" if is_en else "Няма определени")
+        elif any(
+            w in q_lower
+            for w in [
+                "сиеста",
+                "siesta",
+                "тишина",
+                "silence",
+                "quiet",
+                "rest",
+                "почивка",
+            ]
+        ):
+            n_val = details.get("night_silence") or (
+                "Not specified" if is_en else "Няма определени"
+            )
+            s_val = details.get("afternoon_rest") or (
+                "Not specified" if is_en else "Няма определени"
+            )
             response_text = (
                 f"Quiet hours: Night silence is {n_val}, Afternoon rest (siesta) is {s_val}."
                 if is_en
                 else f"Часовете за тишина са: Нощна тишина ({n_val}) и Следобедна почивка ({s_val})."
             )
-        elif any(w in q_lower for w in ["парно", "климатик", "отоплен", "термостат", "heat", "warm"]):
+        elif any(
+            w in q_lower
+            for w in ["парно", "климатик", "отоплен", "термостат", "heat", "warm"]
+        ):
             response_text = (
                 "The living room thermostat is set to 22°C. Bedroom heaters turn on via the side switch."
                 if is_en
@@ -191,7 +242,9 @@ async def generate_stream_node(
                 if is_en
                 else "На разположение е безплатен открит паркинг в двора за до 2 автомобила."
             )
-        elif any(w in q_lower for w in ["храна", "ресторант", "механ", "food", "dine", "eat"]):
+        elif any(
+            w in q_lower for w in ["храна", "ресторант", "механ", "food", "dine", "eat"]
+        ):
             response_text = (
                 "We recommend 'Starata Izba' tavern (300m away) and 'Edelweiss' restaurant (500m away)."
                 if is_en

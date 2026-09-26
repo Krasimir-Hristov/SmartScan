@@ -8,9 +8,7 @@ SUPPORTED_LOCALES = frozenset(
     {"en", "bg", "ro", "el", "ru", "tr", "de", "es", "it", "fr"}
 )
 
-SupportedLocale = Literal[
-    "en", "bg", "ro", "el", "ru", "tr", "de", "es", "it", "fr"
-]
+SupportedLocale = Literal["en", "bg", "ro", "el", "ru", "tr", "de", "es", "it", "fr"]
 
 
 class ChatMessage(BaseModel):
