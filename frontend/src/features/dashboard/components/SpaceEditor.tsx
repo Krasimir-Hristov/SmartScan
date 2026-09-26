@@ -2,16 +2,14 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, Loader2, Save } from 'lucide-react';
+import { Check, Loader2, Printer, Save } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import { updateSpaceAction } from '../actions/spaceActions';
-import { buildGuestUrl, getValidGuestLinkOrigin } from '../lib/plaqueConfig';
 import { DeleteSpaceModal } from './DeleteSpaceModal';
 import { QrPrintModal } from './QrPrintModal';
 import { SpaceCredentialsFields } from './space-editor/SpaceCredentialsFields';
 import { SpaceDangerZone } from './space-editor/SpaceDangerZone';
-import { SpaceGuestLinkBanner } from './space-editor/SpaceGuestLinkBanner';
 import { SpaceBillingCard } from './space-editor/SpaceBillingCard';
 
 import {
@@ -47,7 +45,6 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
     type: 'success' | 'error';
     text: string;
   } | null>(null);
-  const [copiedLink, setCopiedLink] = useState(false);
   const [copiedWifi, setCopiedWifi] = useState(false);
 
   const handleFieldChange = <K extends SpaceFormField>(
@@ -57,31 +54,6 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
     setValues((previous) => ({ ...previous, [field]: value }));
   };
 
-  const handleCopyGuestLink = async () => {
-    try {
-      const browserOrigin =
-        typeof window !== 'undefined' ? window.location.origin : '';
-      const validOrigin = getValidGuestLinkOrigin(
-        canonicalOrigin,
-        browserOrigin,
-        process.env.NODE_ENV !== 'production',
-      );
-      if (!validOrigin) {
-        setStatusMessage({
-          type: 'error',
-          text: t('errorServer'),
-        });
-        return;
-      }
-      const fullUrl = buildGuestUrl(validOrigin, space.slug);
-      await navigator.clipboard.writeText(fullUrl);
-      setCopiedLink(true);
-      triggerHaptic(50);
-      setTimeout(() => setCopiedLink(false), 2000);
-    } catch {
-      // Clipboard fallback
-    }
-  };
 
   const handleCopyWifiPassword = async () => {
     if (!values.wifiPassword) return;
@@ -130,46 +102,54 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
 
   return (
     <div className='flex flex-col gap-6'>
-      <SpaceGuestLinkBanner
-        slug={space.slug}
-        copiedLink={copiedLink}
-        onCopyGuestLink={handleCopyGuestLink}
-        onOpenPrintModal={() => {
-          setIsPrintModalOpen(true);
-          triggerHaptic(50);
-        }}
-      />
+      {/* Billing & Subscription Top Bar */}
+      <SpaceBillingCard space={space} />
 
       {/* Main Edit Form */}
       <form
         onSubmit={handleSave}
         className='p-5 sm:p-7 rounded-3xl bg-[#121216] border border-white/8 flex flex-col gap-6 shadow-2xl'
       >
-        <div className='flex items-center justify-between pb-4 border-b border-white/8'>
+        <div className='flex items-center justify-between pb-4 border-b border-white/8 gap-3 flex-wrap'>
           <div>
             <h2 className='font-display text-lg font-bold text-white'>
               {t('credentialsTitle')}
             </h2>
           </div>
 
-          <button
-            type='submit'
-            disabled={isSaving}
-            aria-label={t('saveChanges')}
-            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className='w-4 h-4 animate-spin' />
-                <span>{t('saving')}</span>
-              </>
-            ) : (
-              <>
-                <Save className='w-4 h-4' />
-                <span>{t('saveChanges')}</span>
-              </>
-            )}
-          </button>
+          <div className='flex items-center gap-2.5'>
+            <button
+              type='button'
+              onClick={() => {
+                setIsPrintModalOpen(true);
+                triggerHaptic(50);
+              }}
+              aria-label={t('printPlaque')}
+              className='inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold border border-white/10 hover:border-emerald-500/30 transition-all cursor-pointer active:scale-95 shadow-sm disabled:cursor-not-allowed disabled:opacity-50'
+            >
+              <Printer className='w-4 h-4 text-emerald-400' />
+              <span>{t('printPlaque')}</span>
+            </button>
+
+            <button
+              type='submit'
+              disabled={isSaving}
+              aria-label={t('saveChanges')}
+              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  <span>{t('saving')}</span>
+                </>
+              ) : (
+                <>
+                  <Save className='w-4 h-4' />
+                  <span>{t('saveChanges')}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {statusMessage && (
@@ -193,8 +173,6 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
           copiedWifi={copiedWifi}
           onCopyWifiPassword={handleCopyWifiPassword}
         />
-
-        <SpaceBillingCard space={space} />
 
         <SpaceDangerZone onRequestDelete={() => setIsDeleteModalOpen(true)} />
       </form>

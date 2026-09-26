@@ -7,12 +7,17 @@ import { QrCode } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { UserProfileDropdown } from './UserProfileDropdown';
 import type { DashboardUser } from '../types/dashboardTypes';
+import type { Space } from '@/lib/types/databaseTypes';
 
 export interface DashboardNavbarProps {
   user: DashboardUser;
+  spaces?: Space[];
 }
 
-export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
+export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
+  user,
+  spaces = [],
+}) => {
   const t = useTranslations('dashboard');
 
   return (
@@ -55,7 +60,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ user }) => {
           </div>
 
           {/* User Profile Dropdown (Responsive: avatar only on mobile, avatar+name+chevron on desktop) */}
-          <UserProfileDropdown user={user} />
+          <UserProfileDropdown user={user} spaces={spaces} />
         </div>
       </div>
     </header>

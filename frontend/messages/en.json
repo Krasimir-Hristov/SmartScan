@@ -220,6 +220,7 @@
     "addressNotProvided": "Address not provided",
     "concierge247": "24/7 Concierge",
     "manage": "Manage",
+    "editSpace": "Edit",
     "manageSpaceAria": "Manage {name}",
     "manageAria": "Manage space {name}",
     "spacesListAria": "Spaces List",
@@ -266,8 +267,6 @@
     "errorNameRequired": "Property name is required.",
     "errorGeneral": "An error occurred while creating the space.",
     "errorServer": "Unexpected error connecting to server.",
-    "guestLinkTitle": "Guest Digital Guide Link",
-    "guestLinkSub": "This link opens when guests scan the physical acrylic QR code.",
     "copyLink": "Copy Link",
     "linkCopied": "Copied!",
     "previewGuest": "Preview as Guest",
@@ -361,7 +360,7 @@
     "voiceIngestSuccess": "Successfully saved {count} cards from voice note!",
     "billing": {
       "activeLabel": "Active Subscription",
-      "activeDesc": "Space is active and accessible. (€1.00/month)",
+      "activeDesc": "Space is active and accessible. (€9/month)",
       "trialingLabel": "Trial Period",
       "trialingDesc": "Your space is currently in the testing phase.",
       "pausedLabel": "Paused",
@@ -375,8 +374,22 @@
       "manage": "Manage",
       "checkoutError": "Checkout connection error.",
       "portalError": "Portal connection error.",
-      "stripeError": "Error connecting to Stripe."
-    }
+      "stripeError": "Error connecting to Stripe.",
+      "modalTitle": "Manage Subscriptions",
+      "modalSubtitle": "Overview and management of subscriptions and billing for your spaces",
+      "manageOrCancel": "Manage / Cancel Subscription",
+      "portalNote": "Secure Self-Serve Billing Portal",
+      "perMonth": "€9 / month",
+      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
+      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+    },
+    "catPets": "Pets & Animals",
+    "starterPetsChip": "Pets & Animals",
+    "starterPetsTitle": "Pet Policy & Rules",
+    "starterPetsPlaceholder": "Specify if pets are allowed, any additional fees, where to walk them, or warnings about neighbor animals...",
+    "starterGeneralChip": "General Information",
+    "starterGeneralTitle": "General Property Information",
+    "starterGeneralPlaceholder": "Enter any additional useful details about the space, stay tips, nearby pharmacies, or extra notes..."
   },
   "stay": {
     "propertyBadge": "DIGITAL CONCIERGE",
@@ -433,7 +446,9 @@
     "metaTitle": "{name} · Digital Guide | SmartScan Stay",
     "metaDesc": "Digital guest guide for {name}. Instant access to Wi-Fi, check-in, taxi address, and quiet hours.",
     "ogDesc": "Digital guest guide for {name}. Instant access to Wi-Fi, check-in, taxi address, and quiet hours.",
-    "polyglotCtaBanner": "🌍 Ask anything in your native language · 50+ languages"
+    "polyglotCtaBanner": "🌍 Ask anything in your native language · 50+ languages",
+    "ctaPromptTitle": "Ask us anything about the property in your language",
+    "ctaPromptDesc": "Heating, AC, house rules, parking, or local recommendations – our 24/7 AI concierge is ready to help."
   },
   "voiceIngest": {
     "modalTitle": "Add Knowledge via Voice",

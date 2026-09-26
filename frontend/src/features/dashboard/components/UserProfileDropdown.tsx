@@ -14,20 +14,25 @@ import {
   Loader2,
 } from 'lucide-react';
 import { DeleteAccountModal } from './DeleteAccountModal';
+import { SubscriptionsModal } from './SubscriptionsModal';
 import type { DashboardUser } from '../types/dashboardTypes';
+import type { Space } from '@/lib/types/databaseTypes';
 
 export interface UserProfileDropdownProps {
   user: DashboardUser;
+  spaces?: Space[];
 }
 
 export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   user,
+  spaces = [],
 }) => {
   const router = useRouter();
   const t = useTranslations('dashboard');
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const displayName =
@@ -154,19 +159,24 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 
           <div className="h-px bg-white/10 my-1" />
 
-          {/* Prepared Slots: Billing & Settings */}
-          <div
+          {/* Billing & Subscriptions Action */}
+          <button
+            type="button"
             role="menuitem"
-            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:bg-white/5 transition-colors cursor-default"
+            onClick={() => {
+              setIsOpen(false);
+              setIsBillingModalOpen(true);
+            }}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-left group"
           >
             <div className="flex items-center gap-2.5">
               <CreditCard className="w-4 h-4 text-emerald-400" />
               <span>{t('billingLabel')}</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              {t('billingBadgeSoon')}
+            <span className="text-zinc-500 font-mono text-xs group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all">
+              &rarr;
             </span>
-          </div>
+          </button>
 
           <div
             role="menuitem"
@@ -218,6 +228,15 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
           isOpen={isDeleteModalOpen}
           userEmail={userEmail}
           onClose={() => setIsDeleteModalOpen(false)}
+        />
+      )}
+
+      {/* Subscriptions Overview Modal */}
+      {isBillingModalOpen && (
+        <SubscriptionsModal
+          isOpen={isBillingModalOpen}
+          spaces={spaces}
+          onClose={() => setIsBillingModalOpen(false)}
         />
       )}
     </div>

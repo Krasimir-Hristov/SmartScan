@@ -62,7 +62,8 @@ export interface CreateKnowledgeInput {
     | 'recommendations'
     | 'general'
     | 'wifi'
-    | 'access';
+    | 'access'
+    | 'pets';
 }
 
 export interface ActionResult<T = unknown> {

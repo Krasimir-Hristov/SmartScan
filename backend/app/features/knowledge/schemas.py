@@ -12,6 +12,7 @@ CardCategory = Literal[
     "general",
     "access",
     "parking",
+    "pets",
 ]
 
 
