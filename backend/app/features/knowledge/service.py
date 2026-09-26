@@ -155,7 +155,8 @@ async def get_relevant_knowledge_chunks(
                     title = _safe_str(item.get("title"))
                     content = _safe_str(item.get("content"))
                     category = _safe_str(item.get("category"), "general")
-                    sim = float(item.get("similarity", 0.0))
+                    sim_raw = item.get("similarity", 0.0)
+                    sim = float(sim_raw) if isinstance(sim_raw, (int, float, str)) else 0.0
                     if content:
                         display_content = f"{title}: {content}" if title else content
                         chunks.append(
@@ -181,7 +182,7 @@ async def get_relevant_knowledge_chunks(
 
         fallback_res = await asyncio.to_thread(_fallback_fetch)
         fallback_data = fallback_res.data
-        chunks: list[KnowledgeChunkDTO] = []
+        fallback_chunks: list[KnowledgeChunkDTO] = []
         if isinstance(fallback_data, list):
             for raw_item in fallback_data:
                 item = _extract_dict(raw_item)
@@ -190,14 +191,14 @@ async def get_relevant_knowledge_chunks(
                 category = _safe_str(item.get("category"), "general")
                 if content:
                     display_content = f"{title}: {content}" if title else content
-                    chunks.append(
+                    fallback_chunks.append(
                         KnowledgeChunkDTO(
                             title=title,
                             content=display_content,
                             category=category,
                         )
                     )
-        return chunks
+        return fallback_chunks
 
     except Exception as exc:  # noqa: BLE001
         logger.warning("Error querying pgvector for space %s: %s", space_id, exc)

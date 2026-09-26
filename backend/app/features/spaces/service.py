@@ -139,10 +139,7 @@ async def purge_host_account(host_id: str) -> bool:
         stripe_sub_id = space.get("stripe_subscription_id")
         if stripe_sub_id and isinstance(stripe_sub_id, str) and not stripe_sub_id.startswith("deleted_"):
             try:
-                def _cancel_sub() -> Any:
-                    return stripe.Subscription.delete(stripe_sub_id)  # type: ignore
-
-                await asyncio.to_thread(_cancel_sub)
+                await asyncio.to_thread(stripe.Subscription.delete, stripe_sub_id)
                 logger.info("Canceled Stripe subscription %s during account purge for space %s", stripe_sub_id, space["id"])
             except stripe.InvalidRequestError as e:
                 if getattr(e, "code", None) == "resource_missing":

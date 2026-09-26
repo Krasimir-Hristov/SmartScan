@@ -6,7 +6,6 @@ import { Check, Loader2, Printer, Save } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import { updateSpaceAction } from '../actions/spaceActions';
-import { buildGuestUrl, getValidGuestLinkOrigin } from '../lib/plaqueConfig';
 import { DeleteSpaceModal } from './DeleteSpaceModal';
 import { QrPrintModal } from './QrPrintModal';
 import { SpaceCredentialsFields } from './space-editor/SpaceCredentialsFields';
