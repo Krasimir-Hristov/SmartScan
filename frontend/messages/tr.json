@@ -360,7 +360,7 @@
     "createSpaceDesc": "Yeni mekanınız için temel bilgileri ekleyin.",
     "billing": {
       "activeLabel": "Aktif Abonelik",
-      "activeDesc": "Mekan aktif ve erişilebilir. (€1.00/ay)",
+      "activeDesc": "Alan aktif ve erişilebilir. (9 € / ay)",
       "trialingLabel": "Deneme Süresi",
       "trialingDesc": "Mekanınız şu anda test aşamasındadır.",
       "pausedLabel": "Duraklatıldı",
@@ -380,8 +380,8 @@
       "manageOrCancel": "Aboneliği Yönet / İptal Et",
       "portalNote": "Güvenli Fatura Portalı",
       "perMonth": "€9 / ay",
-      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
-      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+      "trialingDescExtended": "Alan Test Modundadır (Ücretsiz Deneme). Bitiş tarihi: {date}. Bu tarihten sonra concierge erişilemez olacaktır.",
+      "canceledDescExtended": "Abonelik iptal edildi. Concierge misafirlerin erişimine kapalıdır. Yeniden etkinleştirin."
     },
     "catPets": "Evcil Hayvanlar",
     "starterPetsChip": "Evcil Hayvanlar",

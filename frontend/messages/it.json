@@ -360,7 +360,7 @@
     "createSpaceDesc": "Aggiungi informazioni di base per il tuo nuovo spazio.",
     "billing": {
       "activeLabel": "Abbonamento attivo",
-      "activeDesc": "Lo spazio è attivo e accessibile. (€1.00/mese)",
+      "activeDesc": "Lo spazio è attivo e accessibile. (9 € / mese)",
       "trialingLabel": "Periodo di prova",
       "trialingDesc": "Il tuo spazio è attualmente in fase di test.",
       "pausedLabel": "In pausa",
@@ -380,8 +380,8 @@
       "manageOrCancel": "Gestisci / Cancella abbonamento",
       "portalNote": "Portale sicuro di fatturazione",
       "perMonth": "€9 / mese",
-      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
-      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+      "trialingDescExtended": "Lo spazio è in modalità di prova (Prova gratuita). Scade il {date}. Successivamente il concierge non sarà più accessibile.",
+      "canceledDescExtended": "L'abbonamento è stato annullato. Il concierge non è accessibile agli ospiti. Riattiva per ripristinare."
     },
     "catPets": "Animali domestici",
     "starterPetsChip": "Animali domestici",

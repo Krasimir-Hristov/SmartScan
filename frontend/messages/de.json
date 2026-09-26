@@ -360,7 +360,7 @@
     "createSpaceDesc": "Fügen Sie grundlegende Informationen für Ihre neue Unterkunft hinzu.",
     "billing": {
       "activeLabel": "Aktives Abonnement",
-      "activeDesc": "Unterkunft ist aktiv und zugänglich. (€1.00/Monat)",
+      "activeDesc": "Bereich ist aktiv und erreichbar. (9 € / Monat)",
       "trialingLabel": "Testphase",
       "trialingDesc": "Ihre Unterkunft befindet sich derzeit in der Testphase.",
       "pausedLabel": "Pausiert",
@@ -380,8 +380,8 @@
       "manageOrCancel": "Abonnement verwalten / kündigen",
       "portalNote": "Sicheres Zahlungsportal",
       "perMonth": "€9 / Monat",
-      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
-      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+      "trialingDescExtended": "Objekt befindet sich im Testmodus (Kostenlose Testphase). Läuft am {date} ab. Danach ist der Concierge nicht mehr erreichbar.",
+      "canceledDescExtended": "Abonnement wurde gekündigt. Der Concierge ist für Gäste nicht erreichbar. Bitte reaktivieren."
     },
     "catPets": "Haustiere & Tiere",
     "starterPetsChip": "Haustiere",

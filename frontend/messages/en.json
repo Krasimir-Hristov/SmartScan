@@ -360,7 +360,7 @@
     "voiceIngestSuccess": "Successfully saved {count} cards from voice note!",
     "billing": {
       "activeLabel": "Active Subscription",
-      "activeDesc": "Space is active and accessible. (€1.00/month)",
+      "activeDesc": "Space is active and accessible. (€9/month)",
       "trialingLabel": "Trial Period",
       "trialingDesc": "Your space is currently in the testing phase.",
       "pausedLabel": "Paused",

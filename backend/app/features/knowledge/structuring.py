@@ -76,6 +76,7 @@ def _parse_cards_json(raw_json: str) -> list[StructuredCard]:
         "general",
         "access",
         "parking",
+        "pets",
     }
     cards: list[StructuredCard] = []
 
@@ -133,11 +134,8 @@ def _create_fallback_card(text: str) -> list[StructuredCard]:
             "котка",
             "любимци",
             "животни",
-            "pet",
-            "dog",
-            "cat",
         ]
-    ):
+    ) or bool(re.search(r"\b(pet|pets|dog|dogs|cat|cats)\b", lower)):
         category = "pets"
         title = "Домашни любимци"
     elif any(k in lower for k in ["боклук", "смет", "ресторант", "механа", "храна"]):

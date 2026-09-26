@@ -360,7 +360,7 @@
     "createSpaceDesc": "Добавьте основную информацию о вашем новом объекте.",
     "billing": {
       "activeLabel": "Активная подписка",
-      "activeDesc": "Объект активен и доступен. (€1.00/месяц)",
+      "activeDesc": "Объект активен и доступен. (9 € / месяц)",
       "trialingLabel": "Пробный период",
       "trialingDesc": "Ваш объект в настоящее время находится на стадии тестирования.",
       "pausedLabel": "Приостановлено",
@@ -380,8 +380,8 @@
       "manageOrCancel": "Управление / Отмена подписки",
       "portalNote": "Безопасный портал управления подпиской",
       "perMonth": "€9 / месяц",
-      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
-      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+      "trialingDescExtended": "Объект находится в тестовом режиме (Бесплатный период). Истекает {date}. После этого консьерж станет недоступен.",
+      "canceledDescExtended": "Подписка отменена. Консьерж недоступен для гостей. Активируйте подписку заново."
     },
     "catPets": "Домашние животные",
     "starterPetsChip": "Домашние животные",

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { CreditCard, ExternalLink, Loader2, ArrowRight } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   createCheckoutSessionAction,
   createCustomerPortalAction,
@@ -18,12 +18,13 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations('dashboard.billing');
+  const locale = useLocale();
 
   const status = space.subscription_status || 'trialing';
   
   // Format trial date if available
   const formattedTrialDate = space.trial_ends_at 
-    ? new Date(space.trial_ends_at).toLocaleDateString(undefined, { 
+    ? new Date(space.trial_ends_at).toLocaleDateString(locale, { 
         year: 'numeric', month: 'short', day: 'numeric' 
       }) 
     : '';

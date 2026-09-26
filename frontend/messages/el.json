@@ -360,7 +360,7 @@
     "createSpaceDesc": "Προσθέστε βασικές πληροφορίες για τον νέο σας χώρο.",
     "billing": {
       "activeLabel": "Ενεργή συνδρομή",
-      "activeDesc": "Ο χώρος είναι ενεργός και προσβάσιμος. (€1.00/μήνα)",
+      "activeDesc": "Ο χώρος είναι ενεργός και προσβάσιμος. (€9/μήνα)",
       "trialingLabel": "Δοκιμαστική περίοδος",
       "trialingDesc": "Ο χώρος σας βρίσκεται επί του παρόντος στη φάση δοκιμής.",
       "pausedLabel": "Σε παύση",
@@ -380,8 +380,8 @@
       "manageOrCancel": "Διαχείριση / Ακύρωση συνδρομής",
       "portalNote": "Ασφαλής πύλη πληρωμών",
       "perMonth": "€9 / μήνα",
-      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
-      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+      "trialingDescExtended": "Ο χώρος βρίσκεται σε λειτουργία δοκιμής (Δωρεάν δοκιμή). Λήγει στις {date}. Μετά από αυτό, ο ψηφιακός βοηθός δεν θα είναι προσβάσιμος.",
+      "canceledDescExtended": "Η συνδρομή έχει ακυρωθεί. Ο ψηφιακός βοηθός δεν είναι προσβάσιμος για επισκέπτες. Ενεργοποιήστε ξανά."
     },
     "catPets": "Κατοικίδια & Ζώα",
     "starterPetsChip": "Κατοικίδια",

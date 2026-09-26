@@ -47,6 +47,13 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
             <span>{t('billing.pastDueLabel')}</span>
           </span>
         );
+      case 'paused':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-500/15 text-zinc-400 border border-zinc-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+            <span>{t('billing.pausedLabel')}</span>
+          </span>
+        );
       case 'canceled':
       default:
         return (
@@ -113,14 +120,17 @@ export const SpaceSelector: React.FC<SpaceSelectorProps> = ({
                   </div>
                 </div>
 
-                {isSelected ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>{t('statusActive')}</span>
-                  </span>
-                ) : (
-                  getStatusBadge(space.subscription_status)
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {getStatusBadge(space.subscription_status)}
+                  {isSelected && (
+                    <span
+                      className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                      title={t('statusActive')}
+                    >
+                      <CheckCircle2 className="w-3 h-3" />
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-zinc-500 gap-2">

@@ -360,7 +360,7 @@
     "createSpaceDesc": "Adăugați informații de bază pentru noua dvs. proprietate.",
     "billing": {
       "activeLabel": "Abonament activ",
-      "activeDesc": "Proprietatea este activă și accesibilă. (€1.00/lună)",
+      "activeDesc": "Spațiul este activ și accesibil. (9 € / lună)",
       "trialingLabel": "Perioadă de probă",
       "trialingDesc": "Proprietatea dvs. este în prezent în faza de testare.",
       "pausedLabel": "În pauză",
@@ -380,8 +380,8 @@
       "manageOrCancel": "Administrare / Anulare abonament",
       "portalNote": "Portal securizat de facturare",
       "perMonth": "€9 / lună",
-      "trialingDescExtended": "Space is in Test Mode (Free Trial). Expires on {date}. After this, the concierge becomes inaccessible.",
-      "canceledDescExtended": "Subscription is canceled. The concierge is inaccessible to guests. Please activate to restore."
+      "trialingDescExtended": "Spațiul este în modul de testare (Probă gratuită). Expiră pe {date}. După aceasta, concierge-ul devine inaccesibil.",
+      "canceledDescExtended": "Abonamentul este anulat. Concierge-ul nu este accesibil oaspeților. Vă rugăm să reactivați."
     },
     "catPets": "Animale de companie",
     "starterPetsChip": "Animale de companie",

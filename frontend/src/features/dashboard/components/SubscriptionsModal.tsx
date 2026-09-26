@@ -40,18 +40,56 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
   );
   const [loadingSpaceId, setLoadingSpaceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const modalRef = React.useRef<HTMLDivElement>(null);
 
-  // Close when pressing Escape key
+  // Focus trap, Escape key handling, and focus restoration
   useEffect(() => {
+    if (!isOpen) return;
+
+    const previousActive = document.activeElement as HTMLElement | null;
+    const focusableSelector =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const timer = setTimeout(() => {
+      const first = modalRef.current?.querySelector<HTMLElement>(focusableSelector);
+      first?.focus();
+    }, 50);
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !loadingSpaceId) {
         onClose();
+        return;
+      }
+
+      if (event.key === 'Tab' && modalRef.current) {
+        const focusableElements = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(focusableSelector)
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    return () => document.removeEventListener('keydown', handleKeyDown);
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('keydown', handleKeyDown);
+      previousActive?.focus();
+    };
   }, [isOpen, loadingSpaceId, onClose]);
 
   if (!isOpen || !isClient) return null;
@@ -117,6 +155,13 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
             <span>{t('billing.pastDueLabel')}</span>
           </span>
         );
+      case 'paused':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-500/15 text-zinc-400 border border-zinc-500/30 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+            <span>{t('billing.pausedLabel')}</span>
+          </span>
+        );
       case 'canceled':
       default:
         return (
@@ -139,6 +184,7 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
       className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-lg rounded-3xl bg-zinc-950 border border-white/10 shadow-2xl p-5 sm:p-6 flex flex-col gap-4 sm:gap-5 max-h-[88dvh] overflow-hidden"
       >
@@ -169,7 +215,7 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
             onClick={onClose}
             disabled={!!loadingSpaceId}
             aria-label={t('close')}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5" />
           </button>
@@ -192,8 +238,9 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
           ) : (
             spaces.map((space) => {
               const status = space.subscription_status || 'trialing';
-              const isSubscribed =
-                status === 'active' || !!space.stripe_customer_id;
+              const needsSubscription =
+                (status === 'trialing' && !space.stripe_subscription_id) ||
+                status === 'canceled';
               const isLoading = loadingSpaceId === space.id;
 
               return (
@@ -225,22 +272,22 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
                     onClick={() => handleAction(space)}
                     disabled={isLoading || !!loadingSpaceId}
                     className={`inline-flex items-center justify-center gap-2 px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 w-full sm:w-auto ${
-                      isSubscribed
-                        ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 hover:border-emerald-500/30'
-                        : 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-md shadow-emerald-500/20'
+                      needsSubscription
+                        ? 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-md shadow-emerald-500/20'
+                        : 'bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 hover:border-emerald-500/30'
                     }`}
                   >
                     {isLoading ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : isSubscribed ? (
-                      <>
-                        <span>{t('billing.manageOrCancel')}</span>
-                        <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
-                      </>
-                    ) : (
+                    ) : needsSubscription ? (
                       <>
                         <span>{t('billing.subscribe')}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    ) : (
+                      <>
+                        <span>{t('billing.manageOrCancel')}</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
                       </>
                     )}
                   </button>
@@ -257,7 +304,7 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={!!loadingSpaceId}
-            className="text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+            className="text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('close')}
           </button>

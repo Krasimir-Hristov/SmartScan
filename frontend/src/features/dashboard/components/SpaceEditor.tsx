@@ -125,7 +125,7 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
                 triggerHaptic(50);
               }}
               aria-label={t('printPlaque')}
-              className='inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold border border-white/10 hover:border-emerald-500/30 transition-all cursor-pointer active:scale-95 shadow-sm'
+              className='inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold border border-white/10 hover:border-emerald-500/30 transition-all cursor-pointer active:scale-95 shadow-sm disabled:cursor-not-allowed disabled:opacity-50'
             >
               <Printer className='w-4 h-4 text-emerald-400' />
               <span>{t('printPlaque')}</span>
