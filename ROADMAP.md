@@ -16,7 +16,7 @@
 | **Стъпка 6**  | Хазяин Дашборд (`/dashboard`)                                   | 🟢 Завършена | 16.09.2026        |
 | **Стъпка 7**  | Гласово въвеждане (Voice Ingest + Whisper)                      | 🟢 Завършена | 19.09.2026        |
 | **Стъпка 8**  | Физически QR Табелки за печат (A4/A5/A6)                        | 🟢 Завършена | 19.09.2026        |
-| **Стъпка 9**  | Stripe Granular Billing                                         | ⚪ Очаква    | —                 |
+| **Стъпка 9**  | Stripe Granular Billing                                         | 🟢 Завършена | 27.09.2026        |
 | **Стъпка 10** | Pre-Deployment Verification, E2E Testing & Production Hardening | ⚪ Очаква    | —                 |
 
 ---
@@ -147,13 +147,17 @@
 
 ---
 
-### [ ] Стъпка 9: Stripe Granular Billing (`design/07`)
+### [x] Стъпка 9: Stripe Granular Billing (`design/07`)
 
-- [ ] Грануларно таксуване на ниво конкретен обект (`space_id`): €9/месец за Stay.
-- [ ] 14-дневен безплатен пробен период без изискване на карта.
-- [ ] Сезонен паузинг ("Summer/Winter hold" за запазване на данните без таксуване извън сезона).
-- [ ] 1-клик бутон за Stripe Customer Portal за управление на карти и фактури.
-- [ ] **Верификация**: Тест на абонаментен жизнен цикъл в Stripe Test Mode.
+- [x] Грануларно таксуване на ниво конкретен обект (`space_id`): €9/месец за Stay (`STRIPE_PRICE_ID_STAY`).
+- [x] 14-дневен безплатен пробен период без изискване на карта (`trialing`, `trial_ends_at`).
+- [x] Сезонен паузинг ("Summer/Winter hold" за запазване на данните без таксуване извън сезона).
+- [x] Stripe Checkout & 1-клик бутон за Stripe Customer Portal за управление на карти и фактури.
+- [x] Защитен бекенд слой (FastAPI): `/checkout`, `/portal`, криптографски защитен `/webhook` и SlowAPI rate limiting.
+- [x] Централизиран модал за абонаменти (`SubscriptionsModal.tsx`) в `UserProfileDropdown` с WAI-ARIA и focus trap.
+- [x] Защитен протокол срещу "Ghost Billing": пагиниран purge на абонаменти и пространства (`purge_host_account`) при изтриване на профил (`deleteAccountAction.ts`).
+- [x] Пълна 10-езикова локализация (EN, BG, DE, RO, EL, RU, TR, ES, IT, FR) на всички билинг състояния и бутони.
+- [x] **Верификация**: Тест на абонаментен жизнен цикъл в Stripe Test Mode, `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки, бекенд тестове = passed.
 
 ---
 
