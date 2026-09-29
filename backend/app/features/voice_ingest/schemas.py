@@ -27,7 +27,7 @@ class TranscribeResponse(BaseModel):
     text: str = Field(description="Transcribed text from the audio recording")
     detected_language: str | None = Field(
         default=None,
-        description="ISO language code detected by Whisper (e.g. 'bg', 'en', 'el')",
+        description="ISO language code returned by the provider (e.g. 'bg', 'en'), or None if not detected.",
     )
 
 

@@ -35,13 +35,29 @@ def _is_live_openrouter_key(raw_value: object) -> bool:
     )
 
 
+AUDIO_MIME_TO_FORMAT: dict[str, str] = {
+    "audio/webm": "webm",
+    "audio/mp4": "mp4",
+    "audio/m4a": "m4a",
+    "audio/x-m4a": "m4a",
+    "audio/mp3": "mp3",
+    "audio/mpeg": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/ogg": "ogg",
+    "audio/flac": "flac",
+    "audio/x-flac": "flac",
+    "audio/aac": "aac",
+}
+
+
 async def transcribe_audio_whisper(
     audio_bytes: bytes,
     filename: str = "recording.webm",
     content_type: str = "audio/webm",
     language: str | None = None,
 ) -> tuple[str, str | None]:
-    """Transcribes raw audio bytes via OpenRouter Whisper v3 API endpoint.
+    """Transcribes raw audio bytes via OpenRouter Whisper / Gemini API endpoint.
 
     Args:
         audio_bytes: Raw recorded audio data.
@@ -50,7 +66,10 @@ async def transcribe_audio_whisper(
         language: Optional ISO-639-1 language code hint (e.g. 'el', 'bg', 'en').
 
     Returns:
-        tuple[str, str | None]: (transcript_text, detected_language)
+        tuple[str, str | None]: (transcript_text, detected_language).
+        detected_language is the ISO language code returned by the upstream provider,
+        or None if the provider supplies no language detection. The caller's language
+        hint is never substituted as detected_language.
     """
     if not audio_bytes or len(audio_bytes) < 100:
         raise HTTPException(
@@ -74,6 +93,14 @@ async def transcribe_audio_whisper(
             detail="Гласовата услуга е временно недостъпна. Липсва валиден API ключ.",
         )
 
+    clean_mime = (content_type or "audio/webm").split(";")[0].strip().lower()
+    if clean_mime not in AUDIO_MIME_TO_FORMAT:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Неподдържан аудио формат: {clean_mime}.",
+        )
+    fmt = AUDIO_MIME_TO_FORMAT[clean_mime]
+
     headers = {
         "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
         "HTTP-Referer": "https://smartscan.stay",
@@ -83,20 +110,6 @@ async def transcribe_audio_whisper(
     try:
         chat_url = "https://openrouter.ai/api/v1/chat/completions"
         audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-
-        clean_mime = (content_type or "audio/webm").split(";")[0].strip().lower()
-        if "m4a" in clean_mime:
-            fmt = "m4a"
-        elif "mp4" in clean_mime:
-            fmt = "mp4"
-        elif "wav" in clean_mime:
-            fmt = "wav"
-        elif "mp3" in clean_mime or "mpeg" in clean_mime:
-            fmt = "mp3"
-        elif "ogg" in clean_mime:
-            fmt = "ogg"
-        else:
-            fmt = "webm"
 
         system_instruction = (
             "You are an accurate, verbatim speech-to-text transcriber. Your ONLY task is to transcribe "
@@ -144,21 +157,64 @@ async def transcribe_audio_whisper(
                 detail="Грешка при транскрибиране на гласовия запис. Моля, опитайте отново.",
             )
 
-        result = response.json()
-        detected_language = result.get("language")
+        try:
+            result = response.json()
+        except Exception as exc:
+            logger.error("Failed to parse provider JSON response: %s", exc)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Невалиден JSON отговор от услугата за транскрипция.",
+            ) from exc
 
-        if "text" in result and result.get("text"):
-            return str(result["text"]).strip(), detected_language
+        if not isinstance(result, dict):
+            logger.error("Provider response is not a dict: %r", result)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Невалиден отговор от услугата за транскрипция.",
+            )
 
-        choices = result.get("choices", [])
-        if not choices:
+        raw_detected = result.get("language")
+        detected_language = (
+            str(raw_detected).strip().lower()
+            if isinstance(raw_detected, str) and raw_detected.strip()
+            else None
+        )
+
+        if "text" in result and isinstance(result["text"], str) and result["text"].strip():
+            return result["text"].strip(), detected_language
+
+        choices = result.get("choices")
+        if not isinstance(choices, list) or not choices:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Не беше разпозната реч в аудио записа.",
             )
 
-        message_content = choices[0].get("message", {}).get("content") or ""
-        transcript = message_content.strip()
+        first_choice = choices[0]
+        if not isinstance(first_choice, dict):
+            logger.error("Malformed choice in provider response: %r", first_choice)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Невалиден формат на избора от услугата за транскрипция.",
+            )
+
+        message = first_choice.get("message")
+        if not isinstance(message, dict):
+            logger.error("Malformed message in provider choice: %r", message)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Невалиден формат на съобщението от услугата за транскрипция.",
+            )
+
+        raw_content = message.get("content")
+        if not isinstance(raw_content, str):
+            logger.error("Malformed content in provider message: %r", raw_content)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Не беше разпозната реч в аудио записа.",
+            )
+
+        transcript = raw_content.strip()
         if transcript.startswith('"') and transcript.endswith('"'):
             transcript = transcript[1:-1].strip()
 
