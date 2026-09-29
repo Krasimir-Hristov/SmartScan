@@ -67,3 +67,22 @@ class OpenRouterTranscriptionRequest(BaseModel):
     messages: list[SystemChatMessage | UserChatMessage]
     temperature: float = 0.0
 
+
+class ProviderMessageContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    role: str = "assistant"
+    content: str = ""
+
+
+class ProviderChoice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    message: ProviderMessageContent
+
+
+class ProviderChatCompletionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    choices: list[ProviderChoice] = Field(default_factory=list)
+    text: str | None = None
+    language: str | None = None
+
+

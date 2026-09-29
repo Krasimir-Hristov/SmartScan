@@ -6,12 +6,14 @@ from typing import Any
 
 import httpx
 from fastapi import HTTPException, status
+from pydantic import ValidationError
 
 from app.core.config import settings
 from app.features.voice_ingest.schemas import (
     AudioContentPart,
     AudioInputData,
     OpenRouterTranscriptionRequest,
+    ProviderChatCompletionResponse,
     SystemChatMessage,
     TextContentPart,
     UserChatMessage,
@@ -158,7 +160,7 @@ async def transcribe_audio_whisper(
             )
 
         try:
-            result = response.json()
+            raw_json = response.json()
         except Exception as exc:
             logger.error("Failed to parse provider JSON response: %s", exc)
             raise HTTPException(
@@ -166,55 +168,32 @@ async def transcribe_audio_whisper(
                 detail="Невалиден JSON отговор от услугата за транскрипция.",
             ) from exc
 
-        if not isinstance(result, dict):
-            logger.error("Provider response is not a dict: %r", result)
+        try:
+            provider_resp = ProviderChatCompletionResponse.model_validate(raw_json)
+        except ValidationError as exc:
+            logger.error("Provider response failed Pydantic validation: %s", exc)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Невалиден отговор от услугата за транскрипция.",
-            )
+                detail="Невалиден формат на отговора от услугата за транскрипция.",
+            ) from exc
 
-        raw_detected = result.get("language")
+        raw_detected = provider_resp.language
         detected_language = (
             str(raw_detected).strip().lower()
-            if isinstance(raw_detected, str) and raw_detected.strip()
+            if raw_detected and str(raw_detected).strip()
             else None
         )
 
-        if "text" in result and isinstance(result["text"], str) and result["text"].strip():
-            return result["text"].strip(), detected_language
+        if provider_resp.text and provider_resp.text.strip():
+            return provider_resp.text.strip(), detected_language
 
-        choices = result.get("choices")
-        if not isinstance(choices, list) or not choices:
+        if not provider_resp.choices:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Не беше разпозната реч в аудио записа.",
             )
 
-        first_choice = choices[0]
-        if not isinstance(first_choice, dict):
-            logger.error("Malformed choice in provider response: %r", first_choice)
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Невалиден формат на избора от услугата за транскрипция.",
-            )
-
-        message = first_choice.get("message")
-        if not isinstance(message, dict):
-            logger.error("Malformed message in provider choice: %r", message)
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Невалиден формат на съобщението от услугата за транскрипция.",
-            )
-
-        raw_content = message.get("content")
-        if not isinstance(raw_content, str):
-            logger.error("Malformed content in provider message: %r", raw_content)
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Не беше разпозната реч в аудио записа.",
-            )
-
-        transcript = raw_content.strip()
+        transcript = provider_resp.choices[0].message.content.strip()
         if transcript.startswith('"') and transcript.endswith('"'):
             transcript = transcript[1:-1].strip()
 
