@@ -108,10 +108,15 @@ export async function proxyToBackend(
       signal: request.signal,
     });
 
+    const responseHeaders = new Headers(backendResponse.headers);
+    // Node fetch automatically decompresses responses. Forwarding content-encoding causes browser ERR_CONTENT_DECODING_FAILED.
+    responseHeaders.delete('content-encoding');
+    responseHeaders.delete('content-length');
+
     return new NextResponse(backendResponse.body, {
       status: backendResponse.status,
       statusText: backendResponse.statusText,
-      headers: backendResponse.headers,
+      headers: responseHeaders,
     });
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {

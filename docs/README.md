@@ -9,6 +9,7 @@
 ### 🧭 Архитектура & Проектен план
 - [**AGENTS.md**](file:///d:/myProjects/smart_scan/AGENTS.md) — Главна системна архитектурна спецификация, инженерни стандарти, мулти-тенант модел, правила за сигурност и забрани.
 - [**ROADMAP.md**](file:///d:/myProjects/smart_scan/ROADMAP.md) — 10-стъпков чек-лист за поетапно изпълнение с верификационни критерии и текущ статус.
+- [**DEPLOYMENT.md**](file:///d:/myProjects/smart_scan/docs/deployment.md) — Пълно ръководство за деплой на живо в продукционна среда (Vercel, Render, Supabase, Stripe Webhooks).
 - [**README.md (Root)**](file:///d:/myProjects/smart_scan/README.md) — Главно ръководство за инсталация, стартиране, променливи на средата и системни зависимости.
 
 ---

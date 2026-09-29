@@ -84,8 +84,10 @@ def test_transcribe_voice_with_language_param(monkeypatch):
             data={"language": " EL "},
         )
         assert response.status_code == 200
-        call_data = mock_post.call_args[1]["data"]
-        assert call_data.get("language") == "el"
+        call_kwargs = mock_post.call_args[1]
+        payload = call_kwargs.get("json") or call_kwargs.get("data") or {}
+        # Verify language hint is passed
+        assert "Hint language: el" in str(payload) or payload.get("language") == "el"
 
     # Test 2: Invalid "12" is rejected and omitted
     dummy_audio_2 = io.BytesIO(b"RIFF" + b"\x00" * 200)
@@ -98,5 +100,7 @@ def test_transcribe_voice_with_language_param(monkeypatch):
             data={"language": "12"},
         )
         assert response.status_code == 200
-        call_data = mock_post.call_args[1]["data"]
-        assert "language" not in call_data
+        call_kwargs = mock_post.call_args[1]
+        payload = call_kwargs.get("json") or call_kwargs.get("data") or {}
+        assert "Hint language: 12" not in str(payload) and "language" not in payload
+

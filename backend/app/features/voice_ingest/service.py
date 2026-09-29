@@ -1,6 +1,8 @@
 """Audio transcription service using OpenRouter Whisper."""
 
+import base64
 import logging
+from typing import Any
 
 import httpx
 from fastapi import HTTPException, status
@@ -70,31 +72,62 @@ async def transcribe_audio_whisper(
         "X-Title": "SmartScan Stay Audio Transcription",
     }
 
-    files = {
-        "file": (filename, audio_bytes, content_type),
-    }
-    data: dict[str, str | float] = {
-        "model": WHISPER_MODEL,
-        "temperature": 0.0,
-        "prompt": "Transcribe verbatim in the exact original spoken language. Do NOT translate to English.",
-    }
-    if language:
-        clean_lang = language.strip().lower()[:2]
-        if clean_lang.isalpha():
-            data["language"] = clean_lang
-
     try:
+        chat_url = "https://openrouter.ai/api/v1/chat/completions"
+        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+
+        clean_mime = (content_type or "audio/webm").split(";")[0].strip().lower()
+        fmt = "webm"
+        if "mp4" in clean_mime or "m4a" in clean_mime:
+            fmt = "mp4"
+        elif "wav" in clean_mime:
+            fmt = "wav"
+        elif "mp3" in clean_mime or "mpeg" in clean_mime:
+            fmt = "mp3"
+        elif "ogg" in clean_mime:
+            fmt = "ogg"
+
+        system_instruction = (
+            "You are an accurate, verbatim speech-to-text transcriber. Your ONLY task is to transcribe "
+            "the provided spoken audio verbatim in the exact original language spoken by the user. "
+            "Do not translate to English or any other language. Do not add introductory conversational "
+            "phrases, commentary, explanations, or quotes. Output ONLY the exact transcribed text."
+        )
+
+        user_content: list[dict[str, Any]] = [
+            {
+                "type": "text",
+                "text": f"Transcribe this audio recording verbatim in its original spoken language.{f' Hint language: {language}.' if language else ''}",
+            },
+            {
+                "type": "input_audio",
+                "input_audio": {
+                    "data": audio_b64,
+                    "format": fmt,
+                },
+            },
+        ]
+
+        payload: dict[str, Any] = {
+            "model": settings.OPENROUTER_MODEL or "google/gemini-2.5-flash",
+            "messages": [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": 0.0,
+        }
+
         async with httpx.AsyncClient(timeout=45.0) as client:
             response = await client.post(
-                OPENROUTER_TRANSCRIPTIONS_URL,
+                chat_url,
                 headers=headers,
-                files=files,
-                data=data,
+                json=payload,
             )
+
 
         if response.status_code != 200:
             logger.error(
-                "Whisper transcription failed (status %d): %s",
+                "Audio transcription failed (status %d): %s",
                 response.status_code,
                 response.text,
             )
@@ -104,8 +137,20 @@ async def transcribe_audio_whisper(
             )
 
         result = response.json()
-        transcript = result.get("text", "").strip()
-        detected_language = result.get("language")
+        if "text" in result and result.get("text"):
+            return str(result["text"]).strip(), result.get("language") or language
+
+        choices = result.get("choices", [])
+        if not choices:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Не беше разпозната реч в аудио записа.",
+            )
+
+        message_content = choices[0].get("message", {}).get("content") or ""
+        transcript = message_content.strip()
+        if transcript.startswith('"') and transcript.endswith('"'):
+            transcript = transcript[1:-1].strip()
 
         if not transcript:
             raise HTTPException(
@@ -113,7 +158,7 @@ async def transcribe_audio_whisper(
                 detail="Не беше разпозната реч в аудио записа.",
             )
 
-        return transcript, detected_language
+        return transcript, language
 
     except HTTPException:
         raise
