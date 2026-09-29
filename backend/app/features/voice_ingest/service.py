@@ -8,6 +8,14 @@ import httpx
 from fastapi import HTTPException, status
 
 from app.core.config import settings
+from app.features.voice_ingest.schemas import (
+    AudioContentPart,
+    AudioInputData,
+    OpenRouterTranscriptionRequest,
+    SystemChatMessage,
+    TextContentPart,
+    UserChatMessage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -77,8 +85,9 @@ async def transcribe_audio_whisper(
         audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
 
         clean_mime = (content_type or "audio/webm").split(";")[0].strip().lower()
-        fmt = "webm"
-        if "mp4" in clean_mime or "m4a" in clean_mime:
+        if "m4a" in clean_mime:
+            fmt = "m4a"
+        elif "mp4" in clean_mime:
             fmt = "mp4"
         elif "wav" in clean_mime:
             fmt = "wav"
@@ -86,6 +95,8 @@ async def transcribe_audio_whisper(
             fmt = "mp3"
         elif "ogg" in clean_mime:
             fmt = "ogg"
+        else:
+            fmt = "webm"
 
         system_instruction = (
             "You are an accurate, verbatim speech-to-text transcriber. Your ONLY task is to transcribe "
@@ -94,36 +105,33 @@ async def transcribe_audio_whisper(
             "phrases, commentary, explanations, or quotes. Output ONLY the exact transcribed text."
         )
 
-        user_content: list[dict[str, Any]] = [
-            {
-                "type": "text",
-                "text": f"Transcribe this audio recording verbatim in its original spoken language.{f' Hint language: {language}.' if language else ''}",
-            },
-            {
-                "type": "input_audio",
-                "input_audio": {
-                    "data": audio_b64,
-                    "format": fmt,
-                },
-            },
-        ]
-
-        payload: dict[str, Any] = {
-            "model": settings.OPENROUTER_MODEL or "google/gemini-2.5-flash",
-            "messages": [
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": user_content},
+        request_payload = OpenRouterTranscriptionRequest(
+            model=settings.OPENROUTER_MODEL or "google/gemini-2.5-flash",
+            messages=[
+                SystemChatMessage(content=system_instruction),
+                UserChatMessage(
+                    content=[
+                        TextContentPart(
+                            text=f"Transcribe this audio recording verbatim in its original spoken language.{f' Hint language: {language}.' if language else ''}"
+                        ),
+                        AudioContentPart(
+                            input_audio=AudioInputData(
+                                data=audio_b64,
+                                format=fmt,
+                            )
+                        ),
+                    ]
+                ),
             ],
-            "temperature": 0.0,
-        }
+            temperature=0.0,
+        )
 
         async with httpx.AsyncClient(timeout=45.0) as client:
             response = await client.post(
                 chat_url,
                 headers=headers,
-                json=payload,
+                json=request_payload.model_dump(),
             )
-
 
         if response.status_code != 200:
             logger.error(
@@ -137,8 +145,10 @@ async def transcribe_audio_whisper(
             )
 
         result = response.json()
+        detected_language = result.get("language")
+
         if "text" in result and result.get("text"):
-            return str(result["text"]).strip(), result.get("language") or language
+            return str(result["text"]).strip(), detected_language
 
         choices = result.get("choices", [])
         if not choices:
@@ -158,7 +168,7 @@ async def transcribe_audio_whisper(
                 detail="Не беше разпозната реч в аудио записа.",
             )
 
-        return transcript, language
+        return transcript, detected_language
 
     except HTTPException:
         raise

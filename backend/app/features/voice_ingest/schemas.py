@@ -29,3 +29,41 @@ class TranscribeResponse(BaseModel):
         default=None,
         description="ISO language code detected by Whisper (e.g. 'bg', 'en', 'el')",
     )
+
+
+class AudioInputData(BaseModel):
+    model_config = ConfigDict(strict=True)
+    data: str
+    format: str
+
+
+class TextContentPart(BaseModel):
+    model_config = ConfigDict(strict=True)
+    type: str = "text"
+    text: str
+
+
+class AudioContentPart(BaseModel):
+    model_config = ConfigDict(strict=True)
+    type: str = "input_audio"
+    input_audio: AudioInputData
+
+
+class SystemChatMessage(BaseModel):
+    model_config = ConfigDict(strict=True)
+    role: str = "system"
+    content: str
+
+
+class UserChatMessage(BaseModel):
+    model_config = ConfigDict(strict=True)
+    role: str = "user"
+    content: list[TextContentPart | AudioContentPart]
+
+
+class OpenRouterTranscriptionRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+    model: str
+    messages: list[SystemChatMessage | UserChatMessage]
+    temperature: float = 0.0
+

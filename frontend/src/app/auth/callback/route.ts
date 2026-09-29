@@ -13,14 +13,22 @@ export async function GET(request: Request) {
     const fallbackVercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || fallbackVercelUrl || requestOrigin).trim();
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || fallbackVercelUrl).trim();
+    if (!siteUrl) {
+      return new NextResponse('Configuration Error: Missing NEXT_PUBLIC_SITE_URL', {
+        status: 500,
+      });
+    }
     try {
       const parsed = new URL(siteUrl);
-      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-        redirectOrigin = parsed.origin;
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new Error('Invalid protocol');
       }
+      redirectOrigin = parsed.origin;
     } catch {
-      redirectOrigin = requestOrigin;
+      return new NextResponse('Configuration Error: Invalid NEXT_PUBLIC_SITE_URL', {
+        status: 500,
+      });
     }
   }
 

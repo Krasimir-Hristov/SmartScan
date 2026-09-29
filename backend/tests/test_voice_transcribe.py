@@ -71,7 +71,10 @@ def test_transcribe_voice_with_language_param(monkeypatch):
 
     mock_resp = MagicMock()
     mock_resp.status_code = 200
-    mock_resp.json.return_value = {"text": "Kalimera", "language": "el"}
+    mock_resp.json.return_value = {
+        "choices": [{"message": {"content": "Kalimera"}}],
+        "language": "el",
+    }
 
     # Test 1: Valid " EL " is normalized to "el"
     dummy_audio = io.BytesIO(b"RIFF" + b"\x00" * 200)
@@ -84,10 +87,27 @@ def test_transcribe_voice_with_language_param(monkeypatch):
             data={"language": " EL "},
         )
         assert response.status_code == 200
+        data = response.json()
+        assert data["text"] == "Kalimera"
+        assert data["detected_language"] == "el"
+
         call_kwargs = mock_post.call_args[1]
-        payload = call_kwargs.get("json") or call_kwargs.get("data") or {}
-        # Verify language hint is passed
-        assert "Hint language: el" in str(payload) or payload.get("language") == "el"
+        payload = call_kwargs.get("json") or {}
+        assert payload.get("model") == "google/gemini-2.5-flash"
+        messages = payload.get("messages", [])
+        assert len(messages) >= 2
+        user_message = messages[1]
+        contents = user_message.get("content", [])
+        assert any(
+            isinstance(p, dict) and "Hint language: el" in p.get("text", "")
+            for p in contents
+        )
+        assert any(
+            isinstance(p, dict)
+            and p.get("type") == "input_audio"
+            and p.get("input_audio", {}).get("format") == "webm"
+            for p in contents
+        )
 
     # Test 2: Invalid "12" is rejected and omitted
     dummy_audio_2 = io.BytesIO(b"RIFF" + b"\x00" * 200)
@@ -101,6 +121,12 @@ def test_transcribe_voice_with_language_param(monkeypatch):
         )
         assert response.status_code == 200
         call_kwargs = mock_post.call_args[1]
-        payload = call_kwargs.get("json") or call_kwargs.get("data") or {}
-        assert "Hint language: 12" not in str(payload) and "language" not in payload
+        payload = call_kwargs.get("json") or {}
+        user_message = payload.get("messages", [])[1]
+        contents = user_message.get("content", [])
+        assert not any(
+            isinstance(p, dict) and "Hint language: 12" in p.get("text", "")
+            for p in contents
+        )
+
 
