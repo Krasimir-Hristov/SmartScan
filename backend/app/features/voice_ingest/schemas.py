@@ -71,7 +71,7 @@ class OpenRouterTranscriptionRequest(BaseModel):
 class ProviderMessageContent(BaseModel):
     model_config = ConfigDict(extra="ignore")
     role: str = "assistant"
-    content: str = ""
+    content: str
 
 
 class ProviderChoice(BaseModel):

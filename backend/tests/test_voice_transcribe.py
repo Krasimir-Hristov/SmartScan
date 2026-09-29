@@ -187,4 +187,30 @@ def test_transcribe_voice_malformed_provider_response(monkeypatch):
         assert response.status_code == 502
 
 
+def test_transcribe_voice_missing_content_in_provider_response(monkeypatch):
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "OPENROUTER_API_KEY", "sk-or-v1-live-sample-key")
+
+    # Provider message missing the required 'content' field
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "choices": [{"message": {"role": "assistant"}}]
+    }
+
+    dummy_audio = io.BytesIO(b"RIFF" + b"\x00" * 200)
+    with patch(
+        "httpx.AsyncClient.post", new_callable=AsyncMock, return_value=mock_resp
+    ):
+        response = client.post(
+            "/api/py/voice/transcribe",
+            files={"file": ("sample.webm", dummy_audio, "audio/webm")},
+        )
+        assert response.status_code == 502
+
+
+
 
