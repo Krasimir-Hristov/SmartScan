@@ -10,22 +10,17 @@ export async function GET(request: Request) {
   let redirectOrigin = requestOrigin;
 
   if (!isLocalEnv) {
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').trim();
-    if (!siteUrl) {
-      return new NextResponse('Configuration Error: Missing NEXT_PUBLIC_SITE_URL', {
-        status: 500,
-      });
-    }
+    const fallbackVercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || fallbackVercelUrl || requestOrigin).trim();
     try {
       const parsed = new URL(siteUrl);
-      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-        throw new Error('Invalid protocol');
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        redirectOrigin = parsed.origin;
       }
-      redirectOrigin = parsed.origin;
     } catch {
-      return new NextResponse('Configuration Error: Invalid NEXT_PUBLIC_SITE_URL', {
-        status: 500,
-      });
+      redirectOrigin = requestOrigin;
     }
   }
 
