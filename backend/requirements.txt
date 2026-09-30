@@ -11,3 +11,4 @@ langgraph
 pytest
 pytest-asyncio
 stripe>=10.0.0
+python-multipart>=0.0.18

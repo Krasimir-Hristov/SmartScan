@@ -36,7 +36,10 @@ const parseConfiguredOrigin = (configured: string | undefined): string => {
  * a development convenience only.
  */
 const resolveSiteOrigin = async (): Promise<string> => {
-  const configured = parseConfiguredOrigin(process.env.NEXT_PUBLIC_SITE_URL);
+  const fallbackVercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+  const configured = parseConfiguredOrigin(process.env.NEXT_PUBLIC_SITE_URL || fallbackVercelUrl);
   if (configured) return configured;
 
   if (process.env.NODE_ENV === 'production') return '';

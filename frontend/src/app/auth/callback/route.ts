@@ -10,7 +10,10 @@ export async function GET(request: Request) {
   let redirectOrigin = requestOrigin;
 
   if (!isLocalEnv) {
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').trim();
+    const fallbackVercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || fallbackVercelUrl).trim();
     if (!siteUrl) {
       return new NextResponse('Configuration Error: Missing NEXT_PUBLIC_SITE_URL', {
         status: 500,
