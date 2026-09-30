@@ -2,7 +2,6 @@
 
 import base64
 import logging
-from typing import Any
 
 import httpx
 from fastapi import HTTPException, status
