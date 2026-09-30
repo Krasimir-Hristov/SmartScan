@@ -27,5 +27,62 @@ class TranscribeResponse(BaseModel):
     text: str = Field(description="Transcribed text from the audio recording")
     detected_language: str | None = Field(
         default=None,
-        description="ISO language code detected by Whisper (e.g. 'bg', 'en', 'el')",
+        description="ISO language code returned by the provider (e.g. 'bg', 'en'), or None if not detected.",
     )
+
+
+class AudioInputData(BaseModel):
+    model_config = ConfigDict(strict=True)
+    data: str
+    format: str
+
+
+class TextContentPart(BaseModel):
+    model_config = ConfigDict(strict=True)
+    type: str = "text"
+    text: str
+
+
+class AudioContentPart(BaseModel):
+    model_config = ConfigDict(strict=True)
+    type: str = "input_audio"
+    input_audio: AudioInputData
+
+
+class SystemChatMessage(BaseModel):
+    model_config = ConfigDict(strict=True)
+    role: str = "system"
+    content: str
+
+
+class UserChatMessage(BaseModel):
+    model_config = ConfigDict(strict=True)
+    role: str = "user"
+    content: list[TextContentPart | AudioContentPart]
+
+
+class OpenRouterTranscriptionRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+    model: str
+    messages: list[SystemChatMessage | UserChatMessage]
+    temperature: float = 0.0
+
+
+class ProviderMessageContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    role: str = "assistant"
+    content: str
+
+
+class ProviderChoice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    message: ProviderMessageContent
+
+
+class ProviderChatCompletionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    choices: list[ProviderChoice] = Field(default_factory=list)
+    text: str | None = None
+    language: str | None = None
+
+

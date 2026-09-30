@@ -13,7 +13,7 @@ flowchart TD
     Client["Потребителски браузър (Гост / Хазяин)"] -->|HTTPS| Vercel["Frontend (Next.js 16 App Router) <br> Hosted on Vercel"]
     Vercel -->|Auth & DB Queries via DAL| Supabase["Supabase (PostgreSQL + pgvector + Auth)"]
     Vercel -->|Proxy /api/py/* + x-internal-auth| Render["Backend API (FastAPI + Uvicorn) <br> Hosted on Render (Frankfurt)"]
-    Render -->|SSE Streaming & Embeddings| OpenRouter["OpenRouter (Gemini 2.5 Flash + Whisper)"]
+    Render -->|SSE Streaming & Audio STT| OpenRouter["OpenRouter (Gemini 2.5 Flash)"]
     Render -->|Vector Search & Space Updates| Supabase
     Stripe["Stripe (Checkout & Billing)"] -->|Webhooks /api/py/billing/webhook| Render
 ```
@@ -23,7 +23,7 @@ flowchart TD
 | **Frontend** | Next.js 16, React 19, Tailwind v4 | **Vercel** | Global Edge (Anycast) | Hobby (Free) |
 | **Backend** | FastAPI, Python 3.11+, Uvicorn ASGI | **Render.com** | Frankfurt, Germany (EU Central) | Web Service (Free) |
 | **Database & Auth** | PostgreSQL, pgvector (HNSW), Supabase Auth | **Supabase** | Frankfurt, Germany (EU Central) | Free Tier |
-| **AI LLM & STT** | Gemini 2.5 Flash, Whisper Large v3 | **OpenRouter** | Cloud API | Pay-as-you-go |
+| **AI LLM & STT** | Gemini 2.5 Flash (Multimodal Audio & Chat) | **OpenRouter** | Cloud API | Pay-as-you-go |
 | **Плащания** | Stripe Checkout & Customer Portal | **Stripe** | Global API | Standard |
 
 ---
@@ -150,9 +150,9 @@ Stripe управлява абонаментите на ниво конкрет�
 
 ## 6. Чеклист за верификация след деплой
 
-- [x] **Backend Health Check**: Заявка към `https://<render-url>/api/py/health` връща HTTP 200 с JSON статус `healthy`.
-- [x] **Frontend Proxy Health Check**: Заявка към `https://<vercel-url>/api/py/health` успешно се проксира и връща HTTP 200 от бекенда.
-- [x] **Google OAuth Login**: Входът от началната страница пренасочва успешно към `/dashboard` без `ERR_CONNECTION_REFUSED`.
-- [x] **Stripe Checkout**: Бутонът за абонамент отваря Stripe Checkout и след плащане пренасочва обратно към обекта.
-- [x] **Webhook Delivery**: В Stripe Webhook логовете изпратеното събитие връща статус `200 OK`, а в Supabase статусът се сменя на `active`.
-- [x] **Guest PWA & AI Concierge**: Отваряне на `/stay/[slug]` зарежда виртуалния наръчник и чатът стриймва отговори без прекъсване.
+- [ ] **Backend Health Check**: Заявка към `https://<render-url>/api/py/health` връща HTTP 200 с JSON статус `healthy`.
+- [ ] **Frontend Proxy Health Check**: Заявка към `https://<vercel-url>/api/py/health` успешно се проксира и връща HTTP 200 от бекенда.
+- [ ] **Google OAuth Login**: Входът от началната страница пренасочва успешно към `/dashboard` без `ERR_CONNECTION_REFUSED`.
+- [ ] **Stripe Checkout**: Бутонът за абонамент отваря Stripe Checkout и след плащане пренасочва обратно към обекта.
+- [ ] **Webhook Delivery**: В Stripe Webhook логовете изпратеното събитие връща статус `200 OK`, а в Supabase статусът се сменя на `active`.
+- [ ] **Guest PWA & AI Concierge**: Отваряне на `/stay/[slug]` зарежда виртуалния наръчник и чатът стриймва отговори без прекъсване.

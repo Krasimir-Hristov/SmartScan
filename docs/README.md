@@ -7,10 +7,10 @@
 ## 1. Бърз индекс на документацията
 
 ### 🧭 Архитектура & Проектен план
-- [**AGENTS.md**](file:///d:/myProjects/smart_scan/AGENTS.md) — Главна системна архитектурна спецификация, инженерни стандарти, мулти-тенант модел, правила за сигурност и забрани.
-- [**ROADMAP.md**](file:///d:/myProjects/smart_scan/ROADMAP.md) — 10-стъпков чек-лист за поетапно изпълнение с верификационни критерии и текущ статус.
-- [**DEPLOYMENT.md**](file:///d:/myProjects/smart_scan/docs/deployment.md) — Пълно ръководство за деплой на живо в продукционна среда (Vercel, Render, Supabase, Stripe Webhooks).
-- [**README.md (Root)**](file:///d:/myProjects/smart_scan/README.md) — Главно ръководство за инсталация, стартиране, променливи на средата и системни зависимости.
+- [**AGENTS.md**](../AGENTS.md) — Главна системна архитектурна спецификация, инженерни стандарти, мулти-тенант модел, правила за сигурност и забрани.
+- [**ROADMAP.md**](../ROADMAP.md) — 10-стъпков чек-лист за поетапно изпълнение с верификационни критерии и текущ статус.
+- [**DEPLOYMENT.md**](deployment.md) — Пълно ръководство за деплой на живо в продукционна среда (Vercel, Render, Supabase, Stripe Webhooks).
+- [**README.md (Root)**](../README.md) — Главно ръководство за инсталация, стартиране, променливи на средата и системни зависимости.
 
 ---
 
@@ -18,33 +18,33 @@
 
 | Етап | Документ | Статус | Основни технологии и акценти |
 | :--- | :--- | :--- | :--- |
-| **Стъпка 1** | [**Step 01: Landing Page & i18n**](file:///d:/myProjects/smart_scan/docs/steps/step-01-landing-and-i18n.md) | 🟢 Завършена | Obsidian Luxury дизайн, 10 езика с `next-intl`, No-Middleware RFC 7231 резолюция, Bento мрежа. |
-| **Стъпка 2** | [**Step 02: Host Authentication**](file:///d:/myProjects/smart_scan/docs/steps/step-02-host-authentication.md) | 🟢 Завършена | 1-Click Google OAuth, `@supabase/ssr` HttpOnly бисквитки, DAL сървърна защита на `/dashboard`. |
-| **Стъпка 3** | [**Step 03: Guest PWA Experience**](file:///d:/myProjects/smart_scan/docs/steps/step-03-guest-pwa-experience.md) | 🟢 Завършена | Zero-Image PWA под 200ms, 1-Click Wi-Fi с `navigator.vibrate(50)`, 4-площна SOS решетка, Zero-Empty-States. |
-| **Стъпка 4** | [**Step 04: Database & DAL**](file:///d:/myProjects/smart_scan/docs/steps/step-04-database-migrations-dal.md) | 🟢 Завършена | PostgreSQL + pgvector HNSW индекс, RLS политики, RPC функции, сървърен DAL (`server-only`). |
-| **Стъпка 5** | [**Step 05: FastAPI AI Concierge**](file:///d:/myProjects/smart_scan/docs/steps/step-05-fastapi-ai-concierge-proxy.md) | 🟢 Завършена | FastAPI Python 3.12, LangGraph `StateGraph`, OpenRouter SSE стрийминг, Prompt Injection защита, `proxy.ts` (CVE-2025-29927). |
-| **Стъпка 6** | [**Step 06: Host Dashboard**](file:///d:/myProjects/smart_scan/docs/steps/step-06-host-dashboard.md) | 🟢 Завършена | Пълен контролен панел на хазяина: SpaceEditor, SpaceSwitcher, QuietHoursControl, KnowledgeManager, GitHub-style сигурност. |
-| **Стъпка 7** | [**Step 07: Voice Ingest & Whisper**](file:///d:/myProjects/smart_scan/docs/steps/step-07-voice-ingest-whisper.md) | 🟢 Завършена | Гласов Ingest: MediaRecorder + Web Speech API + Whisper v3 + Gemini Flash карти + 1536D pgvector ембединги + Dynamic Chips. |
-| **Стъпка 8** | [**Step 08: Physical QR Plaques**](file:///d:/myProjects/smart_scan/docs/steps/step-08-qr-print-plaques.md) | 🟢 Завършена | A4/A5/A6 табелки: WYSIWYG модал, истински печатни стилове (`@page` + `print-color-adjust: exact`), векторен QR код и векторни знамена в PDF-а, каноничен домейн за QR линка. |
-| **Стъпка 9** | [**Step 09: Stripe Granular Billing**](file:///d:/myProjects/smart_scan/docs/steps/step-09-stripe-granular-billing.md) | 🟢 Завършена | Грануларно таксуване €9/месец на обект, Stripe Checkout & Customer Portal, сезонен паузинг, защита срещу Ghost Billing при изтриване на профил. |
+| **Стъпка 1** | [**Step 01: Landing Page & i18n**](steps/step-01-landing-and-i18n.md) | 🟢 Завършена | Obsidian Luxury дизайн, 10 езика с `next-intl`, No-Middleware RFC 7231 резолюция, Bento мрежа. |
+| **Стъпка 2** | [**Step 02: Host Authentication**](steps/step-02-host-authentication.md) | 🟢 Завършена | 1-Click Google OAuth, `@supabase/ssr` HttpOnly бисквитки, DAL сървърна защита на `/dashboard`. |
+| **Стъпка 3** | [**Step 03: Guest PWA Experience**](steps/step-03-guest-pwa-experience.md) | 🟢 Завършена | Zero-Image PWA под 200ms, 1-Click Wi-Fi с `navigator.vibrate(50)`, 4-площна SOS решетка, Zero-Empty-States. |
+| **Стъпка 4** | [**Step 04: Database & DAL**](steps/step-04-database-migrations-dal.md) | 🟢 Завършена | PostgreSQL + pgvector HNSW индекс, RLS политики, RPC функции, сървърен DAL (`server-only`). |
+| **Стъпка 5** | [**Step 05: FastAPI AI Concierge**](steps/step-05-fastapi-ai-concierge-proxy.md) | 🟢 Завършена | FastAPI Python 3.12, LangGraph `StateGraph`, OpenRouter SSE стрийминг, Prompt Injection защита, `proxy.ts` (CVE-2025-29927). |
+| **Стъпка 6** | [**Step 06: Host Dashboard**](steps/step-06-host-dashboard.md) | 🟢 Завършена | Пълен контролен панел на хазяина: SpaceEditor, SpaceSwitcher, QuietHoursControl, KnowledgeManager, GitHub-style сигурност. |
+| **Стъпка 7** | [**Step 07: Voice Ingest & Whisper**](steps/step-07-voice-ingest-whisper.md) | 🟢 Завършена | Гласов Ingest: MediaRecorder + Web Speech API + Whisper v3 + Gemini Flash карти + 1536D pgvector ембединги + Dynamic Chips. |
+| **Стъпка 8** | [**Step 08: Physical QR Plaques**](steps/step-08-qr-print-plaques.md) | 🟢 Завършена | A4/A5/A6 табелки: WYSIWYG модал, истински печатни стилове (`@page` + `print-color-adjust: exact`), векторен QR код и векторни знамена в PDF-а, каноничен домейн за QR линка. |
+| **Стъпка 9** | [**Step 09: Stripe Granular Billing**](steps/step-09-stripe-granular-billing.md) | 🟢 Завършена | Грануларно таксуване €9/месец на обект, Stripe Checkout & Customer Portal, сезонен паузинг, защита срещу Ghost Billing при изтриване на профил. |
 | **Стъпка 10**| *Step 10: Production Hardening* | ⚪ Очаква | E2E тестове, пълен одит на сигурността, Core Web Vitals одит. |
 
 ---
 
 ### 🔐 Специализирани технически ръководства
-- [**Автентикация & Сигурност**](file:///d:/myProjects/smart_scan/docs/authentication.md) — Подробен анализ на Google OAuth 2.0 потока, защитата от отворени пренасочвания (Open Redirect), управлението на бисквитки и разделението на отговорностите.
+- [**Автентикация & Сигурност**](authentication.md) — Подробен анализ на Google OAuth 2.0 потока, защитата от отворени пренасочвания (Open Redirect), управлението на бисквитки и разделението на отговорностите.
 
 ---
 
 ### 🎨 Дизайн спецификации (`design/`)
-- [`design/00_master_tokens.md`](file:///d:/myProjects/smart_scan/design/00_master_tokens.md) — Дизайн токени (цветове, градиенти, сенки, радиуси, типография).
-- [`design/01_guest_pwa_mobile.md`](file:///d:/myProjects/smart_scan/design/01_guest_pwa_mobile.md) — Мобилно PWA за гости (`/stay/[slug]`).
-- [`design/02_qr_acrylic_plaque.md`](file:///d:/myProjects/smart_scan/design/02_qr_acrylic_plaque.md) — Физически акрилни табелки с QR код (A5/A6).
-- [`design/03_host_dashboard.md`](file:///d:/myProjects/smart_scan/design/03_host_dashboard.md) — Административен панел за хазяи (`/dashboard`).
-- [`design/04_voice_ingest_wizard.md`](file:///d:/myProjects/smart_scan/design/04_voice_ingest_wizard.md) — Гласов ингест и Whisper транскрипция.
-- [`design/05_landing_page.md`](file:///d:/myProjects/smart_scan/design/05_landing_page.md) — Начална презентационна страница.
-- [`design/06_auth_and_onboarding.md`](file:///d:/myProjects/smart_scan/design/06_auth_and_onboarding.md) — Автентикация и онбординг поток.
-- [`design/07_stripe_billing_architecture.md`](file:///d:/myProjects/smart_scan/design/07_stripe_billing_architecture.md) — Грануларно таксуване на ниво обект.
+- [`design/00_master_tokens.md`](../design/00_master_tokens.md) — Дизайн токени (цветове, градиенти, сенки, радиуси, типография).
+- [`design/01_guest_pwa_mobile.md`](../design/01_guest_pwa_mobile.md) — Мобилно PWA за гости (`/stay/[slug]`).
+- [`design/02_qr_acrylic_plaque.md`](../design/02_qr_acrylic_plaque.md) — Физически акрилни табелки с QR код (A5/A6).
+- [`design/03_host_dashboard.md`](../design/03_host_dashboard.md) — Административен панел за хазяи (`/dashboard`).
+- [`design/04_voice_ingest_wizard.md`](../design/04_voice_ingest_wizard.md) — Гласов ингест и Whisper транскрипция.
+- [`design/05_landing_page.md`](../design/05_landing_page.md) — Начална презентационна страница.
+- [`design/06_auth_and_onboarding.md`](../design/06_auth_and_onboarding.md) — Автентикация и онбординг поток.
+- [`design/07_stripe_billing_architecture.md`](../design/07_stripe_billing_architecture.md) — Грануларно таксуване на ниво обект.
 
 ---
 
