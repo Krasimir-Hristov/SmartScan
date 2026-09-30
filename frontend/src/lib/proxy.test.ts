@@ -78,6 +78,46 @@ describe('proxyToBackend', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
+  it('uses rightmost x-forwarded-for when x-vercel-forwarded-for is absent', async () => {
+    const req = createRequest('/api/test', {
+      headers: {
+        'x-forwarded-for': '1.1.1.1, 8.8.8.8, 203.0.113.50'
+      }
+    });
+
+    await proxyToBackend(req, '/api/test');
+
+    const fetchHeaders = vi.mocked(global.fetch).mock.calls[0][1]?.headers as Headers;
+    expect(fetchHeaders.get('x-forwarded-for')).toBe('203.0.113.50');
+    expect(fetchHeaders.get('x-internal-auth')).toBe('test-secret');
+  });
+
+  it('falls back to x-real-ip when x-forwarded-for is absent', async () => {
+    const req = createRequest('/api/test', {
+      headers: {
+        'x-real-ip': '10.0.0.5'
+      }
+    });
+
+    await proxyToBackend(req, '/api/test');
+
+    const fetchHeaders = vi.mocked(global.fetch).mock.calls[0][1]?.headers as Headers;
+    expect(fetchHeaders.get('x-forwarded-for')).toBe('10.0.0.5');
+  });
+
+  it('falls back to 127.0.0.1 when all identity headers are absent', async () => {
+    const req = createRequest('/api/test', {
+      headers: {
+        'content-type': 'application/json'
+      }
+    });
+
+    await proxyToBackend(req, '/api/test');
+
+    const fetchHeaders = vi.mocked(global.fetch).mock.calls[0][1]?.headers as Headers;
+    expect(fetchHeaders.get('x-forwarded-for')).toBe('127.0.0.1');
+  });
+
   it('forwards query parameters correctly', async () => {
     const req = createRequest('/api/test?space_id=123&sort=desc');
     await proxyToBackend(req, '/api/test');

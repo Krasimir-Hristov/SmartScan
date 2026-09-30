@@ -128,21 +128,27 @@ describe('useConciergeChat', () => {
     expect(result.current.messages[1].content).toBe('Partial text');
   });
 
-  it('stops generation early', async () => {
-    // Make streamConciergeChat hang so it stays in isStreaming=true state
+  it('stops generation early and aborts the signal', async () => {
+    let capturedSignal: AbortSignal | undefined;
     let resolveStream: (value?: unknown) => void = () => {};
     const promise = new Promise((resolve) => { resolveStream = resolve; });
-    vi.mocked(chatStreamApi.streamConciergeChat).mockImplementation(() => promise as never);
+    vi.mocked(chatStreamApi.streamConciergeChat).mockImplementation((params) => {
+      capturedSignal = params.signal;
+      return promise as never;
+    });
 
     const { result } = renderHook(() =>
       useConciergeChat({ spaceId: 'space-123' })
     );
 
+    let sendPromise: Promise<void>;
     act(() => {
-      result.current.sendMessage('Long prompt');
+      sendPromise = result.current.sendMessage('Long prompt');
     });
 
     expect(result.current.isStreaming).toBe(true);
+    expect(capturedSignal).toBeDefined();
+    expect(capturedSignal!.aborted).toBe(false);
 
     act(() => {
       result.current.stopGeneration();
@@ -150,12 +156,14 @@ describe('useConciergeChat', () => {
 
     expect(result.current.isStreaming).toBe(false);
     expect(result.current.messages[1].isStreaming).toBe(false);
-    
-    // Cleanup the promise
+    expect(capturedSignal!.aborted).toBe(true);
+
+    // Cleanup the pending promise
     resolveStream();
+    await act(async () => { await sendPromise!; });
   });
 
-  it('clears chat history', async () => {
+  it('clears chat history and sends empty history on next message', async () => {
     const { result } = renderHook(() =>
       useConciergeChat({ spaceId: 'space-123' })
     );
@@ -177,5 +185,15 @@ describe('useConciergeChat', () => {
 
     expect(result.current.messages).toEqual([]);
     expect(result.current.error).toBeNull();
+
+    // Send another message after clearing — history should be empty
+    await act(async () => {
+      await result.current.sendMessage('Hello again');
+    });
+
+    const lastCall = vi.mocked(chatStreamApi.streamConciergeChat).mock.calls.at(-1);
+    expect(lastCall).toBeDefined();
+    expect(lastCall![0].history).toEqual([]);
+    expect(lastCall![0].query).toBe('Hello again');
   });
 });

@@ -11,8 +11,11 @@ describe('useVoiceRecorder', () => {
   let mockMediaRecorderStart: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockMediaRecorderStop: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mediaRecorderRef: any;
 
   beforeEach(() => {
+    mediaRecorderRef = null;
     mockGetUserMedia = vi.fn().mockResolvedValue({
       getTracks: () => [{ stop: vi.fn() }]
     });
@@ -33,7 +36,11 @@ describe('useVoiceRecorder', () => {
       ondataavailable: ((ev: Event) => void) | null = null;
       onstop: ((ev: Event) => void) | null = null;
       
-      constructor() {}
+      constructor() {
+        // Capture instance for test access
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        mediaRecorderRef = this;
+      }
       start() {
         this.state = 'recording';
         mockMediaRecorderStart();
@@ -139,20 +146,30 @@ describe('useVoiceRecorder', () => {
     vi.useRealTimers();
   });
 
-  it('stops recording and triggers transcription API', async () => {
-    const { result } = renderHook(() => useVoiceRecorder());
-    
+  it('stops recording, sends audio to transcription API, and calls onTranscript', async () => {
+    const onTranscriptMock = vi.fn();
+    const { result } = renderHook(() => useVoiceRecorder({ onTranscript: onTranscriptMock }));
+
     await act(async () => {
       await result.current.startRecording();
     });
-    
+
+    // Simulate MediaRecorder emitting a 200-byte audio chunk via ondataavailable
+    const recorder = mediaRecorderRef;
+    const fakeAudioData = new Blob([new Uint8Array(200)], { type: 'audio/webm' });
+    if (recorder?.ondataavailable) {
+      recorder.ondataavailable({ data: fakeAudioData } as unknown as BlobEvent);
+    }
+
     await act(async () => {
-      result.current.stopRecording();
+      await result.current.stopRecording();
     });
-    
+
     expect(mockMediaRecorderStop).toHaveBeenCalled();
-    // In actual usage, MediaRecorder's onstop event fires the API.
-    // fetch is mocked globally in beforeEach, we just check that isTranscribing flipped, 
-    // or wait for state reset (which depends on exact useVoiceRecorder implementation).
+    expect(global.fetch).toHaveBeenCalledWith('/api/py/voice/transcribe', expect.objectContaining({
+      method: 'POST',
+    }));
+    expect(onTranscriptMock).toHaveBeenCalledWith('Test transcript');
+    expect(result.current.isTranscribing).toBe(false);
   });
 });

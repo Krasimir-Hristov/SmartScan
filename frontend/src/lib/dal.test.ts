@@ -97,5 +97,19 @@ describe('dal', () => {
       const spaces = await getHostSpaces('host-empty');
       expect(spaces).toEqual([]);
     });
+
+    it('returns empty array when no hostId and user is unauthenticated', async () => {
+      const fromMock = vi.fn();
+      vi.mocked(createClient).mockResolvedValue({
+        auth: {
+          getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: new Error('Not authenticated') }),
+        },
+        from: fromMock,
+      } as never);
+
+      const spaces = await getHostSpaces();
+      expect(spaces).toEqual([]);
+      expect(fromMock).not.toHaveBeenCalled();
+    });
   });
 });
