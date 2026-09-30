@@ -39,7 +39,7 @@ describe('WifiCard Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useClipboard).mockReturnValue({ copied: false, copy: mockCopy } as any);
+    vi.mocked(useClipboard).mockReturnValue({ copied: false, copy: mockCopy } as never);
   });
 
   it('renders wifi details correctly', () => {
@@ -64,7 +64,7 @@ describe('WifiCard Component', () => {
   });
 
   it('shows Copied! state after successful copy', () => {
-    vi.mocked(useClipboard).mockReturnValue({ copied: true, copy: mockCopy } as any);
+    vi.mocked(useClipboard).mockReturnValue({ copied: true, copy: mockCopy } as never);
     render(<WifiCard wifi={mockWifi} />);
     
     const button = screen.getByRole('button', { name: 'Copied!' });

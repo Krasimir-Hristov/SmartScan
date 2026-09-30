@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
@@ -24,7 +24,7 @@ describe('dal', () => {
         auth: {
           getUser: vi.fn().mockResolvedValue({ data: { user: mockUser }, error: null }),
         },
-      } as any);
+      } as never);
 
       const user = await getAuthenticatedHost();
       expect(user).toEqual(mockUser);
@@ -35,7 +35,7 @@ describe('dal', () => {
         auth: {
           getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: new Error('Auth failed') }),
         },
-      } as any);
+      } as never);
 
       const user = await getAuthenticatedHost();
       expect(user).toBeNull();
@@ -50,7 +50,7 @@ describe('dal', () => {
       
       vi.mocked(createClient).mockResolvedValue({
         from: vi.fn().mockReturnValue({ select: selectMock }),
-      } as any);
+      } as never);
 
       const spaces = await getHostSpaces('host-123');
       expect(spaces).toEqual(mockSpaces);
@@ -67,7 +67,7 @@ describe('dal', () => {
           getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'current-user-1' } }, error: null }),
         },
         from: vi.fn().mockReturnValue({ select: selectMock }),
-      } as any);
+      } as never);
 
       const spaces = await getHostSpaces();
       expect(spaces).toEqual(mockSpaces);
@@ -80,7 +80,7 @@ describe('dal', () => {
       
       vi.mocked(createClient).mockResolvedValue({
         from: vi.fn().mockReturnValue({ select: selectMock }),
-      } as any);
+      } as never);
 
       const spaces = await getHostSpaces('host-err');
       expect(spaces).toEqual([]);
@@ -92,7 +92,7 @@ describe('dal', () => {
       
       vi.mocked(createClient).mockResolvedValue({
         from: vi.fn().mockReturnValue({ select: selectMock }),
-      } as any);
+      } as never);
 
       const spaces = await getHostSpaces('host-empty');
       expect(spaces).toEqual([]);

@@ -86,9 +86,9 @@ describe('useConciergeChat', () => {
   });
 
   it('prevents concurrent requests while streaming', async () => {
-    let resolveStream: any;
+    let resolveStream: (value?: unknown) => void = () => {};
     const promise = new Promise((resolve) => { resolveStream = resolve; });
-    vi.mocked(chatStreamApi.streamConciergeChat).mockImplementation(() => promise as any);
+    vi.mocked(chatStreamApi.streamConciergeChat).mockImplementation(() => promise as never);
 
     const { result } = renderHook(() => useConciergeChat({ spaceId: 'space-123' }));
 
@@ -130,9 +130,9 @@ describe('useConciergeChat', () => {
 
   it('stops generation early', async () => {
     // Make streamConciergeChat hang so it stays in isStreaming=true state
-    let resolveStream: any;
+    let resolveStream: (value?: unknown) => void = () => {};
     const promise = new Promise((resolve) => { resolveStream = resolve; });
-    vi.mocked(chatStreamApi.streamConciergeChat).mockImplementation(() => promise as any);
+    vi.mocked(chatStreamApi.streamConciergeChat).mockImplementation(() => promise as never);
 
     const { result } = renderHook(() =>
       useConciergeChat({ spaceId: 'space-123' })

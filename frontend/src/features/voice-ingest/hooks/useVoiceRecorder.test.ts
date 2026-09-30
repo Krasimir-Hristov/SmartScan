@@ -2,10 +2,15 @@ import { renderHook, act } from '@testing-library/react';
 import { useVoiceRecorder } from './useVoiceRecorder';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+
+
 describe('useVoiceRecorder', () => {
-  let mockGetUserMedia: import('vitest').Mock;
-  let mockMediaRecorderStart: import('vitest').Mock;
-  let mockMediaRecorderStop: import('vitest').Mock;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockGetUserMedia: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockMediaRecorderStart: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockMediaRecorderStop: any;
 
   beforeEach(() => {
     mockGetUserMedia = vi.fn().mockResolvedValue({
@@ -25,8 +30,8 @@ describe('useVoiceRecorder', () => {
     global.MediaRecorder = class {
       state = 'inactive';
       mimeType = 'audio/webm';
-      ondataavailable: any = null;
-      onstop: any = null;
+      ondataavailable: ((ev: Event) => void) | null = null;
+      onstop: ((ev: Event) => void) | null = null;
       
       constructor() {}
       start() {
@@ -37,12 +42,12 @@ describe('useVoiceRecorder', () => {
         if (this.state === 'inactive') return;
         this.state = 'inactive';
         mockMediaRecorderStop();
-        if (this.onstop) this.onstop();
+        if (this.onstop) this.onstop(new Event('stop'));
       }
       static isTypeSupported() {
         return true;
       }
-    } as any;
+    } as never;
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,

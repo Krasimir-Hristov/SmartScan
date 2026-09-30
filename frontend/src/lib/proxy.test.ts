@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { proxyToBackend } from './proxy';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
@@ -18,7 +18,8 @@ describe('proxyToBackend', () => {
     vi.restoreAllMocks();
   });
 
-  const createRequest = (url: string, init?: any) => {
+  const createRequest = (url: string, init?: unknown) => {
+    // @ts-expect-error Type mismatch with NextRequest RequestInit
     return new NextRequest(new URL(url, 'http://localhost:3000'), init);
   };
 

@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, values?: any) => {
+  useTranslations: () => (key: string, values?: Record<string, unknown>) => {
     const messages: Record<string, string> = {
       statusActive: 'Active',
       statusPaused: 'Paused',
@@ -24,7 +24,7 @@ vi.mock('next-intl', () => ({
 
 describe('PropertyCard Component', () => {
   it('renders property details', () => {
-    const mockProperty: any = {
+    const mockProperty = {
       id: 'prop-2',
       name: 'Seaside Villa',
       location: 'Varna, Bulgaria',
@@ -33,7 +33,7 @@ describe('PropertyCard Component', () => {
       languagesCount: 50,
       wifiName: 'Seaside_Guest',
       todayScans: 10,
-    };
+    } as never;
 
     render(<PropertyCard property={mockProperty} />);
     
@@ -46,30 +46,30 @@ describe('PropertyCard Component', () => {
   });
 
   it('renders different statuses including fallback for unknown status', () => {
-    const mockPropertyPaused: any = {
+    const mockPropertyPaused = {
       id: 'prop-2', name: 'A', location: 'B', slug: 'c', status: 'paused', languagesCount: 50, wifiName: 'D', todayScans: 0
-    };
+    } as never;
     const { rerender } = render(<PropertyCard property={mockPropertyPaused} />);
     expect(screen.getByText('Paused')).toBeInTheDocument();
 
-    const mockPropertyDraft: any = {
+    const mockPropertyDraft = {
       id: 'prop-2', name: 'A', location: 'B', slug: 'c', status: 'draft', languagesCount: 50, wifiName: 'D', todayScans: 0
-    };
+    } as never;
     rerender(<PropertyCard property={mockPropertyDraft} />);
     expect(screen.getByText('Draft')).toBeInTheDocument();
     
-    const mockPropertyUnknown: any = {
+    const mockPropertyUnknown = {
       id: 'prop-2', name: 'A', location: 'B', slug: 'c', status: 'unknown_status_abc', languagesCount: 50, wifiName: 'D', todayScans: 0
-    };
+    } as never;
     rerender(<PropertyCard property={mockPropertyUnknown} />);
     expect(screen.getByText('Draft')).toBeInTheDocument(); // Falls back to draft styling
   });
 
   it('handles missing optional fields (wifiName)', () => {
-    const mockPropertyMissingWifi: any = {
+    const mockPropertyMissingWifi = {
       id: 'prop-2', name: 'A', location: 'B', slug: 'c', status: 'active', languagesCount: 50, todayScans: 0,
       wifiName: null // or undefined
-    };
+    } as never;
     render(<PropertyCard property={mockPropertyMissingWifi} />);
     
     // We expect the wifi component to either render empty text or not crash
@@ -79,9 +79,9 @@ describe('PropertyCard Component', () => {
   it('handles guest view click', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     
-    const mockProperty: any = {
+    const mockProperty = {
       id: 'prop-3', name: 'Test', location: 'Test', slug: 'test-slug', status: 'active', languagesCount: 1, wifiName: 'A', todayScans: 0
-    };
+    } as never;
     render(<PropertyCard property={mockProperty} />);
     
     const button = screen.getByRole('button', { name: 'Open Guest Guide' });
