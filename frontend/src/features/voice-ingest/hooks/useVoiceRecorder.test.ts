@@ -3,9 +3,9 @@ import { useVoiceRecorder } from './useVoiceRecorder';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 describe('useVoiceRecorder', () => {
-  let mockGetUserMedia: ReturnType<typeof vi.fn>;
-  let mockMediaRecorderStart: ReturnType<typeof vi.fn>;
-  let mockMediaRecorderStop: ReturnType<typeof vi.fn>;
+  let mockGetUserMedia: import('vitest').Mock;
+  let mockMediaRecorderStart: import('vitest').Mock;
+  let mockMediaRecorderStop: import('vitest').Mock;
 
   beforeEach(() => {
     mockGetUserMedia = vi.fn().mockResolvedValue({

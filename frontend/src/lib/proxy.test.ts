@@ -18,7 +18,7 @@ describe('proxyToBackend', () => {
     vi.restoreAllMocks();
   });
 
-  const createRequest = (url: string, init?: RequestInit) => {
+  const createRequest = (url: string, init?: any) => {
     return new NextRequest(new URL(url, 'http://localhost:3000'), init);
   };
 
