@@ -320,8 +320,7 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
     """Attach ``metadata.space_id`` to freshly created subscription items.
 
     Stripe Checkout cannot stamp per-item metadata, so after the session
-    completes we map each item explicitly to the enrolled space id based on
-    the item's price.
+    completes we verify the unmapped items match the space count, and tag them.
     """
     if not space_ids:
         return
@@ -330,33 +329,26 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
     if not spaces:
         return
 
-    try:
-        items = await _list_subscription_items(subscription_id)
-    except Exception:  # noqa: BLE001
-        logger.warning("Could not list subscription items to tag %s", subscription_id)
-        return
+    # Let listing failures propagate
+    items = await _list_subscription_items(subscription_id)
 
     unmapped_items = [
         item for item in items 
         if not (getattr(item, "metadata", None) or {}).get("space_id")
     ]
 
-    for space in spaces:
-        expected_price_id = _resolve_price_id(space.space_type)
+    if len(unmapped_items) != len(spaces):
+        msg = f"Cannot tag spaces: found {len(unmapped_items)} unmapped items for {len(spaces)} spaces."
+        logger.error(msg)
+        raise ValueError(msg)
+
+    # Pair items by count
+    for space, item in zip(spaces, unmapped_items, strict=False):
+        def _tag(item_id: str = str(item.id), sid: str = space.id) -> Any:
+            return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
         
-        matched_item = next(
-            (item for item in unmapped_items if getattr(getattr(item, "price", None), "id", None) == expected_price_id), 
-            None
-        )
-        if matched_item:
-            unmapped_items.remove(matched_item)
-            def _tag(item_id: str = str(matched_item.id), sid: str = space.id) -> Any:
-                return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
-            
-            try:
-                await asyncio.to_thread(_tag)
-            except Exception:  # noqa: BLE001
-                logger.warning("Failed to tag subscription item for space %s", space.id)
+        # Let metadata update failures propagate
+        await asyncio.to_thread(_tag)
 
 
 async def create_portal_session(
