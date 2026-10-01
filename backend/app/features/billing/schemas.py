@@ -1,8 +1,20 @@
-"""Schemas for Stripe Billing endpoints."""
+"""Schemas for Stripe Billing endpoints.
 
+Billing ownership lives at the HOST level: one Stripe Customer and one Stripe
+Subscription per host, where every enrolled space is a separate Subscription
+Item tagged with ``metadata.space_id``. That single billing relationship is what
+makes account deletion one Stripe call instead of a loop that can fail halfway
+through and leave ghost subscriptions behind.
+"""
+
+from typing import Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator
+
+# Mirrors the subscription_status CHECK constraint on public.hosts and
+# public.spaces.
+SubscriptionStatus = Literal["trialing", "active", "past_due", "paused", "canceled"]
 
 
 class RedirectableRequest(BaseModel):
@@ -38,9 +50,20 @@ class RedirectableRequest(BaseModel):
 
 
 class CreateCheckoutRequest(RedirectableRequest):
-    """Request to create a Stripe Checkout session."""
+    """Request to create a Stripe Checkout session.
 
-    space_id: str = Field(..., description="ID of the space to subscribe to.")
+    Checkout is host-scoped: the session creates (or tops up) the host's single
+    subscription. `space_ids` selects which owned spaces become billable
+    subscription items; when omitted every active space of the host is enrolled.
+    """
+
+    space_ids: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Owned space ids to enroll on the host's single subscription. "
+            "Empty means: enroll every active space the host owns."
+        ),
+    )
 
 
 class CheckoutResponse(BaseModel):
@@ -51,9 +74,11 @@ class CheckoutResponse(BaseModel):
 
 
 class CreatePortalRequest(RedirectableRequest):
-    """Request to create a Stripe Customer Portal session."""
+    """Request to create a Stripe Customer Portal session.
 
-    space_id: str = Field(..., description="ID of the space (to resolve customer ID).")
+    Host-scoped: the host's single Stripe Customer owns every subscription item,
+    so no space_id is required to resolve billing.
+    """
 
 
 class PortalResponse(BaseModel):
@@ -67,11 +92,46 @@ class BillingUser(BaseModel):
     email: str | None = None
 
 
+class HostBillingRecord(BaseModel):
+    """Row of ``public.hosts`` — the single billing record for a host."""
+
+    id: str
+    stripe_customer_id: str | None = None
+    stripe_subscription_id: str | None = None
+    subscription_status: SubscriptionStatus = "trialing"
+    trial_ends_at: str | None = None
+
+
 class SpaceBillingRecord(BaseModel):
-    """Database record for space billing validation."""
+    """Space row used for billing validation.
+
+    Holds no Stripe identifiers: those live only on ``public.hosts``.
+    """
 
     id: str
     host_id: str
-    subscription_status: str | None = None
-    stripe_subscription_id: str | None = None
-    stripe_customer_id: str | None = None
+    space_type: str | None = None
+    is_active: bool | None = None
+    subscription_status: SubscriptionStatus | None = None
+
+
+class BillingOperationResponse(BaseModel):
+    """Generic success envelope for host-scoped billing mutations."""
+
+    success: bool = True
+    subscription_status: SubscriptionStatus | None = Field(
+        None, description="Resulting host subscription status, when known."
+    )
+
+
+class PurgeResponse(BaseModel):
+    """Outcome of a host account purge (cancel + delete everything)."""
+
+    success: bool = True
+    canceled_subscription_id: str | None = Field(
+        None, description="Stripe Subscription id that was canceled, if any."
+    )
+    deleted_spaces: int = Field(0, description="Number of spaces deleted.")
+    deleted_host_record: bool = Field(
+        False, description="Whether the public.hosts billing row was removed."
+    )

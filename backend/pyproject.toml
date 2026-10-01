@@ -20,5 +20,23 @@ dependencies = [
     "stripe>=10.0.0",
 ]
 
+[tool.ruff]
+# Run Ruff from `backend/` (or point the editor at this config) so `app` is
+# classified as first-party. Without this, the editor resolves the workspace
+# root and mis-detects `app.*` as third-party, producing false I001 import
+# ordering warnings on files whose imports are already correctly grouped.
+line-length = 88
+
+[tool.ruff.lint]
+# Matches the ruleset the project linted against before this file existed:
+# import sorting (I) and flake8-simplify (SIM), plus the always-on E/F defaults.
+select = ["E4", "E7", "E9", "F", "I", "SIM"]
+
+[tool.ruff.lint.isort]
+# `app` lives under backend/ and must be treated as first-party. Declaring it
+# explicitly prevents isort from merging it with third-party imports (which is
+# why the editor, anchored at the workspace root, reported false I001 warnings).
+known-first-party = ["app", "tests"]
+
 [tool.uv]
 package = false

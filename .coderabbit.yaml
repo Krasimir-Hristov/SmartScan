@@ -1,6 +1,13 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "en-US"
-tone_instructions: "You are a Principal AI Reviewer for the SmartScan multi-tenant production platform. Be assertive, precise, and uncompromising on security, multi-tenancy, architecture, and code cleanliness."
+tone_instructions: >
+  You are a Principal AI Reviewer for the SmartScan multi-tenant production platform.
+  Be assertive, precise, and uncompromising on security, multi-tenancy, architecture,
+  and code cleanliness. Billing is HOST-LEVEL: one Stripe Customer and one Stripe
+  Subscription per host (public.hosts), with each space modeled as a Stripe
+  SubscriptionItem tagged metadata.space_id. Reject any review suggestion that assumes
+  the OLD per-space subscription model (stripe_customer_id / stripe_subscription_id /
+  stripe_price_id columns on public.spaces were RETIRED and no longer exist).
 early_access: false
 
 reviews:
@@ -56,12 +63,59 @@ reviews:
         - Guest Voice Ban (MVP Cost Guardrail): Text-to-Speech (TTS) or voice generation for guests is strictly prohibited in MVP. Flag any TTS audio calls intended for guests.
         - Prompt Injection Defense: Ensure user inputs are sanitized with regex tag stripping before passing to LLMs, and RAG vector context is strictly isolated within `<property_context>` XML tags.
         - Rate Limiting: Verify SlowAPI rate limit decorators are present on public endpoints (`/api/py/concierge/chat`, `/api/py/voice/ingest`).
+        - Blocking I/O: Synchronous Supabase/Stripe SDK calls MUST be wrapped with `await asyncio.to_thread(...)` inside async endpoints. Flag any direct blocking SDK call in an async function.
+        - Error Containment: Never leak raw exception messages or stack traces to clients. Routers map `ValueError` to HTTP 400 and any other exception to HTTP 500 with a generic detail.
+        - Test Coverage: Critical billing and multi-tenancy isolation logic MUST have unit tests under `backend/tests/` (e.g. `test_billing_service.py`, `test_spaces_service.py`). Flag billing/multi-tenancy code changed without accompanying tests.
 
-    # 4. Multi-Tenancy & Database Security (Absolute Top Priority)
+    # 4. Host-Level Stripe Billing Architecture (Single Source of Truth)
+    - path: "backend/app/features/billing/**/*.py"
+      instructions: |
+        The billing model is HOST-LEVEL and single-source-of-truth. Enforce it strictly:
+        - One Stripe Customer + one Stripe Subscription per HOST, stored in `public.hosts`
+          (`id` = `auth.users.id`, unique `stripe_customer_id`, unique `stripe_subscription_id`,
+          `subscription_status`, `trial_ends_at`).
+        - Each enrolled space is a Stripe **SubscriptionItem** on that ONE subscription,
+          tagged `metadata.space_id` (used to map items back to `public.spaces`).
+        - THE OLD PER-SPACE MODEL IS RETIRED: `public.spaces.stripe_customer_id`,
+          `stripe_subscription_id` and `stripe_price_id` were DROPPED by migration
+          `20261001000001_host_level_subscriptions.sql`. Flag any code that reads or writes
+          those columns as a blocker.
+        - `public.spaces.subscription_status` is only a DENORMALIZED display mirror of
+          `hosts.subscription_status` (propagated by the webhook handler). `hosts` is
+          authoritative — never treat the spaces mirror as the source of truth.
+        - Endpoints: `POST /billing/checkout` (host-scoped, accepts `space_ids`), `POST /billing/portal`,
+          `POST /billing/spaces/{space_id}/add`, `POST /billing/spaces/{space_id}/remove`,
+          `POST /billing/cancel` (cancel at period end), `POST /billing/purge` (delete Stripe customer
+          + cascade), `POST /billing/webhook`.
+        - Ghost-billing guard: ALWAYS detach/downgrade billing BEFORE deleting a space or account row.
+          Deleting a space must remove its subscription item first; deleting an account must delete the
+          Stripe customer first. Flag any deletion path that removes DB rows while a live Stripe charge remains.
+        - Status mapping: raw Stripe statuses must be collapsed through `map_stripe_status` into the
+          CHECK-constrained set (`trialing | active | past_due | paused | canceled`). Flag direct writes of
+          raw Stripe statuses.
+        - Webhook correlation: subscription events must resolve the host via
+          `hosts.stripe_subscription_id` (unique), never by scanning spaces. Webhook processing must
+          propagate `ValueError` on DB failure so Stripe retries.
+
+    # 5. Migration & Schema Integrity (public.spaces / public.hosts)
+    - path: "supabase/migrations/**/*.sql"
+      instructions: |
+        Schema integrity rules for the host-level billing model:
+        - `public.hosts` is the authoritative billing table (1:1 with `auth.users` via `id`).
+        - `public.spaces` MUST NOT (re)introduce `stripe_customer_id`, `stripe_subscription_id`
+          or `stripe_price_id`. These were dropped by `20261001000001_host_level_subscriptions.sql`.
+        - `public.spaces.subscription_status` may remain as a denormalized mirror only; keep its CHECK
+          constraint in sync with `public.hosts.subscription_status`.
+        - Never edit an already-applied migration file; add a new timestamped migration instead.
+        - Flag destructive statements (DROP/ALTER of billing identifiers) without a data-backfill or
+          otherwise unsafe changes that could orphan Stripe records.
+
+    # 6. Multi-Tenancy & Database Security (Absolute Top Priority)
     - path: "**/*.{py,ts,tsx,sql}"
       instructions: |
         CRITICAL SECURITY AUDIT (Multi-Tenancy Isolation):
         - Every database query, Supabase call, or vector search touching spaces or knowledge chunks MUST contain a mandatory filter on `space_id` (e.g., `WHERE space_id = :space_id` or `.eq('space_id', spaceId)`).
+        - Billable spaces MUST additionally be scoped to the authenticated owner: filter by `host_id` (= `auth.uid()`) in addition to `space_id`. A space id alone is not sufficient authorization.
         - Flag any query that could potentially leak cross-tenant data across different properties.
         - Flag any hardcoded API keys, especially `SUPABASE_SECRET_KEY` or `OPENROUTER_API_KEY`.
 
