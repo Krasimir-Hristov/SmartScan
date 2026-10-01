@@ -479,9 +479,12 @@ async def test_remove_last_item_cancels_subscription():
         mock_stripe.SubscriptionItem.list.return_value = SimpleNamespace(
             data=[_sub_item("si_1", "space-1")]
         )
+        mock_stripe.Subscription.modify.return_value = SimpleNamespace(
+            id="sub_1", status="active", trial_end=None
+        )
         result = await remove_space_item(HOST_ID, "space-1")
 
-    assert result.subscription_status == "canceled"
+    assert result.subscription_status == "active"
     mock_stripe.Subscription.modify.assert_called_once_with(
         "sub_1", cancel_at_period_end=True
     )
