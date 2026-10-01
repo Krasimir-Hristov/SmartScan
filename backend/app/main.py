@@ -12,6 +12,7 @@ from app.core.rate_limit import limiter
 from app.features.billing.router import router as billing_router
 from app.features.concierge.router import router as concierge_router
 from app.features.knowledge.router import router as knowledge_router
+from app.features.spaces.router import router as spaces_router
 from app.features.voice_ingest.router import router as voice_router
 
 MAX_REQUEST_BODY_SIZE = 25 * 1024 * 1024  # 25 MiB
@@ -94,9 +95,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-from app.features.spaces.router import router as spaces_router
 
 
 @app.get("/api/py/health", tags=["Health"])
