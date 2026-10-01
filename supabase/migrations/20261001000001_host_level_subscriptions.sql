@@ -83,6 +83,10 @@ create table if not exists public.legacy_billing_archive (
     archived_at timestamptz not null default now()
 );
 
+alter table public.legacy_billing_archive enable row level security;
+revoke all on public.legacy_billing_archive from anon, authenticated;
+grant all on public.legacy_billing_archive to service_role;
+
 insert into public.legacy_billing_archive (
     space_id, host_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, subscription_status
 )

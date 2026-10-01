@@ -538,7 +538,7 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
 
     try:
         if target_item is None:
-            if items and not any(getattr(item, "metadata", {}).get("space_id") for item in items):
+            if items and any(not (getattr(item, "metadata", None) or {}).get("space_id") for item in items):
                 raise ValueError("Cannot remove space: subscription has unmapped items.")
             # Nothing billable for this space; still mirror it back to trial.
             result_status: SubscriptionStatus = host.subscription_status
