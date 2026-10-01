@@ -176,10 +176,9 @@ async def create_checkout_session(
     if unauthorized:
         raise ValueError("Unauthorized. You do not own one of these spaces.")
 
-    price_id = _resolve_price_id(spaces[0].space_type)
     enrolled_ids = json.dumps([space.id for space in spaces])
     # One line item per space so Stripe creates one Subscription Item per space.
-    line_items = [{"price": price_id, "quantity": 1} for _ in spaces]
+    line_items = [{"price": _resolve_price_id(space.space_type), "quantity": 1} for space in spaces]
 
     # 2. Ensure the host has exactly one Stripe Customer.
     customer_id = await _get_or_create_stripe_customer(host_id, user_email)
@@ -287,7 +286,7 @@ async def _sync_subscription_from_stripe(
 
     # Tag brand-new items with their space_id when checkout carried the mapping.
     if space_ids and subscription_id:
-        await _tag_subscription_items(subscription_id, space_ids)
+        await _tag_subscription_items(subscription_id, host_id, space_ids)
 
 
 async def _list_subscription_items(subscription_id: str) -> list[Any]:
@@ -317,31 +316,47 @@ async def _find_item_for_space(
     return None
 
 
-async def _tag_subscription_items(subscription_id: str, space_ids: list[str]) -> None:
+async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids: list[str]) -> None:
     """Attach ``metadata.space_id`` to freshly created subscription items.
 
     Stripe Checkout cannot stamp per-item metadata, so after the session
-    completes we map each item (in creation order) to the enrolled space id.
+    completes we map each item explicitly to the enrolled space id based on
+    the item's price.
     """
     if not space_ids:
         return
+
+    spaces = await _fetch_owned_spaces(host_id, space_ids)
+    if not spaces:
+        return
+
     try:
         items = await _list_subscription_items(subscription_id)
     except Exception:  # noqa: BLE001
         logger.warning("Could not list subscription items to tag %s", subscription_id)
         return
 
-    for item, space_id in zip(items, space_ids, strict=False):
-        if space_id is None:
-            break
+    unmapped_items = [
+        item for item in items 
+        if not (getattr(item, "metadata", None) or {}).get("space_id")
+    ]
 
-        def _tag(item_id: str = str(item.id), sid: str = space_id) -> Any:
-            return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
-
-        try:
-            await asyncio.to_thread(_tag)
-        except Exception:  # noqa: BLE001
-            logger.warning("Failed to tag subscription item for space %s", space_id)
+    for space in spaces:
+        expected_price_id = _resolve_price_id(space.space_type)
+        
+        matched_item = next(
+            (item for item in unmapped_items if getattr(getattr(item, "price", None), "id", None) == expected_price_id), 
+            None
+        )
+        if matched_item:
+            unmapped_items.remove(matched_item)
+            def _tag(item_id: str = str(matched_item.id), sid: str = space.id) -> Any:
+                return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
+            
+            try:
+                await asyncio.to_thread(_tag)
+            except Exception:  # noqa: BLE001
+                logger.warning("Failed to tag subscription item for space %s", space.id)
 
 
 async def create_portal_session(
