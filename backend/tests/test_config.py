@@ -13,7 +13,13 @@ def test_production_requires_proxy_secret() -> None:
 
 
 def test_production_accepts_configured_secret() -> None:
-    settings = Settings(ENVIRONMENT="production", BACKEND_PROXY_SECRET="s3cret")
+    settings = Settings(
+        ENVIRONMENT="production",
+        BACKEND_PROXY_SECRET="s3cret",
+        STRIPE_SECRET_KEY="sk_test_placeholder",
+        STRIPE_WEBHOOK_SECRET="whsec_placeholder",
+        STRIPE_PRICE_ID_STAY="price_placeholder",
+    )
     assert settings.BACKEND_PROXY_SECRET == "s3cret"
 
 

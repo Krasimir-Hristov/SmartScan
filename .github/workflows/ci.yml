@@ -50,6 +50,9 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: "https://placeholder-ci.supabase.co"
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sbp_placeholder_for_ci_build"
 
+      - name: Run Frontend Tests
+        run: npm run test
+
   backend-ci:
     name: Backend Lint & Type Check
     runs-on: ubuntu-latest
@@ -81,3 +84,6 @@ jobs:
       - name: Run Mypy Type Checker
         run: uvx mypy --ignore-missing-imports app
         continue-on-error: true # Will become strict once backend source files are populated
+
+      - name: Run Pytest
+        run: uv run pytest tests
