@@ -233,6 +233,8 @@ async def _fetch_owned_spaces(
         )
         if wanted:
             query = query.in_("id", wanted)
+        else:
+            query = query.eq("is_active", True)
         return query.execute()
 
     response = await asyncio.to_thread(_fetch)
@@ -248,12 +250,18 @@ async def _sync_subscription_from_stripe(
     if not supabase:
         raise ValueError("Database connection error.")
 
-    subscription_id = str(getattr(subscription, "id", "") or "")
-    raw_status = str(getattr(subscription, "status", "") or "")
+    if isinstance(subscription, dict):
+        subscription_id = str(subscription.get("id", "") or "")
+        raw_status = str(subscription.get("status", "") or "")
+        raw_trial_end = subscription.get("trial_end", None)
+    else:
+        subscription_id = str(getattr(subscription, "id", "") or "")
+        raw_status = str(getattr(subscription, "status", "") or "")
+        raw_trial_end = getattr(subscription, "trial_end", None)
+
     status = map_stripe_status(raw_status)
 
     trial_ends_at: str | None = None
-    raw_trial_end = getattr(subscription, "trial_end", None)
     if isinstance(raw_trial_end, (int, float)) and raw_trial_end > 0:
         trial_ends_at = _timestamp_to_iso(raw_trial_end)
 
@@ -282,10 +290,7 @@ async def _sync_subscription_from_stripe(
 
     # Tag brand-new items with their space_id when checkout carried the mapping.
     if space_ids and subscription_id:
-        try:
-            await _tag_subscription_items(subscription_id, space_ids)
-        except Exception as e:  # noqa: BLE001
-            logger.error(f"Error tagging subscription items for host {host_id}: {e}")
+        await _tag_subscription_items(subscription_id, space_ids)
 
 
 async def _list_subscription_items(subscription_id: str) -> list[Any]:
@@ -457,7 +462,7 @@ async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
                 matched_host_id = row.get("id") if isinstance(row, dict) else None
                 if matched_host_id:
                     await _sync_subscription_from_stripe(
-                        str(matched_host_id), data_dict
+                        str(matched_host_id), data_object
                     )
                 else:
                     logger.warning(f"No host found for subscription {subscription_id}.")
@@ -488,6 +493,10 @@ async def add_space_item(host_id: str, space_id: str) -> BillingOperationRespons
 
     space_type = owned_spaces[0].space_type
     price_id = _resolve_price_id(space_type)
+
+    existing_item = await _find_item_for_space(subscription_id, space_id)
+    if existing_item:
+        return BillingOperationResponse(success=True, subscription_status=host.subscription_status)
 
     try:
 
@@ -532,6 +541,8 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
 
     try:
         if target_item is None:
+            if items and not any(getattr(item, "metadata", {}).get("space_id") for item in items):
+                raise ValueError("Cannot remove space: subscription has unmapped items.")
             # Nothing billable for this space; still mirror it back to trial.
             result_status: SubscriptionStatus = host.subscription_status
         elif len(items) <= 1:
@@ -541,8 +552,8 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
                     subscription_id, cancel_at_period_end=True
                 )
 
-            await asyncio.to_thread(_cancel)
-            result_status = "canceled"
+            sub = await asyncio.to_thread(_cancel)
+            result_status = map_stripe_status(str(getattr(sub, "status", "")))
         else:
 
             def _delete_item():
@@ -585,7 +596,9 @@ async def cancel_host_subscription(host_id: str) -> BillingOperationResponse:
 
         sub = await asyncio.to_thread(_cancel)
         await _sync_subscription_from_stripe(host_id, sub)
-        return BillingOperationResponse(success=True, subscription_status="canceled")
+        return BillingOperationResponse(
+            success=True, subscription_status=map_stripe_status(str(getattr(sub, "status", "")))
+        )
     except Exception as e:
         logger.error(f"Error cancelling host subscription for {host_id}: {e}")
         raise ValueError("Could not cancel your subscription.") from e
@@ -609,9 +622,25 @@ async def purge_host_account(host_id: str) -> PurgeResponse:
                 return stripe.Customer.delete(stripe_customer_id)
 
             await asyncio.to_thread(_delete_customer)
+        except stripe.InvalidRequestError as e:
+            if e.code == "resource_missing":
+                pass
+            else:
+                logger.error(f"Error deleting Stripe customer for host {host_id}: {e}")
+                raise ValueError("Could not delete billing profile.") from e
         except Exception as e:
             logger.error(f"Error deleting Stripe customer for host {host_id}: {e}")
             raise ValueError("Could not delete billing profile.") from e
+
+    def _clear_stripe_ids():
+        return (
+            supabase.table("hosts")
+            .update({"stripe_customer_id": None, "stripe_subscription_id": None})
+            .eq("id", host_id)
+            .execute()
+        )
+
+    await asyncio.to_thread(_clear_stripe_ids)
 
     # 2. Count then delete every space owned by the host. spaces.host_id
     #    references auth.users (NOT public.hosts), so spaces do NOT cascade

@@ -1,13 +1,7 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "en-US"
 tone_instructions: >
-  You are a Principal AI Reviewer for the SmartScan multi-tenant production platform.
-  Be assertive, precise, and uncompromising on security, multi-tenancy, architecture,
-  and code cleanliness. Billing is HOST-LEVEL: one Stripe Customer and one Stripe
-  Subscription per host (public.hosts), with each space modeled as a Stripe
-  SubscriptionItem tagged metadata.space_id. Reject any review suggestion that assumes
-  the OLD per-space subscription model (stripe_customer_id / stripe_subscription_id /
-  stripe_price_id columns on public.spaces were RETIRED and no longer exist).
+  You are a Principal AI Reviewer for the SmartScan platform. Be assertive, precise, and uncompromising on security, multi-tenancy, architecture, and code cleanliness. Leave host-level billing details to the path instructions.
 early_access: false
 
 reviews:

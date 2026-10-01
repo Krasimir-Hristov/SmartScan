@@ -567,16 +567,16 @@ async def test_cancel_sets_period_end_and_syncs_status():
         "app.features.billing.service.stripe"
     ) as mock_stripe:
         mock_stripe.Subscription.modify.return_value = SimpleNamespace(
-            id="sub_1", status="canceled", trial_end=None
+            id="sub_1", status="active", trial_end=None
         )
         result = await cancel_host_subscription(HOST_ID)
 
-    assert result.subscription_status == "canceled"
+    assert result.subscription_status == "active"
     mock_stripe.Subscription.modify.assert_called_once_with(
         "sub_1", cancel_at_period_end=True
     )
-    assert fake.hosts[0]["subscription_status"] == "canceled"
-    assert fake.spaces[0]["subscription_status"] == "canceled"
+    assert fake.hosts[0]["subscription_status"] == "active"
+    assert fake.spaces[0]["subscription_status"] == "active"
 
 
 # ---------------------------------------------------------------------------
@@ -663,3 +663,37 @@ async def test_portal_creates_session_for_host_customer():
     kwargs = mock_stripe.billing_portal.Session.create.call_args.kwargs
     assert kwargs["customer"] == "cus_1"
     assert kwargs["return_url"].startswith(settings.FRONTEND_URL.rstrip("/"))
+
+
+# ---------------------------------------------------------------------------
+# Webhook processing
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_webhook_updates_status_with_dict_payload():
+    """Webhook correctly updates status when payload is a raw dictionary."""
+    from app.features.billing.service import process_webhook_event
+    fake = FakeSupabaseClient(
+        hosts=[
+            make_host(stripe_subscription_id="sub_test", subscription_status="trialing")
+        ],
+        spaces=[make_space("space-1", subscription_status="trialing")],
+    )
+    with patch_supabase(fake), patch(
+        "app.features.billing.service.stripe.Webhook.construct_event"
+    ) as mock_construct:
+        mock_construct.return_value = {
+            "type": "customer.subscription.updated",
+            "data": {
+                "object": {
+                    "id": "sub_test",
+                    "status": "active",
+                    "trial_end": None
+                }
+            }
+        }
+        await process_webhook_event(b"fake_payload", "fake_sig")
+
+    assert fake.hosts[0]["subscription_status"] == "active"
+    assert fake.spaces[0]["subscription_status"] == "active"

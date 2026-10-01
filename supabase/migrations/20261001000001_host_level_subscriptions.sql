@@ -72,6 +72,27 @@ comment on column public.hosts.subscription_status is
 --    oldest one (deterministic) so no historical Stripe Customer is orphaned.
 --    No-op on a database without legacy rows.
 -- -----------------------------------------------------------------------------
+create table if not exists public.legacy_billing_archive (
+    id uuid primary key default gen_random_uuid(),
+    space_id uuid not null,
+    host_id uuid not null,
+    stripe_customer_id text,
+    stripe_subscription_id text,
+    stripe_price_id text,
+    subscription_status text,
+    archived_at timestamptz not null default now()
+);
+
+insert into public.legacy_billing_archive (
+    space_id, host_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, subscription_status
+)
+select id, host_id, stripe_customer_id, stripe_subscription_id, stripe_price_id, subscription_status
+from public.spaces
+where stripe_customer_id is not null or stripe_subscription_id is not null;
+
+-- A reconciliation step should use this archive to cancel or consolidate extra Stripe
+-- subscriptions and tag surviving items with metadata.space_id.
+
 insert into public.hosts (
     id,
     stripe_customer_id,
@@ -89,7 +110,15 @@ where s.host_id is not null
         s.stripe_customer_id is not null
      or s.stripe_subscription_id is not null
   )
-order by s.host_id, s.created_at asc, s.id asc
+order by s.host_id,
+         case coalesce(s.subscription_status, 'trialing')
+             when 'active' then 1
+             when 'trialing' then 2
+             when 'past_due' then 3
+             when 'paused' then 4
+             else 5
+         end asc,
+         s.created_at asc, s.id asc
 on conflict (id) do update
 set stripe_customer_id = coalesce(
         public.hosts.stripe_customer_id,
@@ -120,11 +149,6 @@ create policy "Hosts can view their own billing record"
     using (id = (select auth.uid()));
 
 drop policy if exists "Hosts can insert their own billing record" on public.hosts;
-create policy "Hosts can insert their own billing record"
-    on public.hosts
-    for insert
-    to authenticated
-    with check (id = (select auth.uid()));
 
 -- Deliberately NO update/delete policy: billing state is written exclusively by
 -- the webhook handler through the service role, never by the browser session.
@@ -150,5 +174,5 @@ alter table public.spaces
 -- 7. Explicit grants (defensive: default privileges already cover these roles,
 --    but migrations must not depend on ambient database configuration).
 -- -----------------------------------------------------------------------------
-grant select, insert on public.hosts to authenticated;
+grant select on public.hosts to authenticated;
 grant all on public.hosts to service_role;
