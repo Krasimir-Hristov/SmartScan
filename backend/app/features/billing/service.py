@@ -231,10 +231,7 @@ async def _fetch_owned_spaces(
             .select("id, host_id, space_type, is_active, subscription_status")
             .eq("host_id", host_id)
         )
-        if wanted:
-            query = query.in_("id", wanted)
-        else:
-            query = query.eq("is_active", True)
+        query = query.in_("id", wanted) if wanted else query.eq("is_active", True)
         return query.execute()
 
     response = await asyncio.to_thread(_fetch)
