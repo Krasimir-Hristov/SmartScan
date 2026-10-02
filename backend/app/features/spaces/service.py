@@ -30,7 +30,9 @@ from app.features.billing.service import (
 logger = logging.getLogger(__name__)
 
 
-async def delete_space(space_id: str, host_id: str) -> bool:
+from typing import Literal
+
+async def delete_space(space_id: str, host_id: str) -> Literal["deleted", "cancellation_scheduled"]:
     """Delete a single space and detach its Stripe subscription item.
 
     Verifies ownership, removes the space's billing item from the host's
@@ -66,7 +68,7 @@ async def delete_space(space_id: str, host_id: str) -> bool:
     # If the subscription was only scheduled for cancellation at period end,
     # the space is still legally active until then. Do not delete from database.
     if response_billing.scheduled_cancellation:
-        return True
+        return "cancellation_scheduled"
 
     # 3. Delete the space row (knowledge_chunks cascade). The host_id filter
     #    keeps the delete strictly tenant-scoped.
@@ -85,7 +87,7 @@ async def delete_space(space_id: str, host_id: str) -> bool:
         logger.error("Database error deleting space %s: %s", space_id, e)
         raise ValueError("Could not delete space from database.") from e
 
-    return True
+    return "deleted"
 
 
 async def purge_host_account(host_id: str) -> bool:

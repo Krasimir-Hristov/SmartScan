@@ -9,8 +9,11 @@ from app.features.billing.schemas import BillingUser
 from app.features.spaces.service import delete_space, purge_host_account
 
 
+from typing import Literal
+
 class DeleteSpaceResponse(BaseModel):
     success: bool
+    status: Literal["deleted", "cancellation_scheduled"] = "deleted"
 
 
 router = APIRouter(prefix="/spaces", tags=["Spaces"])
@@ -25,8 +28,8 @@ async def delete_space_endpoint(
 ):
     """Securely deletes a space and removes its Stripe subscription item."""
     try:
-        success = await delete_space(space_id=space_id, host_id=user.id)
-        return DeleteSpaceResponse(success=success)
+        status = await delete_space(space_id=space_id, host_id=user.id)
+        return DeleteSpaceResponse(success=True, status=status)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001

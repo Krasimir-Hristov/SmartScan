@@ -117,7 +117,7 @@ async def test_delete_space_detaches_item_then_deletes_row():
     with patch_supabase(fake), patch_remove_item(remove):
         result = await delete_space(space_id="space-1", host_id=HOST_ID)
 
-    assert result is True
+    assert result == "deleted"
     remove.assert_awaited_once_with(host_id=HOST_ID, space_id="space-1")
     # Only the targeted space is gone; the sibling survives.
     assert [space["id"] for space in fake.spaces] == ["space-2"]
