@@ -16,6 +16,7 @@ a single source of truth.
 
 import asyncio
 import logging
+from typing import Literal
 
 from postgrest.base_request_builder import APIResponse
 
@@ -30,7 +31,6 @@ from app.features.billing.service import (
 logger = logging.getLogger(__name__)
 
 
-from typing import Literal
 
 async def delete_space(space_id: str, host_id: str) -> Literal["deleted", "cancellation_scheduled"]:
     """Delete a single space and detach its Stripe subscription item.

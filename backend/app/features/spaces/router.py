@@ -1,5 +1,7 @@
 """FastAPI router for Space endpoints."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
@@ -8,8 +10,6 @@ from app.features.billing.router import get_current_user
 from app.features.billing.schemas import BillingUser
 from app.features.spaces.service import delete_space, purge_host_account
 
-
-from typing import Literal
 
 class DeleteSpaceResponse(BaseModel):
     success: bool
