@@ -332,18 +332,27 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
     # Let listing failures propagate
     items = await _list_subscription_items(subscription_id)
 
+    mapped_space_ids = {
+        (getattr(item, "metadata", None) or {}).get("space_id") 
+        for item in items
+    }
+    
+    unmapped_spaces = [space for space in spaces if space.id not in mapped_space_ids]
+    if not unmapped_spaces:
+        return
+        
     unmapped_items = [
         item for item in items 
         if not (getattr(item, "metadata", None) or {}).get("space_id")
     ]
 
-    if len(unmapped_items) != len(spaces):
-        msg = f"Cannot tag spaces: found {len(unmapped_items)} unmapped items for {len(spaces)} spaces."
+    if len(unmapped_items) != len(unmapped_spaces):
+        msg = f"Cannot tag spaces: found {len(unmapped_items)} unmapped items for {len(unmapped_spaces)} spaces."
         logger.error(msg)
         raise ValueError(msg)
 
     # Pair items by count
-    for space, item in zip(spaces, unmapped_items, strict=False):
+    for space, item in zip(unmapped_spaces, unmapped_items, strict=False):
         def _tag(item_id: str = str(item.id), sid: str = space.id) -> Any:
             return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
         
@@ -549,22 +558,23 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
                 raise ValueError("Cannot remove space: subscription has unmapped items.")
             # Nothing billable for this space; still mirror it back to trial.
             result_status: SubscriptionStatus = host.subscription_status
-        elif len(items) <= 1:
-            # Last billable item: cancel the whole subscription.
-            def _cancel():
-                return stripe.Subscription.modify(
-                    subscription_id, cancel_at_period_end=True
-                )
-
-            sub = await asyncio.to_thread(_cancel)
-            result_status = map_stripe_status(str(getattr(sub, "status", "")))
         else:
+            if len(items) <= 1:
+                # Last billable item: cancel the whole subscription.
+                def _cancel():
+                    return stripe.Subscription.modify(
+                        subscription_id, cancel_at_period_end=True
+                    )
+
+                sub = await asyncio.to_thread(_cancel)
+                result_status = map_stripe_status(str(getattr(sub, "status", "")))
+            else:
+                result_status = host.subscription_status
 
             def _delete_item():
                 return stripe.SubscriptionItem.delete(str(target_item.id))
 
             await asyncio.to_thread(_delete_item)
-            result_status = host.subscription_status
 
         # Always mirror the space back to trial once it is no longer billable.
         def _mirror_trial():
