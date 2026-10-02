@@ -61,7 +61,12 @@ async def delete_space(space_id: str, host_id: str) -> bool:
 
     # 2. Detach billing: remove this space's item from the host subscription.
     #    Aborts on Stripe failure so the row is never orphaned from billing.
-    await remove_space_item(host_id=host_id, space_id=space_id)
+    response_billing = await remove_space_item(host_id=host_id, space_id=space_id)
+    
+    # If the subscription was only scheduled for cancellation at period end,
+    # the space is still legally active until then. Do not delete from database.
+    if response_billing.scheduled_cancellation:
+        return True
 
     # 3. Delete the space row (knowledge_chunks cascade). The host_id filter
     #    keeps the delete strictly tenant-scoped.

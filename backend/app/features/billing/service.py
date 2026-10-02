@@ -337,7 +337,16 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
         for item in items
     }
     
-    valid_ids = {s.id for s in spaces}
+    supabase = get_supabase_client()
+    if supabase:
+        def _fetch_all_spaces() -> Any:
+            return supabase.table("spaces").select("id").eq("host_id", host_id).execute()
+        all_spaces_response = await asyncio.to_thread(_fetch_all_spaces)
+        all_spaces = all_spaces_response.data if isinstance(all_spaces_response.data, list) else []
+        valid_ids = {s.get("id") for s in all_spaces}
+    else:
+        valid_ids = {s.id for s in spaces}
+        
     invalid_mapped_ids = {sid for sid in mapped_space_ids if sid and sid not in valid_ids}
     if invalid_mapped_ids:
         raise ValueError(f"Subscription has items mapped to unknown spaces: {invalid_mapped_ids}")
@@ -574,6 +583,7 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
                 raise ValueError("Cannot remove space: subscription has unmapped items.")
             # Nothing billable for this space; still mirror it back to trial.
             result_status: SubscriptionStatus = host.subscription_status
+            scheduled_cancel = False
         elif len(items) <= 1:
             # Last billable item: cancel the whole subscription.
             def _cancel():
@@ -583,24 +593,32 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
 
             sub = await asyncio.to_thread(_cancel)
             result_status = map_stripe_status(str(getattr(sub, "status", "")))
+            scheduled_cancel = True
         else:
             def _delete_item():
                 return stripe.SubscriptionItem.delete(str(target_item.id))
 
             await asyncio.to_thread(_delete_item)
             result_status = host.subscription_status
+            scheduled_cancel = False
 
         # Always mirror the space back to trial once it is no longer billable.
-        def _mirror_trial():
-            return (
-                supabase.table("spaces")
-                .update({"subscription_status": "trialing"})
-                .eq("id", space_id)
-                .execute()
-            )
+        if not scheduled_cancel:
+            def _mirror_trial():
+                return (
+                    supabase.table("spaces")
+                    .update({"subscription_status": "trialing"})
+                    .eq("id", space_id)
+                    .execute()
+                )
 
-        await asyncio.to_thread(_mirror_trial)
-        return BillingOperationResponse(success=True, subscription_status=result_status)
+            await asyncio.to_thread(_mirror_trial)
+            
+        return BillingOperationResponse(
+            success=True, 
+            subscription_status=result_status,
+            scheduled_cancellation=scheduled_cancel
+        )
     except ValueError:
         raise
     except Exception as e:

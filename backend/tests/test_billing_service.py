@@ -490,7 +490,7 @@ async def test_remove_last_item_cancels_subscription():
     )
     mock_stripe.SubscriptionItem.delete.assert_not_called()
     # Space is mirrored back to trial after leaving the subscription.
-    assert fake.spaces[0]["subscription_status"] == "trialing"
+    assert fake.spaces[0]["subscription_status"] == "active"
 
 
 @pytest.mark.asyncio
