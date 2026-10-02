@@ -488,7 +488,7 @@ async def test_remove_last_item_cancels_subscription():
     mock_stripe.Subscription.modify.assert_called_once_with(
         "sub_1", cancel_at_period_end=True
     )
-    mock_stripe.SubscriptionItem.delete.assert_called_once_with("si_1")
+    mock_stripe.SubscriptionItem.delete.assert_not_called()
     # Space is mirrored back to trial after leaving the subscription.
     assert fake.spaces[0]["subscription_status"] == "trialing"
 

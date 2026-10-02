@@ -337,6 +337,11 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
         for item in items
     }
     
+    valid_ids = {s.id for s in spaces}
+    invalid_mapped_ids = {sid for sid in mapped_space_ids if sid and sid not in valid_ids}
+    if invalid_mapped_ids:
+        raise ValueError(f"Subscription has items mapped to unknown spaces: {invalid_mapped_ids}")
+    
     unmapped_spaces = [space for space in spaces if space.id not in mapped_space_ids]
     if not unmapped_spaces:
         return
@@ -346,18 +351,29 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
         if not (getattr(item, "metadata", None) or {}).get("space_id")
     ]
 
-    if len(unmapped_items) != len(unmapped_spaces):
-        msg = f"Cannot tag spaces: found {len(unmapped_items)} unmapped items for {len(unmapped_spaces)} spaces."
-        logger.error(msg)
-        raise ValueError(msg)
+    unmapped_spaces_by_price = {}
+    for space in unmapped_spaces:
+        price = _resolve_price_id(space.space_type)
+        unmapped_spaces_by_price.setdefault(price, []).append(space)
 
-    # Pair items by count
-    for space, item in zip(unmapped_spaces, unmapped_items, strict=False):
-        def _tag(item_id: str = str(item.id), sid: str = space.id) -> Any:
-            return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
-        
-        # Let metadata update failures propagate
-        await asyncio.to_thread(_tag)
+    unmapped_items_by_price = {}
+    for item in unmapped_items:
+        price = getattr(getattr(item, "price", None), "id", None)
+        unmapped_items_by_price.setdefault(price, []).append(item)
+
+    for price_id, grouped_spaces in unmapped_spaces_by_price.items():
+        grouped_items = unmapped_items_by_price.get(price_id, [])
+        if len(grouped_spaces) != len(grouped_items):
+            msg = f"Cannot tag spaces: found {len(grouped_items)} items for {len(grouped_spaces)} spaces for price {price_id}."
+            logger.error(msg)
+            raise ValueError(msg)
+            
+        for space, item in zip(grouped_spaces, grouped_items, strict=True):
+            def _tag(item_id: str = str(item.id), sid: str = space.id) -> Any:
+                return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
+            
+            # Let metadata update failures propagate
+            await asyncio.to_thread(_tag)
 
 
 async def create_portal_session(
@@ -558,23 +574,21 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
                 raise ValueError("Cannot remove space: subscription has unmapped items.")
             # Nothing billable for this space; still mirror it back to trial.
             result_status: SubscriptionStatus = host.subscription_status
+        elif len(items) <= 1:
+            # Last billable item: cancel the whole subscription.
+            def _cancel():
+                return stripe.Subscription.modify(
+                    subscription_id, cancel_at_period_end=True
+                )
+
+            sub = await asyncio.to_thread(_cancel)
+            result_status = map_stripe_status(str(getattr(sub, "status", "")))
         else:
-            if len(items) <= 1:
-                # Last billable item: cancel the whole subscription.
-                def _cancel():
-                    return stripe.Subscription.modify(
-                        subscription_id, cancel_at_period_end=True
-                    )
-
-                sub = await asyncio.to_thread(_cancel)
-                result_status = map_stripe_status(str(getattr(sub, "status", "")))
-            else:
-                result_status = host.subscription_status
-
             def _delete_item():
                 return stripe.SubscriptionItem.delete(str(target_item.id))
 
             await asyncio.to_thread(_delete_item)
+            result_status = host.subscription_status
 
         # Always mirror the space back to trial once it is no longer billable.
         def _mirror_trial():
@@ -587,6 +601,8 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
 
         await asyncio.to_thread(_mirror_trial)
         return BillingOperationResponse(success=True, subscription_status=result_status)
+    except ValueError:
+        raise
     except Exception as e:
         logger.error(f"Error removing space {space_id} from host subscription: {e}")
         raise ValueError("Could not remove this space from your subscription.") from e
