@@ -360,15 +360,16 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
         if not (getattr(item, "metadata", None) or {}).get("space_id")
     ]
 
-    unmapped_spaces_by_price = {}
+    unmapped_spaces_by_price: dict[str, list[SpaceBillingRecord]] = {}
     for space in unmapped_spaces:
         price = _resolve_price_id(space.space_type)
         unmapped_spaces_by_price.setdefault(price, []).append(space)
 
-    unmapped_items_by_price = {}
+    unmapped_items_by_price: dict[str, list[Any]] = {}
     for item in unmapped_items:
-        price = getattr(getattr(item, "price", None), "id", None)
-        unmapped_items_by_price.setdefault(price, []).append(item)
+        price_val = getattr(getattr(item, "price", None), "id", None)
+        price_str: str = price_val if isinstance(price_val, str) else ""
+        unmapped_items_by_price.setdefault(price_str, []).append(item)
 
     for price_id, grouped_spaces in unmapped_spaces_by_price.items():
         grouped_items = unmapped_items_by_price.get(price_id, [])
