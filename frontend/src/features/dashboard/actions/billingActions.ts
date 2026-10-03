@@ -4,7 +4,7 @@ import { ActionResult } from '../types/dashboardTypes';
 import { fetchBackend } from './backendClient';
 
 interface BillingPayload {
-  space_id: string;
+  space_ids: string[];
   return_url?: string;
 }
 
@@ -16,7 +16,7 @@ export async function createCheckoutSessionAction(
   returnUrl?: string
 ): Promise<ActionResult<{ checkout_url: string }>> {
   try {
-    const payload: BillingPayload = { space_id: spaceId, return_url: returnUrl };
+    const payload: BillingPayload = { space_ids: [spaceId], return_url: returnUrl };
     const data = await fetchBackend<unknown>('billing/checkout', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -41,7 +41,7 @@ export async function createCustomerPortalAction(
   returnUrl?: string
 ): Promise<ActionResult<{ portal_url: string }>> {
   try {
-    const payload: BillingPayload = { space_id: spaceId, return_url: returnUrl };
+    const payload: BillingPayload = { space_ids: [spaceId], return_url: returnUrl };
     const data = await fetchBackend<unknown>('billing/portal', {
       method: 'POST',
       body: JSON.stringify(payload),

@@ -211,7 +211,7 @@ async def create_checkout_session(
         return CheckoutResponse(checkout_url=session.url, session_id=session.id)
     except Exception as e:
         logger.error(f"Error creating Stripe checkout session: {e}")
-        raise ValueError("Could not create checkout session.") from e
+        raise ValueError(f"Could not create checkout session: {e}") from e
 
 
 async def _fetch_owned_spaces(
