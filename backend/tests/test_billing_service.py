@@ -871,7 +871,6 @@ async def test_checkout_creates_a_dedicated_subscription_for_one_space():
     correlation = {"host_id": HOST_ID, "space_id": SPACE_ID}
     assert kwargs["metadata"] == correlation
 
-    expected_description = "Абонамент за обект"
     # If make_space assigns a name, it would be space.name, but since we don't know, we can just check if description is present.
     assert "description" in kwargs["subscription_data"]
     assert kwargs["subscription_data"]["metadata"] == correlation
