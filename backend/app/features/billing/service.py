@@ -191,7 +191,6 @@ async def create_checkout_session(
     # 4. Create the Stripe Checkout Session
     try:
         kwargs: dict[str, Any] = {
-            "payment_method_types": ["card"],
             "line_items": line_items,
             "mode": "subscription",
             "success_url": f"{success_url}?session_id={{CHECKOUT_SESSION_ID}}",
