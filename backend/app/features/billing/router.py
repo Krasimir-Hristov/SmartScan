@@ -220,4 +220,3 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=500, detail="Internal server error")
-

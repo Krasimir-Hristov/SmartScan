@@ -190,7 +190,11 @@ async def get_relevant_knowledge_chunks(
                     content = _safe_str(item.get("content"))
                     category = _safe_str(item.get("category"), "general")
                     sim_raw = item.get("similarity", 0.0)
-                    sim = float(sim_raw) if isinstance(sim_raw, (int, float, str)) else 0.0
+                    sim = (
+                        float(sim_raw)
+                        if isinstance(sim_raw, (int, float, str))
+                        else 0.0
+                    )
                     if content:
                         display_content = f"{title}: {content}" if title else content
                         chunks.append(

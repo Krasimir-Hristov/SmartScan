@@ -84,5 +84,3 @@ class ProviderChatCompletionResponse(BaseModel):
     choices: list[ProviderChoice] = Field(default_factory=list)
     text: str | None = None
     language: str | None = None
-
-

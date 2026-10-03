@@ -476,7 +476,9 @@ async def create_checkout_session(
             "client_reference_id": host_id,
             "subscription_data": {
                 "metadata": correlation,
-                "description": space.name.strip() if space.name else "Абонамент за обект",
+                "description": space.name.strip()
+                if space.name
+                else "Абонамент за обект",
             },
             "metadata": correlation,
         }

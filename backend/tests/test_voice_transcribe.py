@@ -197,9 +197,7 @@ def test_transcribe_voice_missing_content_in_provider_response(monkeypatch):
     # Provider message missing the required 'content' field
     mock_resp = MagicMock()
     mock_resp.status_code = 200
-    mock_resp.json.return_value = {
-        "choices": [{"message": {"role": "assistant"}}]
-    }
+    mock_resp.json.return_value = {"choices": [{"message": {"role": "assistant"}}]}
 
     dummy_audio = io.BytesIO(b"RIFF" + b"\x00" * 200)
     with patch(
@@ -210,7 +208,3 @@ def test_transcribe_voice_missing_content_in_provider_response(monkeypatch):
             files={"file": ("sample.webm", dummy_audio, "audio/webm")},
         )
         assert response.status_code == 502
-
-
-
-

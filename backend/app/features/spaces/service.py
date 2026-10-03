@@ -36,7 +36,6 @@ from app.features.billing.service import (
 logger = logging.getLogger(__name__)
 
 
-
 async def delete_space(space_id: str, host_id: str) -> Literal["deleted"]:
     """Delete a single space and cancel its own Stripe subscription.
 
@@ -102,4 +101,3 @@ async def purge_host_account(host_id: str) -> bool:
     """
     result = await purge_host_billing(host_id=host_id)
     return result.success
-
