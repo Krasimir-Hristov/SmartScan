@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Migration: 20261003000001_per_space_subscriptions_and_account_trial.sql
+-- Migration: 20261003152742_per_space_subscriptions_and_account_trial.sql
 --
 -- Moves billing from "one host subscription carrying N subscription items" to
 -- the target product model:

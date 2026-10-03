@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Migration: 20261003000003_drop_host_subscription_status.sql
+-- Migration: 20261003153200_drop_host_subscription_status.sql
 --
 -- Follow-up to the per-space subscription migration.
 --

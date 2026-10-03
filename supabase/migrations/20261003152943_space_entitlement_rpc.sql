@@ -1,7 +1,7 @@
 -- ==============================================================================
--- Migration: 20261003000002_space_entitlement_rpc.sql
+-- Migration: 20261003152943_space_entitlement_rpc.sql
 --
--- Follow-up to 20261003000001_per_space_subscriptions_and_account_trial.sql.
+-- Follow-up to 20261003152742_per_space_subscriptions_and_account_trial.sql.
 --
 -- 1. Removes the hardcoded 14-day DEFAULT on public.hosts.trial_ends_at so the
 --    backend setting ACCOUNT_TRIAL_DAYS is the ONLY source of truth for the
