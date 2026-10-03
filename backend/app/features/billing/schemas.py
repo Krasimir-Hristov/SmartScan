@@ -135,6 +135,7 @@ class SpaceBillingRecord(BaseModel):
 
     id: str
     host_id: str
+    name: str | None = None
     space_type: str | None = None
     is_active: bool | None = None
     subscription_status: SubscriptionStatus | None = None

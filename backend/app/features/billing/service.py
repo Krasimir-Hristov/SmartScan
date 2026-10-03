@@ -78,7 +78,7 @@ SPACE_SUBSCRIPTION_REQUIRED = "SPACE_SUBSCRIPTION_REQUIRED"
 # Columns read for billing decisions. Every query using them is scoped by
 # host_id in addition to id (hard multi-tenancy isolation).
 _SPACE_BILLING_COLUMNS = (
-    "id, host_id, space_type, is_active, subscription_status, "
+    "id, host_id, name, space_type, is_active, subscription_status, "
     "stripe_subscription_id, current_period_end"
 )
 
@@ -474,7 +474,10 @@ async def create_checkout_session(
             "cancel_url": cancel_url,
             "customer": customer_id,
             "client_reference_id": host_id,
-            "subscription_data": {"metadata": correlation},
+            "subscription_data": {
+                "metadata": correlation,
+                "description": space.name.strip() if space.name else "Абонамент за обект",
+            },
             "metadata": correlation,
         }
 
