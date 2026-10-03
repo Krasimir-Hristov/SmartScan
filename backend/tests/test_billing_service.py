@@ -450,6 +450,31 @@ def _sub_item(item_id, space_id):
     return SimpleNamespace(id=item_id, metadata={"space_id": space_id})
 
 
+class MockStripeObject:
+    """Mock representing StripeObject which raises AttributeError on .get()."""
+
+    def __init__(self, data):
+        self._data = data
+
+    def to_dict(self):
+        return dict(self._data)
+
+    def __getattr__(self, name):
+        if name == "get":
+            raise AttributeError("'get' is a dict method, but a StripeObject is not a dict.")
+        return getattr(self._data, name)
+
+
+def test_extract_metadata_with_stripe_object():
+    """Confirms _extract_metadata extracts from StripeObject without AttributeError."""
+    from app.features.billing.service import _extract_metadata
+
+    mock_obj = SimpleNamespace(metadata=MockStripeObject({"space_id": "space-99"}))
+    meta = _extract_metadata(mock_obj)
+    assert meta == {"space_id": "space-99"}
+    assert meta.get("space_id") == "space-99"
+
+
 @pytest.mark.asyncio
 async def test_remove_space_item_noop_without_subscription():
     """No subscription -> immediate success, no Stripe calls."""
@@ -479,18 +504,17 @@ async def test_remove_last_item_cancels_subscription():
         mock_stripe.SubscriptionItem.list.return_value = SimpleNamespace(
             data=[_sub_item("si_1", "space-1")]
         )
-        mock_stripe.Subscription.modify.return_value = SimpleNamespace(
-            id="sub_1", status="active", trial_end=None
+        mock_stripe.Subscription.cancel.return_value = SimpleNamespace(
+            id="sub_1", status="canceled", trial_end=None
         )
         result = await remove_space_item(HOST_ID, "space-1")
 
-    assert result.subscription_status == "active"
-    mock_stripe.Subscription.modify.assert_called_once_with(
-        "sub_1", cancel_at_period_end=True
-    )
+    assert result.subscription_status == "canceled"
+    mock_stripe.Subscription.cancel.assert_called_once_with("sub_1")
     mock_stripe.SubscriptionItem.delete.assert_not_called()
-    # Space is mirrored back to trial after leaving the subscription.
-    assert fake.spaces[0]["subscription_status"] == "active"
+    assert fake.hosts[0]["stripe_subscription_id"] is None
+    assert fake.hosts[0]["subscription_status"] == "canceled"
+    assert fake.spaces[0]["subscription_status"] == "trialing"
 
 
 @pytest.mark.asyncio
@@ -536,6 +560,33 @@ async def test_remove_unlisted_space_keeps_host_status():
     mock_stripe.SubscriptionItem.delete.assert_not_called()
     mock_stripe.Subscription.modify.assert_not_called()
     assert fake.spaces[0]["subscription_status"] == "trialing"
+
+
+@pytest.mark.asyncio
+async def test_remove_single_unmapped_item_cancels_subscription():
+    """If Stripe item is unmapped (e.g. checkout tagging lag), single item still cancels subscription."""
+    fake = FakeSupabaseClient(
+        hosts=[
+            make_host(stripe_subscription_id="sub_1", subscription_status="active")
+        ],
+        spaces=[make_space("space-1", subscription_status="active")],
+    )
+    with patch_supabase(fake), patch(
+        "app.features.billing.service.stripe"
+    ) as mock_stripe:
+        # Untagged StripeObject metadata: {}
+        mock_stripe.SubscriptionItem.list.return_value = SimpleNamespace(
+            data=[SimpleNamespace(id="si_1", metadata=MockStripeObject({}))]
+        )
+        mock_stripe.Subscription.cancel.return_value = SimpleNamespace(
+            id="sub_1", status="canceled", trial_end=None
+        )
+        result = await remove_space_item(HOST_ID, "space-1")
+
+    assert result.subscription_status == "canceled"
+    mock_stripe.Subscription.cancel.assert_called_once_with("sub_1")
+    assert fake.hosts[0]["stripe_subscription_id"] is None
+    assert fake.hosts[0]["subscription_status"] == "canceled"
 
 
 # ---------------------------------------------------------------------------

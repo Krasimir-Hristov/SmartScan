@@ -122,9 +122,7 @@ class BillingOperationResponse(BaseModel):
     subscription_status: SubscriptionStatus | None = Field(
         None, description="Resulting host subscription status, when known."
     )
-    scheduled_cancellation: bool = Field(
-        False, description="True if the action only scheduled the subscription to cancel at period end."
-    )
+    scheduled_cancellation: bool = False
 
 
 class PurgeResponse(BaseModel):

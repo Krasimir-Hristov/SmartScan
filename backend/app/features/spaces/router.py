@@ -1,5 +1,4 @@
-"""FastAPI router for Space endpoints."""
-
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -10,10 +9,12 @@ from app.features.billing.router import get_current_user
 from app.features.billing.schemas import BillingUser
 from app.features.spaces.service import delete_space, purge_host_account
 
+logger = logging.getLogger(__name__)
+
 
 class DeleteSpaceResponse(BaseModel):
     success: bool
-    status: Literal["deleted", "cancellation_scheduled"] = "deleted"
+    status: Literal["deleted"] = "deleted"
 
 
 router = APIRouter(prefix="/spaces", tags=["Spaces"])
@@ -31,8 +32,10 @@ async def delete_space_endpoint(
         status = await delete_space(space_id=space_id, host_id=user.id)
         return DeleteSpaceResponse(success=True, status=status)
     except ValueError as e:
+        logger.warning("ValueError deleting space %s: %s", space_id, e)
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Unexpected error deleting space %s: %s", space_id, e)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

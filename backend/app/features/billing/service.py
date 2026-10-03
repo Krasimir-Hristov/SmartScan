@@ -74,6 +74,22 @@ def _timestamp_to_iso(unix_seconds: float) -> str:
     return datetime.fromtimestamp(unix_seconds, tz=timezone.utc).isoformat()
 
 
+def _extract_metadata(obj: Any) -> dict[str, Any]:
+    """Safely extracts metadata as a dict from a Stripe object or dict/namespace."""
+    if obj is None:
+        return {}
+    meta = getattr(obj, "metadata", None)
+    if meta is None and isinstance(obj, dict):
+        meta = obj.get("metadata")
+    if meta is None:
+        return {}
+    if hasattr(meta, "to_dict"):
+        return cast(dict[str, Any], meta.to_dict())
+    if isinstance(meta, dict):
+        return meta
+    return {}
+
+
 async def _ensure_host_record(
     host_id: str, *, email: str | None = None
 ) -> HostBillingRecord:
@@ -309,7 +325,7 @@ async def _find_item_for_space(
     if items is None:
         items = await _list_subscription_items(subscription_id)
     for item in items:
-        metadata = getattr(item, "metadata", None) or {}
+        metadata = _extract_metadata(item)
         if metadata.get("space_id") == space_id:
             return item
     return None
@@ -332,7 +348,7 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
     items = await _list_subscription_items(subscription_id)
 
     mapped_space_ids = {
-        (getattr(item, "metadata", None) or {}).get("space_id") 
+        _extract_metadata(item).get("space_id") 
         for item in items
     }
     
@@ -356,7 +372,7 @@ async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids:
         
     unmapped_items = [
         item for item in items 
-        if not (getattr(item, "metadata", None) or {}).get("space_id")
+        if not _extract_metadata(item).get("space_id")
     ]
 
     unmapped_spaces_by_price: dict[str, list[SpaceBillingRecord]] = {}
@@ -574,50 +590,81 @@ async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResp
             success=True, subscription_status=host.subscription_status
         )
 
+    if host.subscription_status == "canceled":
+        return BillingOperationResponse(
+            success=True, subscription_status="canceled"
+        )
+
     items = await _list_subscription_items(subscription_id)
     target_item = await _find_item_for_space(subscription_id, space_id, items=items)
 
+    # If target_item was not explicitly found by tag, check for unmapped items
+    if target_item is None and items:
+        unmapped = [it for it in items if not _extract_metadata(it).get("space_id")]
+        if len(unmapped) == 1:
+            target_item = unmapped[0]
+
     try:
         if target_item is None:
-            if items and any(not (getattr(item, "metadata", None) or {}).get("space_id") for item in items):
-                raise ValueError("Cannot remove space: subscription has unmapped items.")
-            # Nothing billable for this space; still mirror it back to trial.
-            result_status: SubscriptionStatus = host.subscription_status
-            scheduled_cancel = False
+            # Space had no billable item on this subscription (e.g. trial / free)
+            result_status = host.subscription_status
         elif len(items) <= 1:
-            # Last billable item: cancel the whole subscription.
+            # Removing this space removes the last item on the subscription: cancel subscription
             def _cancel():
-                return stripe.Subscription.modify(
-                    subscription_id, cancel_at_period_end=True
-                )
+                try:
+                    return stripe.Subscription.cancel(subscription_id)
+                except stripe.InvalidRequestError as e:
+                    if getattr(e, "code", None) == "resource_missing":
+                        return None
+                    raise
 
             sub = await asyncio.to_thread(_cancel)
-            result_status = map_stripe_status(str(getattr(sub, "status", "")))
-            scheduled_cancel = True
-        else:
-            def _delete_item():
-                return stripe.SubscriptionItem.delete(str(target_item.id))
+            result_status = (
+                map_stripe_status(str(getattr(sub, "status", ""))) if sub else "canceled"
+            )
 
-            await asyncio.to_thread(_delete_item)
-            result_status = host.subscription_status
-            scheduled_cancel = False
-
-        # Always mirror the space back to trial once it is no longer billable.
-        if not scheduled_cancel:
-            def _mirror_trial():
+            def _clear_host_sub():
                 return (
-                    supabase.table("spaces")
-                    .update({"subscription_status": "trialing"})
-                    .eq("id", space_id)
+                    supabase.table("hosts")
+                    .update({
+                        "stripe_subscription_id": None,
+                        "subscription_status": result_status,
+                    })
+                    .eq("id", host_id)
                     .execute()
                 )
 
-            await asyncio.to_thread(_mirror_trial)
-            
+            await asyncio.to_thread(_clear_host_sub)
+        else:
+            # Multiple items exist; delete only the target space's subscription item
+            item_id = str(getattr(target_item, "id", ""))
+
+            def _delete_item():
+                try:
+                    return stripe.SubscriptionItem.delete(item_id)
+                except stripe.InvalidRequestError as e:
+                    if getattr(e, "code", None) == "resource_missing":
+                        return None
+                    raise
+
+            await asyncio.to_thread(_delete_item)
+            result_status = host.subscription_status
+
+        # Mirror the space back to trial once it is no longer billable.
+        def _mirror_trial():
+            return (
+                supabase.table("spaces")
+                .update({"subscription_status": "trialing"})
+                .eq("id", space_id)
+                .execute()
+            )
+
+        await asyncio.to_thread(_mirror_trial)
+
         return BillingOperationResponse(
             success=True, 
             subscription_status=result_status,
-            scheduled_cancellation=scheduled_cancel
+            scheduled_cancellation=False,
         )
     except ValueError:
         raise
