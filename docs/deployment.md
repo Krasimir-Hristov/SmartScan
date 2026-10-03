@@ -142,7 +142,7 @@ Stripe управлява абонаментите на ниво конкрет�
 
 ### 5.2. Жизнен цикъл на абонамента в базата данни:
 * **Създаване на обект**: Автоматично се задава `subscription_status = 'trialing'` с `trial_ends_at = NOW() + 14 days`.
-* **Успешно плащане (`checkout.session.completed`)**: Webhook-ът записва `subscription_status = 'active'`, `stripe_subscription_id = sub_...`, `stripe_customer_id = cus_...` и нулира `trial_ends_at = NULL`.
+* **Успешно плащане (`checkout.session.completed`)**: Webhook-ът записва `subscription_status = 'active'`, `stripe_subscription_id = sub_... (?? ???? public.hosts)`, `stripe_customer_id = cus_...` и нулира `trial_ends_at = NULL`.
 * **Прекратяване (`customer.subscription.deleted`)**: Webhook-ът променя статуса на `canceled` и заключва функциите за госта.
 * **Изтриване на обект от хазяина**: Бекенд услугата извлича записания `stripe_subscription_id` и автоматично прекратява абонамента в Stripe преди изтриване на записа.
 
