@@ -1,16 +1,19 @@
 """FastAPI router for Space endpoints."""
 
+from typing import Literal
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from app.core.rate_limit import limiter
 from app.features.billing.router import get_current_user
 from app.features.billing.schemas import BillingUser
-from app.features.spaces.service import delete_space
+from app.features.spaces.service import delete_space, purge_host_account
 
 
 class DeleteSpaceResponse(BaseModel):
     success: bool
+    status: Literal["deleted", "cancellation_scheduled"] = "deleted"
 
 
 router = APIRouter(prefix="/spaces", tags=["Spaces"])
@@ -23,10 +26,10 @@ async def delete_space_endpoint(
     request: Request,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Securely deletes a space and cancels its Stripe subscription if any."""
+    """Securely deletes a space and removes its Stripe subscription item."""
     try:
-        success = await delete_space(space_id=space_id, host_id=user.id)
-        return DeleteSpaceResponse(success=success)
+        status = await delete_space(space_id=space_id, host_id=user.id)
+        return DeleteSpaceResponse(success=True, status=status)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
@@ -43,8 +46,7 @@ async def purge_host_account_endpoint(
     request: Request,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Securely purges all spaces and cancels all Stripe subscriptions for a host before account deletion."""
-    from app.features.spaces.service import purge_host_account
+    """Purge the host's Stripe subscription, all spaces and the billing row."""
     try:
         success = await purge_host_account(host_id=user.id)
         return PurgeAccountResponse(success=success)

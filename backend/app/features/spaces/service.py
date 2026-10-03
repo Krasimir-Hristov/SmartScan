@@ -1,199 +1,103 @@
-"""Service for managing Spaces, including safe deletion with Stripe subscription cancellation."""
+"""Service for managing Spaces under the host-level Stripe billing model.
+
+Billing identifiers live on ``public.hosts`` (one Stripe Customer and one
+Subscription per host). A space is represented on that subscription as a
+Stripe SubscriptionItem tagged with ``metadata.space_id``. Consequently:
+
+* deleting a single space removes only its subscription item (and cancels the
+  whole subscription when it was the last enrolled space);
+* deleting the host account is a single Stripe customer deletion, handled by
+  the billing service, which also removes every space and the hosts row.
+
+This module therefore performs NO direct Stripe calls; all billing mutations
+are delegated to ``app.features.billing.service`` so the host-level model has
+a single source of truth.
+"""
 
 import asyncio
 import logging
-from typing import Any, cast
+from typing import Literal
 
-import stripe
 from postgrest.base_request_builder import APIResponse
-from pydantic import BaseModel
 
-from app.core.config import settings
 from app.core.database import get_supabase_client
+from app.features.billing.service import (
+    purge_host_account as purge_host_billing,
+)
+from app.features.billing.service import (
+    remove_space_item,
+)
 
 logger = logging.getLogger(__name__)
 
-# Initialize Stripe
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
-class PurgeSpaceItem(BaseModel):
-    id: str
-    stripe_subscription_id: str | None = None
+async def delete_space(space_id: str, host_id: str) -> Literal["deleted", "cancellation_scheduled"]:
+    """Delete a single space and detach its Stripe subscription item.
 
-
-async def delete_space(space_id: str, host_id: str) -> bool:
-    """Delete a space securely.
-
-    If the space has an active Stripe subscription, cancels it first.
+    Verifies ownership, removes the space's billing item from the host's
+    single subscription, then deletes the space row. ``knowledge_chunks``
+    cascade from the space row. The Stripe item is removed FIRST so a space is
+    never deleted while its item keeps billing the host (ghost billing).
     """
     supabase = get_supabase_client()
     if not supabase:
         msg = "Database connection error."
         raise ValueError(msg)
 
-    # 1. Fetch space to verify ownership and check subscription status
+    # 1. Verify the space exists AND belongs to this host in one pre-filtered
+    #    query (hard multi-tenancy isolation: WHERE id AND host_id).
     def _fetch_space() -> APIResponse:
-        return supabase.table("spaces").select("*").eq("id", space_id).execute()
+        return (
+            supabase.table("spaces")
+            .select("id, host_id")
+            .eq("id", space_id)
+            .eq("host_id", host_id)
+            .execute()
+        )
 
     response = await asyncio.to_thread(_fetch_space)
     if not response.data or not isinstance(response.data, list):
-        msg = "Space not found."
+        msg = "Space not found or you are not the owner."
         raise ValueError(msg)
 
-    space = cast(dict[str, Any], response.data[0])
+    # 2. Detach billing: remove this space's item from the host subscription.
+    #    Aborts on Stripe failure so the row is never orphaned from billing.
+    response_billing = await remove_space_item(host_id=host_id, space_id=space_id)
+    
+    # If the subscription was only scheduled for cancellation at period end,
+    # the space is still legally active until then. Do not delete from database.
+    if response_billing.scheduled_cancellation:
+        return "cancellation_scheduled"
 
-    if space.get("host_id") != host_id:
-        msg = "Unauthorized. You do not own this space."
-        raise ValueError(msg)
-
-    # 2. Cancel Stripe Subscription if exists
-    stripe_sub_id = space.get("stripe_subscription_id")
-    if stripe_sub_id and isinstance(stripe_sub_id, str):
-        try:
-
-            def _cancel_sub() -> Any:
-                return stripe.Subscription.delete(stripe_sub_id)  # type: ignore
-
-            await asyncio.to_thread(_cancel_sub)
-            logger.info(
-                "Canceled Stripe subscription %s for space %s", stripe_sub_id, space_id
-            )
-        except stripe.InvalidRequestError as e:
-            if getattr(e, "code", None) == "resource_missing":
-                logger.info(
-                    "Stripe subscription %s already missing, proceeding to delete space.",
-                    stripe_sub_id,
-                )
-            else:
-                logger.exception(
-                    "Stripe error canceling subscription %s", stripe_sub_id
-                )
-                raise
-        except Exception:
-            logger.exception(
-                "Unexpected error canceling Stripe subscription %s", stripe_sub_id
-            )
-            raise
-
-    # 2.5 Persist canceled state to decouple before full deletion
-    if stripe_sub_id and isinstance(stripe_sub_id, str):
-
-        def _decouple_space() -> APIResponse:
-            return (
-                supabase.table("spaces")
-                .update(
-                    {"stripe_subscription_id": f"deleted_{stripe_sub_id}", "subscription_status": "canceled"}
-                )
-                .eq("id", space_id)
-                .execute()
-            )
-
-        try:
-            await asyncio.to_thread(_decouple_space)
-        except Exception:  # noqa: BLE001
-            logger.warning(
-                "Failed to decouple subscription from space %s. Deletion might be incomplete if it fails next.",
-                space_id,
-            )
-
-    # 3. Delete from Supabase
+    # 3. Delete the space row (knowledge_chunks cascade). The host_id filter
+    #    keeps the delete strictly tenant-scoped.
     def _delete_space() -> APIResponse:
         return (
             supabase.table("spaces")
             .delete()
             .eq("id", space_id)
             .eq("host_id", host_id)
-            .select("id")
             .execute()
         )
 
     try:
-        del_resp = await asyncio.to_thread(_delete_space)
-        if not del_resp.data:
-            raise ValueError("Space not found or unauthorized.")
+        await asyncio.to_thread(_delete_space)
     except Exception as e:
-        if isinstance(e, ValueError):
-            raise
-        logger.error(f"Database error deleting space {space_id}: {e}")
+        logger.error("Database error deleting space %s: %s", space_id, e)
         raise ValueError("Could not delete space from database.") from e
 
-    return True
+    return "deleted"
 
 
 async def purge_host_account(host_id: str) -> bool:
-    """Purge all subscriptions and spaces for a host to prevent ghost billing before account deletion.
-    
-    Returns True if successful. Aborts if a Stripe error occurs.
+    """Purge everything for a host before auth account deletion.
+
+    Delegates to the host-level billing purge, which deletes the single Stripe
+    customer (cancelling the one subscription), removes every space owned by
+    the host and finally drops the ``public.hosts`` billing row. Returns True
+    on success; the billing service raises ``ValueError`` on any Stripe or
+    database failure so the caller can abort before deleting the auth user.
     """
-    supabase = get_supabase_client()
-    if not supabase:
-        raise ValueError("Database connection error.")
-
-    # 1. Fetch all spaces for the host with pagination
-    page_size = 100
-    current_page = 0
-    all_spaces: list[PurgeSpaceItem] = []
-
-    while True:
-        start = current_page * page_size
-        end = start + page_size - 1
-
-        def _fetch_page(s: int = start, e: int = end) -> APIResponse:
-            return (
-                supabase.table("spaces")
-                .select("id, stripe_subscription_id")
-                .eq("host_id", host_id)
-                .order("id")
-                .range(s, e)
-                .execute()
-            )
-
-        response = await asyncio.to_thread(_fetch_page)
-        if not response.data or not isinstance(response.data, list):
-            break
-
-        for row in response.data:
-            if not isinstance(row, dict):
-                raise TypeError("Corrupt data received from spaces table during purge.")
-            all_spaces.append(PurgeSpaceItem.model_validate(row))
-
-        if len(response.data) < page_size:
-            break
-        current_page += 1
-
-    # 2. Sequentially cancel all Stripe subscriptions
-    for space in all_spaces:
-        stripe_sub_id = space.stripe_subscription_id
-        if stripe_sub_id and not stripe_sub_id.startswith("deleted_"):
-            try:
-                await asyncio.to_thread(stripe.Subscription.delete, stripe_sub_id)
-                logger.info("Canceled Stripe subscription %s during account purge for space %s", stripe_sub_id, space.id)
-            except stripe.InvalidRequestError as e:
-                if getattr(e, "code", None) == "resource_missing":
-                    logger.info("Stripe subscription %s already missing during purge.", stripe_sub_id)
-                else:
-                    logger.exception("Stripe error canceling subscription %s during purge", stripe_sub_id)
-                    raise ValueError("Failed to cancel some subscriptions in Stripe. Aborting deletion to prevent ghost billing.") from e
-            except Exception as e:
-                logger.exception("Unexpected error canceling Stripe subscription %s during purge", stripe_sub_id)
-                raise ValueError("Unexpected error during Stripe cancellation. Aborting deletion.") from e
-
-    # 3. Delete each space ensuring tenant space_id is explicitly filtered
-    for space in all_spaces:
-        def _delete_space(sp_id: str = space.id) -> APIResponse:
-            return (
-                supabase.table("spaces")
-                .delete()
-                .eq("id", sp_id)
-                .eq("host_id", host_id)
-                .execute()
-            )
-
-        try:
-            await asyncio.to_thread(_delete_space)
-        except Exception as e:
-            logger.error("Database error deleting space %s for host %s: %s", space.id, host_id, e)
-            raise ValueError(f"Could not delete space {space.id} from database.") from e
-
-    return True
+    result = await purge_host_billing(host_id=host_id)
+    return result.success

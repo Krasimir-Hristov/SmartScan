@@ -1,6 +1,7 @@
 """Zero-latency prompt injection defense and input sanitization."""
 
 import re
+from xml.sax.saxutils import escape as xml_escape
 
 TAG_SANITIZER_REGEX = re.compile(
     r"</?(?:property_context|system|instruction|prompt|assistant|human)[^>]*>",
@@ -15,7 +16,5 @@ def sanitize_user_input(user_text: str) -> str:
     cleaned = TAG_SANITIZER_REGEX.sub("", user_text)
     return cleaned.strip()
 
-
-from xml.sax.saxutils import escape as xml_escape
 
 __all__ = ["TAG_SANITIZER_REGEX", "sanitize_user_input", "xml_escape"]
