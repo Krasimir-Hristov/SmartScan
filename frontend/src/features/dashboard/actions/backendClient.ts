@@ -30,14 +30,51 @@ export async function fetchBackend<T>(
   });
 
   if (!response.ok) {
-    const errData: unknown = await response.json().catch(() => ({}));
-    let detail = 'Error connecting to backend service.';
-    if (errData && typeof errData === 'object' && 'detail' in errData && typeof errData.detail === 'string') {
-      detail = errData.detail;
-    }
-    throw new Error(detail);
+    throw new Error(await readBackendError(response));
   }
 
   const data: unknown = await response.json();
   return data as T;
 }
+
+/**
+ * Extracts a human-readable message from a failed backend response.
+ *
+ * FastAPI returns validation failures as a 422 whose `detail` is an ARRAY of
+ * error objects (`{loc, msg, type}`) instead of a plain string. Rendering only
+ * the string case is what surfaced the opaque "Error connecting to backend
+ * service." message for what was really a `space_id: Field required` payload
+ * mismatch, so both shapes are handled here.
+ */
+async function readBackendError(response: Response): Promise<string> {
+  const fallback = 'Error connecting to backend service.';
+  try {
+    const errData: unknown = await response.json();
+    if (!errData || typeof errData !== 'object' || !('detail' in errData)) {
+      return fallback;
+    }
+
+    const detail = (errData as { detail: unknown }).detail;
+    if (typeof detail === 'string') {
+      return detail;
+    }
+
+    if (Array.isArray(detail)) {
+      const messages = detail
+        .map((item) =>
+          item && typeof item === 'object' && 'msg' in item
+            ? String((item as { msg: unknown }).msg)
+            : null
+        )
+        .filter((msg): msg is string => Boolean(msg));
+      if (messages.length > 0) {
+        return messages.join('; ');
+      }
+    }
+
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+

@@ -79,7 +79,9 @@ export const SpaceBillingCard: React.FC<SpaceBillingCardProps> = ({ space }) => 
     setIsLoading(true);
     setError(null);
     try {
-      const returnUrl = window.location.href;
+      // Origin + path only: query strings and hashes would be appended to the
+      // Stripe success_url verbatim and the backend allowlist matches on origin.
+      const returnUrl = `${window.location.origin}${window.location.pathname}`;
       if (needsSubscription) {
         // Go to Checkout
         const res = await createCheckoutSessionAction(space.id, returnUrl);

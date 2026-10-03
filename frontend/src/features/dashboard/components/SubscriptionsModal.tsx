@@ -109,7 +109,11 @@ export const SubscriptionsModal: React.FC<SubscriptionsModalProps> = ({
     setError(null);
 
     try {
-      const returnUrl = window.location.href;
+      // Prefer the canonical public origin: `window.location.href` can be a
+      // preview deployment whose origin the backend allowlist (FRONTEND_URL /
+      // ALLOWED_ORIGINS) does not include, which makes the backend reject the
+      // request with "return_url origin is not allowed".
+      const returnUrl = `${window.location.origin}${window.location.pathname}`;
       if (needsSubscription) {
         const res = await createCheckoutSessionAction(space.id, returnUrl);
         if (res.success && res.data?.checkout_url) {
