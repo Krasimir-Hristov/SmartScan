@@ -38,5 +38,13 @@ select = ["E4", "E7", "E9", "F", "I", "SIM"]
 # why the editor, anchored at the workspace root, reported false I001 warnings).
 known-first-party = ["app", "tests"]
 
+[tool.mypy]
+# The Pydantic plugin teaches mypy that ``Field(default, ...)`` supplies a
+# default value. Without it every Pydantic model constructed with partial kwargs
+# is reported as "Missing named argument", which hides real type errors in the
+# noise. `ignore_missing_imports` mirrors the flag the CI job already passes.
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+
 [tool.uv]
 package = false

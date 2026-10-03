@@ -1,30 +1,49 @@
 """Service for Stripe Billing operations (Checkout, Portal, Webhooks).
 
-Billing is HOST-scoped: one Stripe Customer and one Stripe Subscription per
-host. Each enrolled space is a separate Subscription Item whose
-``metadata.space_id`` links it back to ``public.spaces``. ``public.hosts`` is
-the authoritative billing record; ``spaces.subscription_status`` is only a
-denormalised display mirror.
+Billing model — per-space subscriptions with an account-level trial:
+
+* ONE Stripe Customer per host        -> ``public.hosts.stripe_customer_id``
+* ONE Stripe Subscription PER SPACE   -> ``public.spaces.stripe_subscription_id``
+* ONE account-level trial per host    -> ``public.hosts.trial_ends_at``
+
+ENTITLEMENT RULE (single source of truth: ``public.get_space_entitlement``):
+    a space is usable by guests while
+    ``spaces.subscription_status == 'active'`` OR ``now() <= hosts.trial_ends_at``.
+
+So while the account trial runs, EVERY space of that host works. Once it ends,
+only spaces that hold their own paid subscription keep working.
+
+CANCELLATION SEMANTICS:
+    ``cancel_space_subscription`` sets ``cancel_at_period_end``. Stripe keeps the
+    subscription ``active`` until ``spaces.current_period_end`` passes, so the
+    space stays entitled for the period the host already paid for. Only a real
+    ``customer.subscription.deleted`` event flips it to ``canceled`` and locks it.
+
+GHOST-SUBSCRIPTION PROTECTION:
+    ``detach_space_subscription`` cancels a space's subscription in Stripe BEFORE
+    its row is deleted, and ``purge_host_account`` deletes the host's single
+    Stripe customer, which cancels every per-space subscription in one call.
 """
 
 import asyncio
-import json
 import logging
-from datetime import datetime, timezone
+import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
 import stripe
-from postgrest.types import CountMethod
 
 from app.core.config import settings
 from app.core.database import get_supabase_client
 from app.features.billing.schemas import (
     BillingOperationResponse,
+    BillingSummaryResponse,
     CheckoutResponse,
     HostBillingRecord,
     PortalResponse,
     PurgeResponse,
     SpaceBillingRecord,
+    SpaceEntitlement,
     SubscriptionStatus,
 )
 
@@ -50,12 +69,51 @@ LIVE_STRIPE_STATUSES = frozenset(
     {"trialing", "active", "past_due", "paused", "unpaid", "incomplete"}
 )
 
+# DB-constrained statuses that still represent a live, cancelable subscription.
+LIVE_DB_STATUSES = frozenset({"trialing", "active", "past_due", "paused"})
+
+# Error code surfaced to guests when a space is locked for billing reasons.
+SPACE_SUBSCRIPTION_REQUIRED = "SPACE_SUBSCRIPTION_REQUIRED"
+
+# Columns read for billing decisions. Every query using them is scoped by
+# host_id in addition to id (hard multi-tenancy isolation).
+_SPACE_BILLING_COLUMNS = (
+    "id, host_id, space_type, is_active, subscription_status, "
+    "stripe_subscription_id, current_period_end"
+)
+
+
+class SpaceNotEntitledError(ValueError):
+    """Raised when a space is locked: no paid subscription and the trial ended.
+
+    Subclasses ``ValueError`` so existing error handling keeps working, but
+    routers catch it FIRST to answer ``403 SPACE_SUBSCRIPTION_REQUIRED`` instead
+    of a generic ``400``.
+    """
+
 
 def map_stripe_status(raw_status: str | None) -> SubscriptionStatus:
     """Pure mapping from a raw Stripe status to our DB-constrained status."""
     if not raw_status:
         return "canceled"
     return _STRIPE_TO_DB_STATUS.get(raw_status, "past_due")
+
+
+def is_billable_space_id(space_id: str) -> bool:
+    """Pure predicate: does this id identify a real, billable space?
+
+    Demo fixtures (``demo-*``) and malformed ids have no ``public.spaces`` row,
+    so they cannot be entitlement-checked. Callers use this to skip the gate for
+    them instead of turning them into 404s.
+    """
+    cleaned = (space_id or "").strip()
+    if not cleaned or cleaned.startswith("demo-"):
+        return False
+    try:
+        uuid.UUID(cleaned)
+        return True
+    except (ValueError, TypeError, AttributeError):
+        return False
 
 
 def _resolve_price_id(space_type: str | None) -> str:
@@ -74,13 +132,18 @@ def _timestamp_to_iso(unix_seconds: float) -> str:
     return datetime.fromtimestamp(unix_seconds, tz=timezone.utc).isoformat()
 
 
-def _extract_metadata(obj: Any) -> dict[str, Any]:
-    """Safely extracts metadata as a dict from a Stripe object or dict/namespace."""
+def _read_attr(obj: Any, name: str) -> Any:
+    """Pure attribute/key reader that works for Stripe objects and plain dicts."""
     if obj is None:
-        return {}
-    meta = getattr(obj, "metadata", None)
-    if meta is None and isinstance(obj, dict):
-        meta = obj.get("metadata")
+        return None
+    if isinstance(obj, dict):
+        return obj.get(name)
+    return getattr(obj, name, None)
+
+
+def _extract_metadata(obj: Any) -> dict[str, Any]:
+    """Safely extracts metadata as a dict from a Stripe object or dict."""
+    meta = _read_attr(obj, "metadata")
     if meta is None:
         return {}
     if hasattr(meta, "to_dict"):
@@ -90,10 +153,66 @@ def _extract_metadata(obj: Any) -> dict[str, Any]:
     return {}
 
 
-async def _ensure_host_record(
-    host_id: str, *, email: str | None = None
-) -> HostBillingRecord:
-    """Return the host's billing row, creating it if it does not exist yet."""
+def _read_period_end(subscription: Any) -> str | None:
+    """Pure extraction of the paid-period end from a Stripe subscription.
+
+    Stripe moved ``current_period_end`` onto subscription items in API version
+    2025-03-31.basil, so both the legacy top-level shape and the per-item shape
+    are supported.
+    """
+    raw = _read_attr(subscription, "current_period_end")
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool) and raw > 0:
+        return _timestamp_to_iso(raw)
+
+    items = _read_attr(subscription, "items")
+    item_rows = _read_attr(items, "data")
+    for item in item_rows or []:
+        raw_item = _read_attr(item, "current_period_end")
+        if (
+            isinstance(raw_item, (int, float))
+            and not isinstance(raw_item, bool)
+            and raw_item > 0
+        ):
+            return _timestamp_to_iso(raw_item)
+    return None
+
+
+def _subscription_snapshot(
+    subscription: Any,
+) -> tuple[str, SubscriptionStatus, str | None, bool]:
+    """Pure projection of a Stripe subscription onto the columns we persist."""
+    subscription_id = str(_read_attr(subscription, "id") or "")
+    status = map_stripe_status(str(_read_attr(subscription, "status") or ""))
+    period_end = _read_period_end(subscription)
+    cancel_at_period_end = bool(_read_attr(subscription, "cancel_at_period_end"))
+    return subscription_id, status, period_end, cancel_at_period_end
+
+
+def _build_new_host_payload(host_id: str) -> dict[str, Any]:
+    """Pure builder for a brand-new ``hosts`` row, granting the trial ONCE.
+
+    ``public.hosts.trial_ends_at`` has no database default, so the configured
+    ``ACCOUNT_TRIAL_DAYS`` is the only source of truth for the trial length.
+    ``trial_claimed_at`` freezes the start so the trial can never be restarted.
+    """
+    now = datetime.now(timezone.utc)
+    payload: dict[str, Any] = {
+        "id": host_id,
+        "trial_claimed_at": now.isoformat(),
+    }
+    trial_days = settings.ACCOUNT_TRIAL_DAYS
+    if trial_days > 0:
+        payload["trial_ends_at"] = (now + timedelta(days=trial_days)).isoformat()
+    return payload
+
+
+async def _ensure_host_record(host_id: str) -> HostBillingRecord:
+    """Return the host's account-level billing row, creating it if absent.
+
+    The account trial is granted exactly once, here, on first insert. Re-reading
+    an existing row never touches ``trial_ends_at``, so the trial can neither be
+    extended nor restarted by repeated calls.
+    """
     supabase = get_supabase_client()
     if not supabase:
         raise ValueError("Database connection error.")
@@ -105,23 +224,39 @@ async def _ensure_host_record(
     if response.data:
         return HostBillingRecord.model_validate(cast(dict, response.data[0]))
 
-    def _insert() -> Any:
-        return supabase.table("hosts").insert({"id": host_id}).execute()
+    payload = _build_new_host_payload(host_id)
 
-    inserted = await asyncio.to_thread(_insert)
+    def _insert() -> Any:
+        return supabase.table("hosts").insert(payload).execute()
+
+    try:
+        inserted = await asyncio.to_thread(_insert)
+    except Exception as exc:  # noqa: BLE001
+        # Concurrent first touch: the row now exists. Re-read it rather than
+        # failing, and never overwrite the trial another request just granted.
+        logger.warning("Concurrent hosts insert for %s: %s", host_id, exc)
+        refetched = await asyncio.to_thread(_fetch)
+        if refetched.data:
+            return HostBillingRecord.model_validate(cast(dict, refetched.data[0]))
+        raise ValueError("Could not initialise the host billing record.") from exc
+
     if inserted.data:
         return HostBillingRecord.model_validate(cast(dict, inserted.data[0]))
     raise ValueError("Could not initialise the host billing record.")
 
 
-async def get_host_billing(host_id: str, email: str | None = None) -> HostBillingRecord:
-    """Public read accessor for the host's single billing record."""
-    return await _ensure_host_record(host_id, email=email)
+async def get_host_billing(host_id: str) -> HostBillingRecord:
+    """Public read accessor for the host's account-level billing record."""
+    return await _ensure_host_record(host_id)
 
 
 async def _get_or_create_stripe_customer(host_id: str, email: str | None = None) -> str:
-    """Return the Stripe Customer id for a host, creating it once if needed."""
-    host = await _ensure_host_record(host_id, email=email)
+    """Return the Stripe Customer id for a host, creating it once if needed.
+
+    Every per-space subscription of this host is attached to this ONE customer,
+    which is what lets account deletion cancel them all in a single call.
+    """
+    host = await _ensure_host_record(host_id)
     existing = (host.stripe_customer_id or "").strip()
     if existing:
         return existing
@@ -135,8 +270,8 @@ async def _get_or_create_stripe_customer(host_id: str, email: str | None = None)
             return stripe.Customer.create(**kwargs)
 
         customer = await asyncio.to_thread(_create_customer)
-    except Exception as e:
-        logger.error(f"Error creating Stripe customer for host {host_id}: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error creating Stripe customer for host %s: %s", host_id, e)
         raise ValueError("Could not create the billing profile.") from e
 
     supabase = get_supabase_client()
@@ -157,82 +292,106 @@ async def _get_or_create_stripe_customer(host_id: str, email: str | None = None)
     return customer_id
 
 
-async def create_checkout_session(
-    host_id: str,
-    user_email: str,
-    space_ids: list[str] | None = None,
-    return_url: str | None = None,
-) -> CheckoutResponse:
-    """Create a Stripe Checkout session for the host's SINGLE subscription.
+# ---------------------------------------------------------------------------
+# Entitlement (the gate every guest-facing feature must pass)
+# ---------------------------------------------------------------------------
 
-    The session enrolls one or more owned spaces as subscription items. If the
-    host already has a live subscription, adding spaces goes through
-    ``add_space_item`` instead, because Stripe forbids a second
-    subscription-mode session on the same billing relationship.
+
+async def get_space_entitlement(space_id: str) -> SpaceEntitlement | None:
+    """Return the atomic entitlement snapshot for a space, or None if unknown.
+
+    Reads the ``public.get_space_entitlement`` RPC so the verdict comes from the
+    exact same SQL predicate that ``get_guest_space_by_slug`` and
+    ``match_space_knowledge`` use. Keeping the rule in one place means the Python
+    gate and the SQL gates can never drift apart.
     """
     supabase = get_supabase_client()
     if not supabase:
         raise ValueError("Database connection error.")
 
-    host = await _ensure_host_record(host_id, email=user_email)
+    def _call() -> Any:
+        return supabase.rpc(
+            "get_space_entitlement", {"target_space_id": space_id}
+        ).execute()
 
-    # Guard: a live subscription cannot be re-created via Checkout.
-    if host.stripe_subscription_id and host.subscription_status != "canceled":
-        raise ValueError(
-            "This account already has an active subscription. "
-            "Use the billing portal or add a space instead."
-        )
-
-    # 1. Resolve which owned spaces become subscription items.
-    spaces = await _fetch_owned_spaces(host_id, space_ids or [])
-    if not spaces:
-        raise ValueError("No spaces available to subscribe. Create a space first.")
-
-    unauthorized = [space for space in spaces if space.host_id != host_id]
-    if unauthorized:
-        raise ValueError("Unauthorized. You do not own one of these spaces.")
-
-    enrolled_ids = json.dumps([space.id for space in spaces])
-    # One line item per space so Stripe creates one Subscription Item per space.
-    line_items = [{"price": _resolve_price_id(space.space_type), "quantity": 1} for space in spaces]
-
-    # 2. Ensure the host has exactly one Stripe Customer.
-    customer_id = await _get_or_create_stripe_customer(host_id, user_email)
-
-    # 3. Determine success/cancel URLs
-    base_url = settings.FRONTEND_URL.rstrip("/")
-    success_url = return_url or f"{base_url}/dashboard"
-    cancel_url = return_url or f"{base_url}/dashboard"
-
-    # 4. Create the Stripe Checkout Session
     try:
-        kwargs: dict[str, Any] = {
-            "line_items": line_items,
-            "mode": "subscription",
-            "success_url": f"{success_url}?session_id={{CHECKOUT_SESSION_ID}}",
-            "cancel_url": cancel_url,
-            "customer": customer_id,
-            "client_reference_id": host_id,
-            "subscription_data": {
-                "metadata": {"host_id": host_id, "space_ids": enrolled_ids}
-            },
-            "metadata": {"host_id": host_id, "space_ids": enrolled_ids},
-        }
+        response = await asyncio.to_thread(_call)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Entitlement lookup failed for space %s: %s", space_id, exc)
+        raise ValueError("Could not verify this space's subscription.") from exc
 
-        def _create_stripe_session() -> Any:
-            return stripe.checkout.Session.create(**kwargs)
+    rows = response.data if isinstance(response.data, list) else []
+    if not rows:
+        return None
+    return SpaceEntitlement.model_validate(cast(dict, rows[0]))
 
-        session = await asyncio.to_thread(_create_stripe_session)
-        return CheckoutResponse(checkout_url=session.url, session_id=session.id)
-    except Exception as e:
-        logger.error(f"Error creating Stripe checkout session: {e}")
-        raise ValueError("Could not create checkout session.") from e
+
+async def ensure_space_entitled(space_id: str) -> SpaceEntitlement:
+    """Return the entitlement snapshot or raise when the space is locked.
+
+    Raises:
+        ValueError: the space does not exist.
+        SpaceNotEntitledError: the space exists but has no paid subscription and
+            the owning account's trial has ended. Routers turn this into
+            ``403 SPACE_SUBSCRIPTION_REQUIRED``.
+    """
+    entitlement = await get_space_entitlement(space_id)
+    if entitlement is None:
+        raise ValueError("Space not found.")
+    if not entitlement.entitled:
+        raise SpaceNotEntitledError(SPACE_SUBSCRIPTION_REQUIRED)
+    return entitlement
+
+
+async def get_billing_summary(host_id: str) -> BillingSummaryResponse:
+    """Return the host's account trial plus the entitlement of every owned space.
+
+    Every verdict comes from the ``public.get_space_entitlement`` RPC, so the
+    dashboard shows exactly what the guest-facing gates will enforce.
+    """
+    host = await _ensure_host_record(host_id)
+
+    supabase = get_supabase_client()
+    if not supabase:
+        raise ValueError("Database connection error.")
+
+    def _fetch_space_ids() -> Any:
+        return supabase.table("spaces").select("id").eq("host_id", host_id).execute()
+
+    try:
+        response = await asyncio.to_thread(_fetch_space_ids)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Could not enumerate spaces for host %s: %s", host_id, e)
+        raise ValueError("Could not load the billing summary.") from e
+
+    rows = response.data if isinstance(response.data, list) else []
+    space_ids = [
+        str(row["id"]) for row in rows if isinstance(row, dict) and row.get("id")
+    ]
+
+    entitlements = await asyncio.gather(
+        *(get_space_entitlement(space_id) for space_id in space_ids)
+    )
+
+    return BillingSummaryResponse(
+        host=host,
+        spaces=[item for item in entitlements if item is not None],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Space lookup (always tenant-scoped)
+# ---------------------------------------------------------------------------
 
 
 async def _fetch_owned_spaces(
     host_id: str, space_ids: list[str]
 ) -> list[SpaceBillingRecord]:
-    """Fetch spaces owned by the host, optionally restricted to given ids."""
+    """Fetch spaces owned by the host, optionally restricted to given ids.
+
+    Every branch keeps the hard ``host_id`` filter, so a caller can never read a
+    space belonging to another host even by supplying its id explicitly.
+    """
     supabase = get_supabase_client()
     if not supabase:
         raise ValueError("Database connection error.")
@@ -242,7 +401,7 @@ async def _fetch_owned_spaces(
     def _fetch() -> Any:
         query = (
             supabase.table("spaces")
-            .select("id, host_id, space_type, is_active, subscription_status")
+            .select(_SPACE_BILLING_COLUMNS)
             .eq("host_id", host_id)
         )
         query = query.in_("id", wanted) if wanted else query.eq("is_active", True)
@@ -253,175 +412,101 @@ async def _fetch_owned_spaces(
     return [SpaceBillingRecord.model_validate(cast(dict, row)) for row in rows]
 
 
-async def _sync_subscription_from_stripe(
-    host_id: str, subscription: Any, space_ids: list[str] | None = None
-) -> None:
-    """Persist authoritative Stripe subscription state onto hosts and mirror spaces."""
-    supabase = get_supabase_client()
-    if not supabase:
-        raise ValueError("Database connection error.")
+async def _require_owned_space(host_id: str, space_id: str) -> SpaceBillingRecord:
+    """Return one owned space or raise. Hard filter: id AND host_id."""
+    spaces = await _fetch_owned_spaces(host_id, [space_id])
+    match = next(
+        (
+            space
+            for space in spaces
+            if space.id == space_id and space.host_id == host_id
+        ),
+        None,
+    )
+    if match is None:
+        raise ValueError("Space not found or you are not the owner.")
+    return match
 
-    if isinstance(subscription, dict):
-        subscription_id = str(subscription.get("id", "") or "")
-        raw_status = str(subscription.get("status", "") or "")
-        raw_trial_end = subscription.get("trial_end", None)
-    else:
-        subscription_id = str(getattr(subscription, "id", "") or "")
-        raw_status = str(getattr(subscription, "status", "") or "")
-        raw_trial_end = getattr(subscription, "trial_end", None)
 
-    status = map_stripe_status(raw_status)
+# ---------------------------------------------------------------------------
+# Checkout & Portal
+# ---------------------------------------------------------------------------
 
-    trial_ends_at: str | None = None
-    if isinstance(raw_trial_end, (int, float)) and raw_trial_end > 0:
-        trial_ends_at = _timestamp_to_iso(raw_trial_end)
 
-    host_payload: dict[str, Any] = {
-        "stripe_subscription_id": subscription_id or None,
-        "subscription_status": status,
-    }
-    if trial_ends_at:
-        host_payload["trial_ends_at"] = trial_ends_at
+async def create_checkout_session(
+    host_id: str,
+    user_email: str,
+    space_id: str,
+    return_url: str | None = None,
+) -> CheckoutResponse:
+    """Create a Stripe Checkout session for ONE space's dedicated subscription.
 
-    def _update_host() -> Any:
-        return supabase.table("hosts").update(host_payload).eq("id", host_id).execute()
+    The subscription is attached to the host's single Stripe Customer, so the
+    Customer Portal lists every space of that host in one place.
+    """
+    space = await _require_owned_space(host_id, space_id)
 
-    await asyncio.to_thread(_update_host)
-
-    # Mirror the authoritative status onto every space owned by the host.
-    def _mirror_spaces() -> Any:
-        return (
-            supabase.table("spaces")
-            .update({"subscription_status": status})
-            .eq("host_id", host_id)
-            .execute()
+    # Guard: a space with a live subscription cannot be re-created via Checkout.
+    existing_sub = (space.stripe_subscription_id or "").strip()
+    if existing_sub and space.subscription_status in LIVE_DB_STATUSES:
+        raise ValueError(
+            "This space already has a subscription. "
+            "Use the billing portal to manage it."
         )
 
-    await asyncio.to_thread(_mirror_spaces)
+    customer_id = await _get_or_create_stripe_customer(host_id, user_email)
 
-    # Tag brand-new items with their space_id when checkout carried the mapping.
-    if space_ids and subscription_id:
-        await _tag_subscription_items(subscription_id, host_id, space_ids)
+    base_url = settings.FRONTEND_URL.rstrip("/")
+    success_url = return_url or f"{base_url}/dashboard"
+    cancel_url = return_url or f"{base_url}/dashboard"
 
+    # space_id travels on BOTH the session and the subscription so the webhook
+    # can resolve the affected space without scanning anything.
+    correlation = {"host_id": host_id, "space_id": space_id}
 
-async def _list_subscription_items(subscription_id: str) -> list[Any]:
-    """Return the Subscription Items of a subscription."""
+    try:
+        kwargs: dict[str, Any] = {
+            "line_items": [
+                {"price": _resolve_price_id(space.space_type), "quantity": 1}
+            ],
+            "mode": "subscription",
+            "success_url": f"{success_url}?session_id={{CHECKOUT_SESSION_ID}}",
+            "cancel_url": cancel_url,
+            "customer": customer_id,
+            "client_reference_id": host_id,
+            "subscription_data": {"metadata": correlation},
+            "metadata": correlation,
+        }
 
-    def _list() -> Any:
-        return stripe.SubscriptionItem.list(subscription=subscription_id, limit=100)
+        def _create_stripe_session() -> Any:
+            return stripe.checkout.Session.create(**kwargs)
 
-    listing = await asyncio.to_thread(_list)
-    return list(getattr(listing, "data", []) or [])
-
-
-async def _find_item_for_space(
-    subscription_id: str, space_id: str, items: list[Any] | None = None
-) -> Any | None:
-    """Find the Subscription Item tagged with the given space_id.
-
-    Accepts an already-fetched ``items`` list to avoid a redundant Stripe call
-    when the caller has just listed the subscription items.
-    """
-    if items is None:
-        items = await _list_subscription_items(subscription_id)
-    for item in items:
-        metadata = _extract_metadata(item)
-        if metadata.get("space_id") == space_id:
-            return item
-    return None
-
-
-async def _tag_subscription_items(subscription_id: str, host_id: str, space_ids: list[str]) -> None:
-    """Attach ``metadata.space_id`` to freshly created subscription items.
-
-    Stripe Checkout cannot stamp per-item metadata, so after the session
-    completes we verify the unmapped items match the space count, and tag them.
-    """
-    if not space_ids:
-        return
-
-    spaces = await _fetch_owned_spaces(host_id, space_ids)
-    if not spaces:
-        return
-
-    # Let listing failures propagate
-    items = await _list_subscription_items(subscription_id)
-
-    mapped_space_ids = {
-        _extract_metadata(item).get("space_id") 
-        for item in items
-    }
-    
-    supabase = get_supabase_client()
-    if supabase:
-        def _fetch_all_spaces() -> Any:
-            return supabase.table("spaces").select("id").eq("host_id", host_id).execute()
-        all_spaces_response = await asyncio.to_thread(_fetch_all_spaces)
-        all_spaces = all_spaces_response.data if isinstance(all_spaces_response.data, list) else []
-        valid_ids = {s.get("id") for s in all_spaces}
-    else:
-        valid_ids = {s.id for s in spaces}
-        
-    invalid_mapped_ids = {sid for sid in mapped_space_ids if sid and sid not in valid_ids}
-    if invalid_mapped_ids:
-        raise ValueError(f"Subscription has items mapped to unknown spaces: {invalid_mapped_ids}")
-    
-    unmapped_spaces = [space for space in spaces if space.id not in mapped_space_ids]
-    if not unmapped_spaces:
-        return
-        
-    unmapped_items = [
-        item for item in items 
-        if not _extract_metadata(item).get("space_id")
-    ]
-
-    unmapped_spaces_by_price: dict[str, list[SpaceBillingRecord]] = {}
-    for space in unmapped_spaces:
-        price = _resolve_price_id(space.space_type)
-        unmapped_spaces_by_price.setdefault(price, []).append(space)
-
-    unmapped_items_by_price: dict[str, list[Any]] = {}
-    for item in unmapped_items:
-        price_val = getattr(getattr(item, "price", None), "id", None)
-        price_str: str = price_val if isinstance(price_val, str) else ""
-        unmapped_items_by_price.setdefault(price_str, []).append(item)
-
-    for price_id, grouped_spaces in unmapped_spaces_by_price.items():
-        grouped_items = unmapped_items_by_price.get(price_id, [])
-        if len(grouped_spaces) != len(grouped_items):
-            msg = f"Cannot tag spaces: found {len(grouped_items)} items for {len(grouped_spaces)} spaces for price {price_id}."
-            logger.error(msg)
-            raise ValueError(msg)
-            
-        for space, item in zip(grouped_spaces, grouped_items, strict=True):
-            def _tag(item_id: str = str(item.id), sid: str = space.id) -> Any:
-                return stripe.SubscriptionItem.modify(item_id, metadata={"space_id": sid})
-            
-            # Let metadata update failures propagate
-            await asyncio.to_thread(_tag)
+        session = await asyncio.to_thread(_create_stripe_session)
+        return CheckoutResponse(checkout_url=session.url, session_id=session.id)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Error creating Stripe checkout session: %s", e)
+        raise ValueError("Could not create checkout session.") from e
 
 
 async def create_portal_session(
     host_id: str, return_url: str | None = None
 ) -> PortalResponse:
-    """Creates a Stripe Customer Portal session for the host's billing."""
-    supabase = get_supabase_client()
-    if not supabase:
-        raise ValueError("Database connection error.")
+    """Creates a Stripe Customer Portal session for the host's billing.
 
-    # The host's single Stripe Customer owns every subscription item.
+    Host-scoped on purpose: the single Stripe Customer owns every per-space
+    subscription, so the host manages all of them from one portal.
+    """
     host = await _ensure_host_record(host_id)
     stripe_customer_id = (host.stripe_customer_id or "").strip()
     if not stripe_customer_id:
         raise ValueError("This account does not have a billing profile yet.")
 
-    # Build the return URL
     base_url = settings.FRONTEND_URL.rstrip("/")
     portal_return_url = return_url or f"{base_url}/dashboard"
 
     try:
 
-        def _create_portal_session():
+        def _create_portal_session() -> Any:
             return stripe.billing_portal.Session.create(
                 customer=stripe_customer_id,
                 return_url=portal_return_url,
@@ -430,343 +515,443 @@ async def create_portal_session(
         session = await asyncio.to_thread(_create_portal_session)
         return PortalResponse(portal_url=session.url)
     except Exception as e:  # noqa: BLE001
-        logger.error(f"Error creating Stripe portal session: {e}")
-        raise ValueError("Could not create customer portal session.")
+        logger.error("Error creating Stripe portal session: %s", e)
+        raise ValueError("Could not create customer portal session.") from e
 
 
-async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
-    """Processes incoming Stripe Webhook events and updates the database."""
+# ---------------------------------------------------------------------------
+# Stripe -> DB synchronisation (per-space)
+# ---------------------------------------------------------------------------
+
+
+async def _sync_space_subscription(
+    space_id: str, subscription: Any
+) -> SpaceBillingRecord | None:
+    """Persist authoritative Stripe state onto ONE space row.
+
+    Stripe is the single source of truth for subscription state. ``spaces`` only
+    mirrors what Stripe reported, so no status here is ever inferred locally.
+
+    Returns None (and logs) when the subscription points at a space that no
+    longer exists — the ghost-subscription case that purge/detach prevent.
+    """
     supabase = get_supabase_client()
     if not supabase:
         raise ValueError("Database connection error.")
 
+    subscription_id, status, period_end, _cancel_at_period_end = _subscription_snapshot(
+        subscription
+    )
+
+    payload: dict[str, Any] = {
+        "stripe_subscription_id": subscription_id or None,
+        "subscription_status": status,
+        "current_period_end": period_end,
+    }
+
+    def _update() -> Any:
+        return supabase.table("spaces").update(payload).eq("id", space_id).execute()
+
+    try:
+        response = await asyncio.to_thread(_update)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Failed to sync subscription for space %s: %s", space_id, e)
+        raise ValueError("Could not update the space billing state.") from e
+
+    rows = response.data if isinstance(response.data, list) else []
+    if not rows:
+        logger.warning(
+            "Subscription %s referenced missing space %s; ignoring.",
+            subscription_id or "<unknown>",
+            space_id,
+        )
+        return None
+    return SpaceBillingRecord.model_validate(cast(dict, rows[0]))
+
+
+async def _clear_space_subscription(space_id: str) -> None:
+    """Reset a space to "never subscribed" so the account trial covers it again.
+
+    Used when Stripe no longer knows the subscription (deleted in the Stripe
+    dashboard) — without this, the space would keep pointing at a subscription
+    id that does not exist and wrongly look entitled.
+    """
+    supabase = get_supabase_client()
+    if not supabase:
+        raise ValueError("Database connection error.")
+
+    def _update() -> Any:
+        return (
+            supabase.table("spaces")
+            .update(
+                {
+                    "stripe_subscription_id": None,
+                    "current_period_end": None,
+                    "subscription_status": "trialing",
+                }
+            )
+            .eq("id", space_id)
+            .execute()
+        )
+
+    await asyncio.to_thread(_update)
+
+
+async def _find_space_id_by_subscription(subscription_id: str) -> str | None:
+    """Resolve the owning space of a subscription id, or None when unmapped."""
+    supabase = get_supabase_client()
+    if not supabase:
+        raise ValueError("Database connection error.")
+
+    def _find() -> Any:
+        return (
+            supabase.table("spaces")
+            .select("id")
+            .eq("stripe_subscription_id", subscription_id)
+            .limit(1)
+            .maybe_single()
+            .execute()
+        )
+
+    try:
+        response = await asyncio.to_thread(_find)
+    except Exception as e:  # noqa: BLE001
+        logger.error(
+            "Failed to resolve space for subscription %s: %s", subscription_id, e
+        )
+        raise ValueError("Could not resolve the space for this subscription.") from e
+
+    row = response.data if response is not None else None
+    if isinstance(row, dict) and row.get("id"):
+        return str(row["id"])
+    return None
+
+
+async def process_webhook_event(payload_bytes: bytes, sig_header: str) -> dict:
+    """Verify and route a Stripe webhook event to its per-space handler.
+
+    Signature verification happens BEFORE any business logic so an unsigned or
+    tampered payload can never mutate billing state.
+    """
     try:
         event = stripe.Webhook.construct_event(
             payload_bytes, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
     except ValueError as e:
-        logger.warning(f"Invalid payload: {e}")
-        raise ValueError("Invalid payload")
+        logger.warning("Invalid Stripe webhook payload: %s", e)
+        raise ValueError("Invalid payload") from e
     except stripe.SignatureVerificationError as e:
-        logger.warning(f"Invalid signature: {e}")
-        raise ValueError("Invalid signature")
+        logger.warning("Invalid Stripe webhook signature: %s", e)
+        raise ValueError("Invalid signature") from e
 
-    event_type = event["type"]
-    data_object = event["data"]["object"]
-    data_dict = (
-        data_object.to_dict() if hasattr(data_object, "to_dict") else data_object
-    )
+    # `construct_event` returns a typed `stripe.Event` — a `StripeObject` with
+    # ATTRIBUTE access and NO `.get()` method. `_read_attr` normalises that and
+    # the plain-dict shape tests hand us, so the handler never assumes a
+    # container Stripe does not actually provide. Reading `event["data"]` as a
+    # dict here would raise AttributeError on every real webhook.
+    event_type = str(_read_attr(event, "type") or "")
+    data_object = _read_attr(_read_attr(event, "data"), "object")
 
-    try:
-        if event_type in [
-            "checkout.session.completed",
-            "checkout.session.async_payment_succeeded",
-        ]:
-            host_id = data_dict.get("client_reference_id")
-            subscription_id = data_dict.get("subscription")
+    if event_type in (
+        "checkout.session.completed",
+        "checkout.session.async_payment_succeeded",
+    ):
+        metadata = _extract_metadata(data_object)
+        space_id = str(metadata.get("space_id") or "")
+        subscription_id = _read_attr(data_object, "subscription")
+        if space_id and subscription_id:
 
-            if host_id and subscription_id:
-                logger.info(
-                    f"Checkout completed for host {host_id}, subscription {subscription_id}."
+            def _retrieve_subscription() -> Any:
+                return stripe.Subscription.retrieve(str(subscription_id))
+
+            try:
+                subscription = await asyncio.to_thread(_retrieve_subscription)
+            except Exception as e:  # noqa: BLE001
+                logger.error(
+                    "Could not retrieve subscription %s: %s", subscription_id, e
                 )
+                raise ValueError("Could not retrieve the subscription.") from e
 
-                session_metadata = data_dict.get("metadata") or {}
-                encoded_space_ids = str(session_metadata.get("space_ids") or "")
-                space_ids: list[str] = []
-                if encoded_space_ids:
-                    try:
-                        decoded = json.loads(encoded_space_ids)
-                        if isinstance(decoded, list):
-                            space_ids = [str(item) for item in decoded]
-                    except json.JSONDecodeError:
-                        logger.warning("Invalid space_ids JSON in session metadata.")
+            await _sync_space_subscription(space_id, subscription)
+            logger.info(
+                "Space %s subscription %s activated.", space_id, subscription_id
+            )
+        else:
+            logger.warning(
+                "Checkout event %s missing space_id/subscription metadata; ignoring.",
+                event_type,
+            )
 
-                def _fetch_sub():
-                    return stripe.Subscription.retrieve(subscription_id)
-
-                sub = await asyncio.to_thread(_fetch_sub)
-                await _sync_subscription_from_stripe(host_id, sub, space_ids=space_ids)
-                logger.info(f"Host {host_id} subscription activated.")
+    elif event_type in (
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+    ):
+        subscription_id = str(_read_attr(data_object, "id") or "")
+        if not subscription_id:
+            logger.warning("Subscription event %s missing subscription id.", event_type)
+        else:
+            mapped_space_id = await _find_space_id_by_subscription(subscription_id)
+            if mapped_space_id:
+                await _sync_space_subscription(mapped_space_id, data_object)
+                logger.info(
+                    "Subscription %s (%s) synced to space %s.",
+                    subscription_id,
+                    event_type,
+                    mapped_space_id,
+                )
             else:
                 logger.warning(
-                    f"Missing host_id ({host_id}) or subscription_id ({subscription_id}) in webhook data."
+                    "No space mapped to subscription %s (%s); ignoring.",
+                    subscription_id,
+                    event_type,
                 )
 
-        elif event_type in [
-            "customer.subscription.updated",
-            "customer.subscription.deleted",
-        ]:
-            subscription_id = data_dict.get("id")
-            if not subscription_id:
-                logger.warning("Subscription event missing subscription id.")
-            else:
+    else:
+        logger.debug("Unhandled Stripe event type: %s", event_type)
 
-                def _find_host():
-                    return (
-                        supabase.table("hosts")
-                        .select("id")
-                        .eq("stripe_subscription_id", subscription_id)
-                        .limit(1)
-                        .maybe_single()
-                        .execute()
-                    )
-
-                host_row = await asyncio.to_thread(_find_host)
-                row = host_row.data if host_row is not None else None
-                matched_host_id = row.get("id") if isinstance(row, dict) else None
-                if matched_host_id:
-                    await _sync_subscription_from_stripe(
-                        str(matched_host_id), data_object
-                    )
-                else:
-                    logger.warning(f"No host found for subscription {subscription_id}.")
-
-    except Exception as e:
-        logger.error(f"Error processing webhook event {event_type}: {e}")
-        raise ValueError("Database update failed during webhook") from e
-
-    return {"status": "success", "event_type": event_type}
+    return {"received": True}
 
 
-async def add_space_item(host_id: str, space_id: str) -> BillingOperationResponse:
-    """Adds a single space as a new item on the host's existing subscription."""
-    supabase = get_supabase_client()
-    if not supabase:
-        raise ValueError("Database connection error.")
+# ---------------------------------------------------------------------------
+# Cancellation, resume and detach (space-scoped)
+# ---------------------------------------------------------------------------
 
-    host = await _ensure_host_record(host_id)
-    subscription_id = (host.stripe_subscription_id or "").strip()
+
+async def _load_live_subscription(
+    host_id: str, space_id: str
+) -> tuple[SpaceBillingRecord, str]:
+    """Return an owned space plus its live subscription id, or raise."""
+    space = await _require_owned_space(host_id, space_id)
+    subscription_id = (space.stripe_subscription_id or "").strip()
     if not subscription_id:
-        raise ValueError(
-            "No active subscription found. Start checkout first to add spaces."
-        )
-
-    owned_spaces = await _fetch_owned_spaces(host_id, [space_id])
-    if not any(space.id == space_id for space in owned_spaces):
-        raise ValueError("Space not found or you are not the owner.")
-
-    space_type = owned_spaces[0].space_type
-    price_id = _resolve_price_id(space_type)
-
-    existing_item = await _find_item_for_space(subscription_id, space_id)
-    if existing_item:
-        return BillingOperationResponse(success=True, subscription_status=host.subscription_status)
-
-    try:
-
-        def _add_item():
-            return stripe.Subscription.modify(
-                subscription_id,
-                items=[{"price": price_id, "metadata": {"space_id": space_id}}],
-            )
-
-        await asyncio.to_thread(_add_item)
-
-        def _mirror_active():
-            return (
-                supabase.table("spaces")
-                .update({"subscription_status": "active"})
-                .eq("id", space_id)
-                .execute()
-            )
-
-        await asyncio.to_thread(_mirror_active)
-        return BillingOperationResponse(success=True, subscription_status="active")
-    except Exception as e:
-        logger.error(f"Error adding space {space_id} to host subscription: {e}")
-        raise ValueError("Could not add this space to your subscription.") from e
+        raise ValueError("This space does not have a subscription.")
+    return space, subscription_id
 
 
-async def remove_space_item(host_id: str, space_id: str) -> BillingOperationResponse:
-    """Removes a space's subscription item; cancels the subscription if it was the last one."""
-    supabase = get_supabase_client()
-    if not supabase:
-        raise ValueError("Database connection error.")
+async def cancel_space_subscription(
+    host_id: str, space_id: str
+) -> BillingOperationResponse:
+    """Cancel ONE space's subscription at the end of its paid period.
 
-    host = await _ensure_host_record(host_id)
-    subscription_id = (host.stripe_subscription_id or "").strip()
+    Access is preserved until ``spaces.current_period_end``: Stripe keeps the
+    subscription ``active`` while ``cancel_at_period_end`` is set, so the space
+    stays entitled for the period the host already paid for. Only the later
+    ``customer.subscription.deleted`` event locks it.
+    """
+    space = await _require_owned_space(host_id, space_id)
+    subscription_id = (space.stripe_subscription_id or "").strip()
+
     if not subscription_id:
+        # Nothing to cancel: the space is on the account trial only.
         return BillingOperationResponse(
-            success=True, subscription_status=host.subscription_status
-        )
-
-    if host.subscription_status == "canceled":
-        return BillingOperationResponse(
-            success=True, subscription_status="canceled"
-        )
-
-    items = await _list_subscription_items(subscription_id)
-    target_item = await _find_item_for_space(subscription_id, space_id, items=items)
-
-    # If target_item was not explicitly found by tag, check for unmapped items
-    if target_item is None and items:
-        unmapped = [it for it in items if not _extract_metadata(it).get("space_id")]
-        if len(unmapped) == 1:
-            target_item = unmapped[0]
-
-    try:
-        if target_item is None:
-            # Space had no billable item on this subscription (e.g. trial / free)
-            result_status = host.subscription_status
-        elif len(items) <= 1:
-            # Removing this space removes the last item on the subscription: cancel subscription
-            def _cancel():
-                try:
-                    return stripe.Subscription.cancel(subscription_id)
-                except stripe.InvalidRequestError as e:
-                    if getattr(e, "code", None) == "resource_missing":
-                        return None
-                    raise
-
-            sub = await asyncio.to_thread(_cancel)
-            result_status = (
-                map_stripe_status(str(getattr(sub, "status", ""))) if sub else "canceled"
-            )
-
-            def _clear_host_sub():
-                return (
-                    supabase.table("hosts")
-                    .update({
-                        "stripe_subscription_id": None,
-                        "subscription_status": result_status,
-                    })
-                    .eq("id", host_id)
-                    .execute()
-                )
-
-            await asyncio.to_thread(_clear_host_sub)
-        else:
-            # Multiple items exist; delete only the target space's subscription item
-            item_id = str(getattr(target_item, "id", ""))
-
-            def _delete_item():
-                try:
-                    return stripe.SubscriptionItem.delete(item_id)
-                except stripe.InvalidRequestError as e:
-                    if getattr(e, "code", None) == "resource_missing":
-                        return None
-                    raise
-
-            await asyncio.to_thread(_delete_item)
-            result_status = host.subscription_status
-
-        # Mirror the space back to trial once it is no longer billable.
-        def _mirror_trial():
-            return (
-                supabase.table("spaces")
-                .update({"subscription_status": "trialing"})
-                .eq("id", space_id)
-                .execute()
-            )
-
-        await asyncio.to_thread(_mirror_trial)
-
-        return BillingOperationResponse(
-            success=True, 
-            subscription_status=result_status,
-            scheduled_cancellation=False,
-        )
-    except ValueError:
-        raise
-    except Exception as e:
-        logger.error(f"Error removing space {space_id} from host subscription: {e}")
-        raise ValueError("Could not remove this space from your subscription.") from e
-
-
-async def cancel_host_subscription(host_id: str) -> BillingOperationResponse:
-    """Cancels the host's subscription at the end of the current period."""
-    host = await _ensure_host_record(host_id)
-    subscription_id = (host.stripe_subscription_id or "").strip()
-    if not subscription_id:
-        return BillingOperationResponse(
-            success=True, subscription_status=host.subscription_status
+            success=True,
+            subscription_status=space.subscription_status,
+            current_period_end=space.current_period_end,
         )
 
     try:
 
-        def _cancel():
+        def _schedule_cancel() -> Any:
             return stripe.Subscription.modify(
                 subscription_id, cancel_at_period_end=True
             )
 
-        sub = await asyncio.to_thread(_cancel)
-        await _sync_subscription_from_stripe(host_id, sub)
+        subscription = await asyncio.to_thread(_schedule_cancel)
+    except stripe.InvalidRequestError as e:
+        if getattr(e, "code", None) == "resource_missing":
+            # Stripe no longer knows this subscription: drop the stale pointer so
+            # the space cannot claim a subscription it does not have.
+            await _clear_space_subscription(space_id)
+            return BillingOperationResponse(
+                success=True, subscription_status="canceled"
+            )
+        logger.error("Could not cancel subscription %s: %s", subscription_id, e)
+        raise ValueError("Could not cancel this space's subscription.") from e
+    except Exception as e:  # noqa: BLE001
+        logger.error("Could not cancel subscription %s: %s", subscription_id, e)
+        raise ValueError("Could not cancel this space's subscription.") from e
+
+    await _sync_space_subscription(space_id, subscription)
+    return BillingOperationResponse(
+        success=True,
+        subscription_status=map_stripe_status(
+            str(_read_attr(subscription, "status") or "")
+        ),
+        current_period_end=_read_period_end(subscription),
+        scheduled_cancellation=bool(_read_attr(subscription, "cancel_at_period_end")),
+    )
+
+
+async def resume_space_subscription(
+    host_id: str, space_id: str
+) -> BillingOperationResponse:
+    """Undo a scheduled cancellation so the space keeps renewing."""
+    _space, subscription_id = await _load_live_subscription(host_id, space_id)
+
+    try:
+
+        def _resume() -> Any:
+            return stripe.Subscription.modify(
+                subscription_id, cancel_at_period_end=False
+            )
+
+        subscription = await asyncio.to_thread(_resume)
+    except stripe.InvalidRequestError as e:
+        if getattr(e, "code", None) == "resource_missing":
+            await _clear_space_subscription(space_id)
+            return BillingOperationResponse(
+                success=True, subscription_status="canceled"
+            )
+        logger.error("Could not resume subscription %s: %s", subscription_id, e)
+        raise ValueError("Could not resume this space's subscription.") from e
+    except Exception as e:  # noqa: BLE001
+        logger.error("Could not resume subscription %s: %s", subscription_id, e)
+        raise ValueError("Could not resume this space's subscription.") from e
+
+    await _sync_space_subscription(space_id, subscription)
+    return BillingOperationResponse(
+        success=True,
+        subscription_status=map_stripe_status(
+            str(_read_attr(subscription, "status") or "")
+        ),
+        current_period_end=_read_period_end(subscription),
+        scheduled_cancellation=bool(_read_attr(subscription, "cancel_at_period_end")),
+    )
+
+
+async def detach_space_subscription(
+    host_id: str, space_id: str
+) -> BillingOperationResponse:
+    """Cancel a space's subscription IMMEDIATELY, before its row is deleted.
+
+    Ghost-subscription protection: a space must never be deleted while its Stripe
+    subscription keeps charging the host. Called by the spaces service before any
+    ``DELETE FROM spaces``.
+    """
+    space = await _require_owned_space(host_id, space_id)
+    subscription_id = (space.stripe_subscription_id or "").strip()
+
+    if not subscription_id:
         return BillingOperationResponse(
-            success=True, subscription_status=map_stripe_status(str(getattr(sub, "status", "")))
+            success=True, subscription_status=space.subscription_status
         )
-    except Exception as e:
-        logger.error(f"Error cancelling host subscription for {host_id}: {e}")
-        raise ValueError("Could not cancel your subscription.") from e
+
+    try:
+
+        def _cancel_now() -> Any:
+            try:
+                return stripe.Subscription.cancel(subscription_id)
+            except stripe.InvalidRequestError as e:
+                if getattr(e, "code", None) == "resource_missing":
+                    return None
+                raise
+
+        subscription = await asyncio.to_thread(_cancel_now)
+    except Exception as e:  # noqa: BLE001
+        # Fail closed: never delete a space row while Stripe may still charge.
+        logger.error("Could not detach subscription %s: %s", subscription_id, e)
+        raise ValueError("Could not cancel this space's subscription.") from e
+
+    await _clear_space_subscription(space_id)
+    return BillingOperationResponse(
+        success=True,
+        subscription_status=(
+            map_stripe_status(str(_read_attr(subscription, "status") or ""))
+            if subscription is not None
+            else "canceled"
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Account purge (ghost-billing protection)
+# ---------------------------------------------------------------------------
 
 
 async def purge_host_account(host_id: str) -> PurgeResponse:
-    """Permanently deletes the Stripe customer and cascades the account purge."""
+    """Delete a host's billing footprint: Stripe customer, spaces, host row.
+
+    Order matters and is deliberately billing-first:
+
+    1. Collect every per-space ``stripe_subscription_id`` (for the report).
+    2. DELETE the host's single Stripe Customer — Stripe cancels every attached
+       per-space subscription in one call, so no charge can survive.
+    3. Delete the spaces (cascades to knowledge_chunks).
+    4. Delete the hosts billing row.
+
+    If step 2 fails, nothing is deleted: the caller aborts before removing the
+    auth user, which is what prevents orphaned subscriptions.
+    """
     supabase = get_supabase_client()
     if not supabase:
         raise ValueError("Database connection error.")
 
     host = await _ensure_host_record(host_id)
     stripe_customer_id = (host.stripe_customer_id or "").strip()
-    canceled_subscription_id = (host.stripe_subscription_id or "").strip() or None
 
-    # 1. Delete the Stripe customer (cancels every subscription at once).
-    if stripe_customer_id:
-        try:
-
-            def _delete_customer():
-                return stripe.Customer.delete(stripe_customer_id)
-
-            await asyncio.to_thread(_delete_customer)
-        except stripe.InvalidRequestError as e:
-            if e.code == "resource_missing":
-                pass
-            else:
-                logger.error(f"Error deleting Stripe customer for host {host_id}: {e}")
-                raise ValueError("Could not delete billing profile.") from e
-        except Exception as e:
-            logger.error(f"Error deleting Stripe customer for host {host_id}: {e}")
-            raise ValueError("Could not delete billing profile.") from e
-
-    def _clear_stripe_ids():
-        return (
-            supabase.table("hosts")
-            .update({"stripe_customer_id": None, "stripe_subscription_id": None})
-            .eq("id", host_id)
-            .execute()
-        )
-
-    await asyncio.to_thread(_clear_stripe_ids)
-
-    # 2. Count then delete every space owned by the host. spaces.host_id
-    #    references auth.users (NOT public.hosts), so spaces do NOT cascade
-    #    from the hosts-row delete below and must be removed explicitly.
-    #    knowledge_chunks cascade from each space row.
-    def _count_spaces():
+    def _fetch_spaces() -> Any:
         return (
             supabase.table("spaces")
-            .select("id", count=CountMethod.exact, head=True)
+            .select("id, stripe_subscription_id")
             .eq("host_id", host_id)
             .execute()
         )
 
-    count_result = await asyncio.to_thread(_count_spaces)
-    deleted_spaces = int(getattr(count_result, "count", 0) or 0)
+    try:
+        spaces_response = await asyncio.to_thread(_fetch_spaces)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Could not enumerate spaces for host %s: %s", host_id, e)
+        raise ValueError("Could not enumerate the spaces to purge.") from e
 
-    def _purge_spaces():
+    space_rows = spaces_response.data if isinstance(spaces_response.data, list) else []
+    deleted_spaces = len(space_rows)
+    canceled_subscription_ids = sorted(
+        {
+            str(row["stripe_subscription_id"])
+            for row in space_rows
+            if isinstance(row, dict) and row.get("stripe_subscription_id")
+        }
+    )
+
+    if stripe_customer_id:
+        try:
+
+            def _delete_customer() -> Any:
+                return stripe.Customer.delete(stripe_customer_id)
+
+            await asyncio.to_thread(_delete_customer)
+        except stripe.InvalidRequestError as e:
+            if getattr(e, "code", None) != "resource_missing":
+                logger.error(
+                    "Could not delete Stripe customer %s: %s", stripe_customer_id, e
+                )
+                raise ValueError("Could not delete the billing profile.") from e
+            # Already gone in Stripe: proceed with the local cleanup.
+            logger.warning("Stripe customer %s already deleted.", stripe_customer_id)
+        except Exception as e:  # noqa: BLE001
+            logger.error(
+                "Could not delete Stripe customer %s: %s", stripe_customer_id, e
+            )
+            raise ValueError("Could not delete the billing profile.") from e
+
+    def _delete_spaces() -> Any:
         return supabase.table("spaces").delete().eq("host_id", host_id).execute()
 
-    await asyncio.to_thread(_purge_spaces)
-
-    # 3. Delete the hosts billing row (id -> auth.users; no space cascade).
-    def _purge_host():
+    def _delete_host() -> Any:
         return supabase.table("hosts").delete().eq("id", host_id).execute()
 
-    purge_result = await asyncio.to_thread(_purge_host)
-    deleted_host_record = bool(purge_result.data)
+    try:
+        await asyncio.to_thread(_delete_spaces)
+        host_response = await asyncio.to_thread(_delete_host)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Could not purge local records for host %s: %s", host_id, e)
+        raise ValueError("Could not delete the account records.") from e
+
+    host_rows = host_response.data if isinstance(host_response.data, list) else []
 
     return PurgeResponse(
         success=True,
-        canceled_subscription_id=canceled_subscription_id,
+        canceled_subscription_ids=canceled_subscription_ids,
         deleted_spaces=deleted_spaces,
-        deleted_host_record=deleted_host_record,
+        deleted_host_record=bool(host_rows),
     )

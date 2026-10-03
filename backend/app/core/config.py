@@ -61,6 +61,17 @@ class Settings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str = Field(default="")
     STRIPE_PRICE_ID_STAY: str = Field(default="")
 
+    # Account-level trial length, in whole days, granted ONCE per host when its
+    # public.hosts billing row is first created. This is the single source of
+    # truth for the trial: the database column public.hosts.trial_ends_at has no
+    # default, so a hosts row always carries exactly the value derived here.
+    #
+    # While now() <= hosts.trial_ends_at EVERY space of that host is entitled.
+    # Set ACCOUNT_TRIAL_DAYS=0 to disable the trial entirely, or to a small
+    # value (e.g. 1) to exercise the "trial expired -> space suspended" path
+    # quickly during testing.
+    ACCOUNT_TRIAL_DAYS: int = Field(default=14, ge=0, le=365)
+
     @property
     def cors_origins(self) -> list[str]:
         return [

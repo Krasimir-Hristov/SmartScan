@@ -1,4 +1,9 @@
-"""FastAPI router for Stripe Billing endpoints."""
+"""FastAPI router for Stripe Billing endpoints.
+
+Billing is per-space: every endpoint that mutates a subscription is scoped to a
+single owned ``space_id``, while the Stripe Customer and the Customer Portal stay
+account-scoped because one host owns exactly one Stripe Customer.
+"""
 
 import hmac
 from typing import Annotated
@@ -9,21 +14,25 @@ from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.features.billing.schemas import (
     BillingOperationResponse,
+    BillingSummaryResponse,
     BillingUser,
     CheckoutResponse,
     CreateCheckoutRequest,
     CreatePortalRequest,
+    HostBillingRecord,
     PortalResponse,
     PurgeResponse,
+    SpaceEntitlement,
 )
 from app.features.billing.service import (
-    add_space_item,
-    cancel_host_subscription,
+    cancel_space_subscription,
     create_checkout_session,
     create_portal_session,
+    get_billing_summary,
+    get_host_billing,
     process_webhook_event,
     purge_host_account,
-    remove_space_item,
+    resume_space_subscription,
 )
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
@@ -54,15 +63,14 @@ async def checkout(
     payload: CreateCheckoutRequest,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Creates a Stripe Checkout Session for the host's single subscription."""
+    """Creates a Stripe Checkout Session for ONE space's dedicated subscription."""
     try:
-        response = await create_checkout_session(
+        return await create_checkout_session(
             host_id=user.id,
             user_email=user.email or "",
-            space_ids=payload.space_ids,
+            space_id=payload.space_id,
             return_url=payload.return_url,
         )
-        return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
@@ -76,60 +84,104 @@ async def portal(
     payload: CreatePortalRequest,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Creates a Stripe Customer Portal Session for managing subscriptions."""
+    """Creates a Stripe Customer Portal Session listing every per-space subscription."""
     try:
-        response = await create_portal_session(
+        return await create_portal_session(
             host_id=user.id,
             return_url=payload.return_url,
         )
-        return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/spaces/{space_id}/add", response_model=BillingOperationResponse)
-@limiter.limit("10/minute")
-async def add_space(
+@router.get("/summary", response_model=BillingSummaryResponse)
+@limiter.limit("30/minute")
+async def billing_summary(
+    request: Request,
+    user: BillingUser = Depends(get_current_user),  # noqa: B008
+):
+    """Returns the account trial plus the entitlement of every owned space."""
+    try:
+        return await get_billing_summary(host_id=user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/host", response_model=HostBillingRecord)
+@limiter.limit("30/minute")
+async def host_billing(
+    request: Request,
+    user: BillingUser = Depends(get_current_user),  # noqa: B008
+):
+    """Returns the account-level billing record (Stripe Customer + trial)."""
+    try:
+        return await get_host_billing(host_id=user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/spaces/{space_id}/entitlement", response_model=SpaceEntitlement)
+@limiter.limit("30/minute")
+async def space_entitlement(
     request: Request,
     space_id: str,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Adds an owned space as a new item on the host's existing subscription."""
+    """Returns the entitlement verdict for one owned space."""
     try:
-        return await add_space_item(host_id=user.id, space_id=space_id)
+        # Ownership first: never disclose entitlement of another host's space.
+        summary = await get_billing_summary(host_id=user.id)
+        match = next(
+            (item for item in summary.spaces if item.space_id == space_id), None
+        )
+        if match is None:
+            raise HTTPException(
+                status_code=404, detail="Space not found or you are not the owner."
+            )
+        return match
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/spaces/{space_id}/remove", response_model=BillingOperationResponse)
+@router.post("/spaces/{space_id}/cancel", response_model=BillingOperationResponse)
 @limiter.limit("10/minute")
-async def remove_space(
+async def cancel_space(
     request: Request,
     space_id: str,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Removes a space's subscription item, cancelling if it was the last one."""
+    """Cancels ONE space's subscription at the end of its paid period.
+
+    Guest access is preserved until ``spaces.current_period_end``.
+    """
     try:
-        return await remove_space_item(host_id=user.id, space_id=space_id)
+        return await cancel_space_subscription(host_id=user.id, space_id=space_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/cancel", response_model=BillingOperationResponse)
-@limiter.limit("5/minute")
-async def cancel_subscription(
+@router.post("/spaces/{space_id}/resume", response_model=BillingOperationResponse)
+@limiter.limit("10/minute")
+async def resume_space(
     request: Request,
+    space_id: str,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Cancels the host's subscription at the end of the current period."""
+    """Undoes a scheduled cancellation so ONE space keeps renewing."""
     try:
-        return await cancel_host_subscription(host_id=user.id)
+        return await resume_space_subscription(host_id=user.id, space_id=space_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
@@ -142,7 +194,7 @@ async def purge_account(
     request: Request,
     user: BillingUser = Depends(get_current_user),  # noqa: B008
 ):
-    """Permanently deletes the Stripe customer and cascades the account purge."""
+    """Deletes the host's single Stripe customer, cancelling every space subscription."""
     try:
         return await purge_host_account(host_id=user.id)
     except ValueError as e:
@@ -156,16 +208,16 @@ async def stripe_webhook(
     request: Request,
     stripe_signature: Annotated[str | None, Header()] = None,
 ):
-    """Handles Stripe Webhook events."""
+    """Handles Stripe Webhook events and syncs them onto the owning space row."""
     if not stripe_signature:
         raise HTTPException(status_code=400, detail="Missing signature")
 
     payload_bytes = await request.body()
 
     try:
-        result = await process_webhook_event(payload_bytes, stripe_signature)
-        return result
+        return await process_webhook_event(payload_bytes, stripe_signature)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:  # noqa: BLE001
         raise HTTPException(status_code=500, detail="Internal server error")
+

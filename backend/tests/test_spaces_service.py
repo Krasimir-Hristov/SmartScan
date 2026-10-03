@@ -1,10 +1,17 @@
-"""Spaces service tests for the host-level billing model.
+"""Spaces service tests for the per-space Stripe billing model.
 
-Deleting a space must detach its Stripe subscription item (via the billing
-service) BEFORE removing the space row, and must never reference the removed
-per-space Stripe columns. Account purge is a thin delegate to the host-level
-billing purge. Supabase is faked in-memory and the billing calls are mocked,
-so no database or Stripe network interaction occurs.
+Billing ownership under test:
+
+* ONE Stripe Customer per host        -> ``public.hosts.stripe_customer_id``
+* ONE Stripe Subscription PER SPACE   -> ``public.spaces.stripe_subscription_id``
+
+Deleting a space must cancel ONLY that space's own dedicated subscription (via
+the billing service) BEFORE removing the space row, and must abort when that
+cancellation fails so no subscription keeps charging for a deleted space (ghost
+billing). Account purge is a thin delegate to the account-level billing purge,
+which deletes the host's single Stripe customer and thereby cancels every
+per-space subscription in one call. Supabase is faked in-memory and the billing
+calls are mocked, so no database or Stripe network interaction occurs.
 """
 
 from unittest.mock import AsyncMock, patch
@@ -91,9 +98,9 @@ def patch_supabase(fake):
     return patch("app.features.spaces.service.get_supabase_client", return_value=fake)
 
 
-def patch_remove_item(mock):
-    """Patch the billing ``remove_space_item`` imported into spaces.service."""
-    return patch("app.features.spaces.service.remove_space_item", mock)
+def patch_detach(mock):
+    """Patch ``detach_space_subscription`` as imported into spaces.service."""
+    return patch("app.features.spaces.service.detach_space_subscription", mock)
 
 
 def deleted_calls(fake):
@@ -107,18 +114,20 @@ def deleted_calls(fake):
 
 
 @pytest.mark.asyncio
-async def test_delete_space_detaches_item_then_deletes_row():
-    """Happy path detaches billing, then deletes only the targeted row."""
+async def test_delete_space_cancels_its_own_subscription_then_deletes_row():
+    """Happy path cancels the space's subscription, then deletes only that row."""
     fake = FakeSupabaseClient(spaces=[make_space("space-1"), make_space("space-2")])
-    remove = AsyncMock(
-        return_value=BillingOperationResponse(success=True, subscription_status=None)
+    detach = AsyncMock(
+        return_value=BillingOperationResponse(
+            success=True, subscription_status="canceled"
+        )
     )
 
-    with patch_supabase(fake), patch_remove_item(remove):
+    with patch_supabase(fake), patch_detach(detach):
         result = await delete_space(space_id="space-1", host_id=HOST_ID)
 
     assert result == "deleted"
-    remove.assert_awaited_once_with(host_id=HOST_ID, space_id="space-1")
+    detach.assert_awaited_once_with(host_id=HOST_ID, space_id="space-1")
     # Only the targeted space is gone; the sibling survives.
     assert [space["id"] for space in fake.spaces] == ["space-2"]
     # The delete stayed strictly tenant-scoped (id AND host_id).
@@ -131,16 +140,16 @@ async def test_delete_space_detaches_item_then_deletes_row():
 async def test_delete_space_rejects_foreign_space():
     """A space owned by another host is rejected before any mutation."""
     fake = FakeSupabaseClient(spaces=[make_space("space-1", OTHER_HOST_ID)])
-    remove = AsyncMock()
+    detach = AsyncMock()
 
     with (
         patch_supabase(fake),
-        patch_remove_item(remove),
-        pytest.raises(ValueError),
+        patch_detach(detach),
+        pytest.raises(ValueError, match="not the owner"),
     ):
         await delete_space(space_id="space-1", host_id=HOST_ID)
 
-    remove.assert_not_awaited()
+    detach.assert_not_awaited()
     assert [space["id"] for space in fake.spaces] == ["space-1"]
     assert deleted_calls(fake) == []
 
@@ -149,40 +158,40 @@ async def test_delete_space_rejects_foreign_space():
 async def test_delete_space_rejects_missing_space():
     """A non-existent space is rejected before any billing or DB mutation."""
     fake = FakeSupabaseClient(spaces=[])
-    remove = AsyncMock()
+    detach = AsyncMock()
 
     with (
         patch_supabase(fake),
-        patch_remove_item(remove),
-        pytest.raises(ValueError),
+        patch_detach(detach),
+        pytest.raises(ValueError, match="not the owner"),
     ):
         await delete_space(space_id="ghost", host_id=HOST_ID)
 
-    remove.assert_not_awaited()
+    detach.assert_not_awaited()
     assert deleted_calls(fake) == []
 
 
 @pytest.mark.asyncio
-async def test_delete_space_keeps_row_when_item_detach_fails():
-    """If billing detach fails, the row survives (no orphan / ghost billing)."""
+async def test_delete_space_keeps_row_when_subscription_cancel_fails():
+    """If Stripe cannot cancel, the row survives (no ghost billing)."""
     fake = FakeSupabaseClient(spaces=[make_space("space-1")])
-    remove = AsyncMock(side_effect=ValueError("Stripe unavailable"))
+    detach = AsyncMock(side_effect=ValueError("Stripe unavailable"))
 
     with (
         patch_supabase(fake),
-        patch_remove_item(remove),
+        patch_detach(detach),
         pytest.raises(ValueError),
     ):
         await delete_space(space_id="space-1", host_id=HOST_ID)
 
-    remove.assert_awaited_once()
+    detach.assert_awaited_once_with(host_id=HOST_ID, space_id="space-1")
     # The delete never ran, so the space row is preserved.
     assert [space["id"] for space in fake.spaces] == ["space-1"]
     assert deleted_calls(fake) == []
 
 
 # ---------------------------------------------------------------------------
-# purge_host_account (delegates to the host-level billing purge)
+# purge_host_account (delegates to the account-level billing purge)
 # ---------------------------------------------------------------------------
 
 
@@ -192,7 +201,7 @@ async def test_purge_host_account_delegates_to_billing():
     billing_purge = AsyncMock(
         return_value=PurgeResponse(
             success=True,
-            canceled_subscription_id="sub_1",
+            canceled_subscription_ids=["sub_1", "sub_2"],
             deleted_spaces=2,
             deleted_host_record=True,
         )

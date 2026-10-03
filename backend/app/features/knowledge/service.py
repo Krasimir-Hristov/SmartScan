@@ -5,6 +5,10 @@ import logging
 import uuid
 
 from app.core.database import get_supabase_client
+from app.features.billing.service import (
+    get_space_entitlement,
+    is_billable_space_id,
+)
 from app.features.knowledge.constants import DEMO_VILLA_CONTEXT
 from app.features.knowledge.embeddings import generate_embeddings
 from app.features.knowledge.schemas import (
@@ -38,12 +42,36 @@ def _is_valid_uuid(val: str) -> bool:
         return False
 
 
+async def _is_space_suspended(space_id: str) -> bool:
+    """True when the space's paid access has lapsed (defence-in-depth gate).
+
+    The guest lookup RPC and ``match_space_knowledge`` already refuse suspended
+    spaces inside SQL. This mirrors the same ``public.get_space_entitlement``
+    verdict for the two reads that query ``spaces`` / ``knowledge_chunks``
+    directly, so a lapsed space never leaks its Wi-Fi, keybox code or host notes.
+    """
+    if not is_billable_space_id(space_id):
+        return False
+
+    try:
+        entitlement = await get_space_entitlement(space_id)
+    except ValueError:
+        # Unknown space: nothing to withhold, downstream returns an empty result.
+        return False
+
+    return entitlement is not None and not entitlement.entitled
+
+
 async def get_space_stay_context(space_id: str) -> SpaceStayContext:
     """Retrieves space stay settings and basic property context."""
     if space_id.startswith("demo-"):
         return DEMO_VILLA_CONTEXT
 
     if not _is_valid_uuid(space_id):
+        return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
+
+    if await _is_space_suspended(space_id):
+        logger.info("Space %s is suspended; withholding stay context.", space_id)
         return SpaceStayContext(space_id=space_id, name="SmartScan Stay")
 
     client = get_supabase_client()
@@ -114,6 +142,12 @@ async def get_relevant_knowledge_chunks(
         return matched if matched else DEMO_VILLA_CONTEXT.rag_chunks
 
     if not _is_valid_uuid(space_id):
+        return []
+
+    if await _is_space_suspended(space_id):
+        # Skip the paid embedding call entirely for a lapsed space; the SQL-side
+        # entitlement filter inside match_space_knowledge stays the hard gate.
+        logger.info("Space %s is suspended; skipping RAG retrieval.", space_id)
         return []
 
     client = get_supabase_client()
@@ -275,6 +309,10 @@ async def get_space_knowledge_chips(space_id: str) -> list[KnowledgeChipDTO]:
         ]
 
     if not _is_valid_uuid(space_id):
+        return []
+
+    if await _is_space_suspended(space_id):
+        logger.info("Space %s is suspended; withholding knowledge chips.", space_id)
         return []
 
     client = get_supabase_client()

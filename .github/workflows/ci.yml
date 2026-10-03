@@ -82,8 +82,11 @@ jobs:
         run: uvx ruff check .
 
       - name: Run Mypy Type Checker
-        run: uvx mypy --ignore-missing-imports app
-        continue-on-error: true # Will become strict once backend source files are populated
+        # `uv run --with mypy` keeps the project venv (installed by `uv sync`) on
+        # the path, which the `pydantic.mypy` plugin declared in pyproject.toml
+        # requires. A bare `uvx mypy` runs in an isolated env without pydantic
+        # and fails to load the plugin before checking any file.
+        run: uv run --with mypy mypy app
 
       - name: Run Pytest
         run: uv run pytest tests
