@@ -163,10 +163,29 @@ const cachedGetGuestSpaceBySlug = cache(async (slug: string): Promise<GuestSpace
 const cachedGetSpaceStayDataWithFallback = cache(
   async (slug: string): Promise<SpaceStayData> => {
     try {
-      const guestSpace = await cachedGetGuestSpaceBySlug(slug);
-      if (guestSpace) {
-        const stayData = mapGuestSpaceToStayData(guestSpace);
-        const chunks = await cachedGetSpaceKnowledgeChunks(guestSpace.id);
+      let spaceToMap: GuestSpace | null = await cachedGetGuestSpaceBySlug(slug);
+
+      // Host Preview Bypass: If the RPC blocked access (no subscription),
+      // check if the user is the owner of the space and allow preview.
+      if (!spaceToMap) {
+        const user = await cachedGetAuthenticatedHost();
+        if (user) {
+          const supabase = await createClient();
+          const { data } = await supabase
+            .from('spaces')
+            .select('id, slug, name, stay_settings, space_type, host_id')
+            .eq('slug', slug)
+            .maybeSingle();
+
+          if (data && data.host_id === user.id) {
+            spaceToMap = data as unknown as GuestSpace;
+          }
+        }
+      }
+
+      if (spaceToMap) {
+        const stayData = mapGuestSpaceToStayData(spaceToMap);
+        const chunks = await cachedGetSpaceKnowledgeChunks(spaceToMap.id);
         stayData.knowledgeChips = chunks.map((c) => ({
           id: c.id,
           title: c.title,
