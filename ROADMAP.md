@@ -15,9 +15,9 @@
 | **Стъпка 5**  | FastAPI AI Concierge & Прокси слой                              | 🟢 Завършена | 14.09.2026        |
 | **Стъпка 6**  | Хазяин Дашборд (`/dashboard`)                                   | 🟢 Завършена | 16.09.2026        |
 | **Стъпка 7**  | Гласово въвеждане (Voice Ingest + Whisper)                      | 🟢 Завършена | 19.09.2026        |
-| **Стъпка 8**  | Физически QR Табелки за печат (A4/A5/A6)                        | 🟢 Завършена | 19.09.2026        |
-| **Стъпка 9**  | Stripe Granular Billing                                         | 🟢 Завършена | 27.09.2026        |
-| **Стъпка 10** | Pre-Deployment Verification, E2E Testing & Production Hardening | ⚪ Очаква    | —                 |
+| **Стъпка 8**  | Физически QR Табелки за печат (A4/A5/A6)                        | 🟢 Завършена            | 19.09.2026        |
+| **Стъпка 9**  | Stripe Granular Billing (Host-Level Multi-Item)                 | 🟢 Завършена            | 04.10.2026        |
+| **Стъпка 10** | Pre-Deployment Verification, E2E Testing & Production Hardening | 🟡 В ход / Верифицирана | 04.10.2026        |
 
 ---
 
@@ -147,25 +147,32 @@
 
 ---
 
-### [x] Стъпка 9: Stripe Granular Billing (`design/07`)
+### [x] Стъпка 9: Stripe Granular Billing & Host-Level Multi-Item Architecture (`design/07`)
 
 - [x] Грануларно таксуване на ниво конкретен обект (`space_id`): €9/месец за Stay (`STRIPE_PRICE_ID_STAY`).
-- [x] 14-дневен безплатен пробен период без изискване на карта (`trialing`, `trial_ends_at`).
+- [x] **Host-Level Billing Архитектура**: Централизация на плащанията — 1 Stripe Customer и 1 Stripe Subscription на ниво хазяин (`hosts`), а всяко пространство се управлява като отделен `SubscriptionItem` с `metadata.space_id`.
+- [x] 14-дневен безплатен пробен период без изискване на карта на ниво акаунт (`trialing`, `trial_ends_at`).
 - [x] Сезонен паузинг ("Summer/Winter hold" за запазване на данните без таксуване извън сезона).
 - [x] Stripe Checkout & 1-клик бутон за Stripe Customer Portal за управление на карти и фактури.
+- [x] Подобрен Stripe Customer Portal UX: включване на името на пространството (`space.name`) в описанието на всеки абонаментен елемент.
+- [x] **Host Preview Bypass**: Хазяинът може да визуализира и тества своето пространство в гост PWA (`/stay/[slug]`), дори когато обектът все още няма активен платен абонамент.
 - [x] Защитен бекенд слой (FastAPI): `/checkout`, `/portal`, криптографски защитен `/webhook` и SlowAPI rate limiting.
 - [x] Централизиран модал за абонаменти (`SubscriptionsModal.tsx`) в `UserProfileDropdown` с WAI-ARIA и focus trap.
 - [x] Защитен протокол срещу "Ghost Billing": пагиниран purge на абонаменти и пространства (`purge_host_account`) при изтриване на профил (`deleteAccountAction.ts`).
+- [x] Безопасно отписване (`cancel_at_period_end`) при изтриване на последния обект и архивна таблица `legacy_billing_archive` с RLS защита.
 - [x] Пълна 10-езикова локализация (EN, BG, DE, RO, EL, RU, TR, ES, IT, FR) на всички билинг състояния и бутони.
-- [x] **Верификация**: Тест на абонаментен жизнен цикъл в Stripe Test Mode, `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки, бекенд тестове = passed.
+- [x] Синхронизация на миграционната история на Supabase с продукционната база данни.
+- [x] **Верификация**: Тест на абонаментен жизнен цикъл в Stripe Test Mode, `npx tsc --noEmit` = 0 грешки, `npm run lint` = 0 грешки, `npm run build` = 0 грешки, пълен набор бекенд тестове (154/154) = passed.
 
 ---
 
-### [ ] Стъпка 10: Pre-Deployment Verification, E2E Testing & Production Hardening
+### [ ] Стъпка 10: Pre-Deployment Verification, E2E Testing & Production Hardening (В ход)
 
-- [ ] **Full-Flow E2E Smoke Test**: Пълен цикъл: Нов хазяин ➔ Обект ➔ Ингест (Глас/Текст) ➔ QR Печат ➔ Гост мобилен чат.
-- [ ] **Multi-Tenancy Security Audit**: Верификация, че никое пространство не може да чете данни на друго пространство.
-- [ ] **CVE-2025-29927 & Proxy Audit**: Проверка на почистването на `x-*` хедъри в `proxy.ts`.
-- [ ] **Production Build Test**: `npm run build` във фронтенда без грешки и без изтичане на тайни ключове на клиента.
-- [ ] **Performance & Core Web Vitals**: PWA зареждане под 200ms.
+- [ ] **Full-Flow E2E Smoke Test**: Финален цикъл в реална жива среда: Нов хазяин ➔ Обект ➔ Ингест (Глас/Текст) ➔ QR Печат ➔ Гост мобилен чат.
+- [x] **Multi-Tenancy Security Audit**: Пълна верификация с тестове (`test_knowledge_isolation.py`), че никое пространство не може да чете данни на друго пространство; валидиране на `is_active` статус и RLS изолация.
+- [x] **CVE-2025-29927 & Proxy Audit**: Проверка на филтрирането на `x-*` хедъри в `proxy.ts`, валидация на прокси тайната срещу празни стрингове в продукция.
+- [x] **Production Build Test**: `npm run build` във фронтенда (Next.js 16 Turbopack) компилиран чисто с 0 грешки, линтер и TypeScript проверки на 100% зелено.
+- [x] **Backend Suite Hardening**: 154 автоматизирани теста преминават успешно (`pytest`), Ruff формат и Mypy типова безопасност.
+- [x] **Консиерж оптимизация & Voice Hardening**: Премахване на markdown форматиране в системния промпт на консиержа в полза на натурален чат с емоджита; ъпгрейд на Whisper/Gemini 2.5 Flash аудио транскрипция със стриктна валидация на схемите.
+- [ ] **Performance & Core Web Vitals**: Мобилно измерване на реалното зареждане на PWA под 200ms в продукция.
 - [ ] **Финален преглед и одобрение за Deployment**.
