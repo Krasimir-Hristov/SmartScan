@@ -11,6 +11,7 @@ export interface WifiCredentialsBlockProps {
   onSsidChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onCopyPassword: () => void;
+  disabled?: boolean;
 }
 
 /** Wi-Fi SSID + password card with the 1-click password copy shortcut. */
@@ -21,6 +22,7 @@ export const WifiCredentialsBlock: React.FC<WifiCredentialsBlockProps> = ({
   onSsidChange,
   onPasswordChange,
   onCopyPassword,
+  disabled = false,
 }) => {
   const t = useTranslations('dashboard');
 
@@ -55,8 +57,9 @@ export const WifiCredentialsBlock: React.FC<WifiCredentialsBlockProps> = ({
             type='text'
             placeholder={t('wifiSsidPlaceholder')}
             value={ssid}
+            disabled={disabled}
             onChange={(e) => onSsidChange(e.target.value)}
-            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500'
+            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 transition-colors'
           />
         </div>
         <div className='flex flex-col gap-1.5'>
@@ -67,8 +70,9 @@ export const WifiCredentialsBlock: React.FC<WifiCredentialsBlockProps> = ({
             type='text'
             placeholder={t('wifiPasswordPlaceholder')}
             value={password}
+            disabled={disabled}
             onChange={(e) => onPasswordChange(e.target.value)}
-            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-emerald-500'
+            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 transition-colors'
           />
         </div>
       </div>

@@ -20,6 +20,7 @@ export interface QuietHoursControlProps {
   onToggleAfternoonRest: (active: boolean) => void;
   onChangeAfternoonStart: (val: string) => void;
   onChangeAfternoonEnd: (val: string) => void;
+  disabled?: boolean;
 }
 
 const NIGHT_START_OPTIONS = [
@@ -87,6 +88,7 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
   onToggleAfternoonRest,
   onChangeAfternoonStart,
   onChangeAfternoonEnd,
+  disabled = false,
 }) => {
   const t = useTranslations('dashboard');
 
@@ -124,10 +126,16 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
           <button
             type="button"
             role="switch"
+            disabled={disabled}
             aria-checked={hasNightSilence}
             aria-label={t('nightSilence')}
-            onClick={() => onToggleNightSilence(!hasNightSilence)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+            onClick={() => {
+              if (disabled) return;
+              onToggleNightSilence(!hasNightSilence);
+            }}
+            className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+              disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            } ${
               hasNightSilence ? 'bg-emerald-500' : 'bg-zinc-700'
             }`}
           >
@@ -147,9 +155,10 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
               </label>
               <select
                 id={`${idPrefix}-night-start-select`}
+                disabled={disabled}
                 value={nightSilenceStart || '23:00'}
                 onChange={(e) => onChangeNightStart(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-zinc-900/40 disabled:border-white/5 cursor-pointer"
               >
                 {nightStartOptions.map((opt) => (
                   <option key={opt} value={opt}>
@@ -165,9 +174,10 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
               </label>
               <select
                 id={`${idPrefix}-night-end-select`}
+                disabled={disabled}
                 value={nightSilenceEnd || '08:00'}
                 onChange={(e) => onChangeNightEnd(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-zinc-900/40 disabled:border-white/5 cursor-pointer"
               >
                 {nightEndOptions.map((opt) => (
                   <option key={opt} value={opt}>
@@ -204,10 +214,16 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
           <button
             type="button"
             role="switch"
+            disabled={disabled}
             aria-checked={hasAfternoonRest}
             aria-label={t('afternoonRest')}
-            onClick={() => onToggleAfternoonRest(!hasAfternoonRest)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+            onClick={() => {
+              if (disabled) return;
+              onToggleAfternoonRest(!hasAfternoonRest);
+            }}
+            className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+              disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            } ${
               hasAfternoonRest ? 'bg-emerald-500' : 'bg-zinc-700'
             }`}
           >
@@ -227,9 +243,10 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
               </label>
               <select
                 id={`${idPrefix}-siesta-start-select`}
+                disabled={disabled}
                 value={afternoonRestStart || '14:30'}
                 onChange={(e) => onChangeAfternoonStart(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-zinc-900/40 disabled:border-white/5 cursor-pointer"
               >
                 {siestaStartOptions.map((opt) => (
                   <option key={opt} value={opt}>
@@ -245,9 +262,10 @@ export const QuietHoursControl: React.FC<QuietHoursControlProps> = ({
               </label>
               <select
                 id={`${idPrefix}-siesta-end-select`}
+                disabled={disabled}
                 value={afternoonRestEnd || '17:30'}
                 onChange={(e) => onChangeAfternoonEnd(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-zinc-900/40 disabled:border-white/5 cursor-pointer"
               >
                 {siestaEndOptions.map((opt) => (
                   <option key={opt} value={opt}>

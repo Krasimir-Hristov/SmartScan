@@ -6,10 +6,7 @@ import { Home, KeyRound, MapPin, Phone, ShieldAlert } from 'lucide-react';
 import { QuietHoursControl } from '../QuietHoursControl';
 import { WifiCredentialsBlock } from './WifiCredentialsBlock';
 import { PLAQUE_NAME_MAX_LENGTH } from '../../lib/plaqueName';
-import type {
-  SpaceFormField,
-  SpaceFormValues,
-} from './spaceFormModel';
+import type { SpaceFormField, SpaceFormValues } from './spaceFormModel';
 
 export interface SpaceCredentialsFieldsProps {
   values: SpaceFormValues;
@@ -19,27 +16,63 @@ export interface SpaceCredentialsFieldsProps {
   ) => void;
   copiedWifi: boolean;
   onCopyWifiPassword: () => void;
+  disabled?: boolean;
 }
 
 const CHECKIN_OPTIONS = [
+  '8:00',
+  '8:30',
+  '9:00',
+  '9:30',
+  '10:00',
+  '10:30',
+  '11:00',
+  '11:30',
   '12:00',
+  '12:30',
   '13:00',
+  '13:30',
   '14:00',
+  '14:30',
   '15:00',
+  '15:30',
   '16:00',
+  '16:30',
   '17:00',
+  '17:30',
   '18:00',
+  '18:30',
   '19:00',
+  '19:30',
   '20:00',
 ];
 
 const CHECKOUT_OPTIONS = [
-  '09:00',
+  '8:00',
+  '8:30',
+  '9:00',
+  '9:30',
   '10:00',
+  '10:30',
   '11:00',
+  '11:30',
   '12:00',
+  '12:30',
   '13:00',
+  '13:30',
   '14:00',
+  '14:30',
+  '15:00',
+  '15:30',
+  '16:00',
+  '16:30',
+  '17:00',
+  '17:30',
+  '18:00',
+  '18:30',
+  '19:00',
+  '19:30',
+  '20:00',
 ];
 
 /** Everything the host can edit about a space, in the dashboard's fixed order. */
@@ -48,6 +81,7 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
   onChange,
   copiedWifi,
   onCopyWifiPassword,
+  disabled = false,
 }) => {
   const t = useTranslations('dashboard');
 
@@ -68,8 +102,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
           required
           maxLength={PLAQUE_NAME_MAX_LENGTH}
           value={values.name}
+          disabled={disabled}
           onChange={(e) => onChange('name', e.target.value)}
-          className='w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-white/10 text-white font-display text-base font-semibold focus:outline-none focus:border-emerald-500 transition-colors'
+          className='w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-white/10 text-white font-display text-base font-semibold focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5'
         />
       </div>
 
@@ -87,8 +122,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
           type='text'
           placeholder={t('stepAddressPlaceholder')}
           value={values.taxiAddress}
+          disabled={disabled}
           onChange={(e) => onChange('taxiAddress', e.target.value)}
-          className='w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors'
+          className='w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5'
         />
         <span className='text-[11px] text-zinc-500'>
           {t('stepAddressDesc')}
@@ -100,6 +136,7 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
         ssid={values.wifiSsid}
         password={values.wifiPassword}
         copied={copiedWifi}
+        disabled={disabled}
         onSsidChange={(value) => onChange('wifiSsid', value)}
         onPasswordChange={(value) => onChange('wifiPassword', value)}
         onCopyPassword={onCopyWifiPassword}
@@ -119,8 +156,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
           type='tel'
           placeholder={t('stepTaxiPlaceholder')}
           value={values.taxiPhone}
+          disabled={disabled}
           onChange={(e) => onChange('taxiPhone', e.target.value)}
-          className='w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500'
+          className='w-full px-4 py-3 rounded-xl bg-zinc-900/90 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 transition-colors'
         />
       </div>
 
@@ -135,8 +173,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
             type='tel'
             placeholder={t('whatsappPlaceholder')}
             value={values.whatsappPhone}
+            disabled={disabled}
             onChange={(e) => onChange('whatsappPhone', e.target.value)}
-            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500'
+            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 transition-colors'
           />
         </div>
         <div className='flex flex-col gap-1.5'>
@@ -151,14 +190,16 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
             id='edit-emergency'
             type='text'
             value={values.emergencyNumber}
+            disabled={disabled}
             onChange={(e) => onChange('emergencyNumber', e.target.value)}
-            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-emerald-500'
+            className='w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 transition-colors'
           />
         </div>
       </div>
       {/* 6. Часове за тишина (Toggle бутони и падащи менюта) */}
       <QuietHoursControl
         idPrefix='editor'
+        disabled={disabled}
         nightSilenceStart={values.nightSilenceStart}
         nightSilenceEnd={values.nightSilenceEnd}
         hasNightSilence={values.hasNightSilence}
@@ -168,9 +209,7 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
         afternoonRestStart={values.afternoonRestStart}
         afternoonRestEnd={values.afternoonRestEnd}
         hasAfternoonRest={values.hasAfternoonRest}
-        onToggleAfternoonRest={(active) =>
-          onChange('hasAfternoonRest', active)
-        }
+        onToggleAfternoonRest={(active) => onChange('hasAfternoonRest', active)}
         onChangeAfternoonStart={(val) => onChange('afternoonRestStart', val)}
         onChangeAfternoonEnd={(val) => onChange('afternoonRestEnd', val)}
       />
@@ -184,8 +223,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
           <select
             id='edit-checkin'
             value={values.checkInTime}
+            disabled={disabled}
             onChange={(e) => onChange('checkInTime', e.target.value)}
-            className='w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-emerald-500 cursor-pointer'
+            className='w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 cursor-pointer transition-colors'
           >
             {CHECKIN_OPTIONS.map((time) => (
               <option key={time} value={time}>
@@ -202,8 +242,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
           <select
             id='edit-checkout'
             value={values.checkOutTime}
+            disabled={disabled}
             onChange={(e) => onChange('checkOutTime', e.target.value)}
-            className='w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-emerald-500 cursor-pointer'
+            className='w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 cursor-pointer transition-colors'
           >
             {CHECKOUT_OPTIONS.map((time) => (
               <option key={time} value={time}>
@@ -226,8 +267,9 @@ export const SpaceCredentialsFields: React.FC<SpaceCredentialsFieldsProps> = ({
             type='text'
             placeholder={t('keyboxPlaceholder')}
             value={values.keyboxCode}
+            disabled={disabled}
             onChange={(e) => onChange('keyboxCode', e.target.value)}
-            className='w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white font-mono text-sm'
+            className='w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-75 disabled:cursor-not-allowed disabled:bg-zinc-900/40 disabled:border-white/5 transition-colors'
           />
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, Loader2, Printer, Save } from 'lucide-react';
+import { Check, Loader2, Pencil, Printer, Save, X } from 'lucide-react';
 import type { Space } from '@/lib/types/databaseTypes';
 import { triggerHaptic } from '@/lib/utils';
 import { updateSpaceAction } from '../actions/spaceActions';
@@ -38,6 +38,7 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
   const [values, setValues] = useState<SpaceFormValues>(() =>
     createSpaceFormValues(space),
   );
+  const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -54,7 +55,6 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
     setValues((previous) => ({ ...previous, [field]: value }));
   };
 
-
   const handleCopyWifiPassword = async () => {
     if (!values.wifiPassword) return;
     try {
@@ -69,6 +69,8 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isEditing) return;
+
     if (!values.name.trim()) {
       setStatusMessage({ type: 'error', text: t('errorNameRequired') });
       return;
@@ -84,6 +86,8 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
 
       if (result.success && result.data) {
         onSpaceUpdated(result.data);
+        setValues(createSpaceFormValues(result.data));
+        setIsEditing(false);
         setStatusMessage({ type: 'success', text: t('saveSuccess') });
         triggerHaptic(50);
         setTimeout(() => setStatusMessage(null), 3500);
@@ -111,10 +115,15 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
         className='p-5 sm:p-7 rounded-3xl bg-[#121216] border border-white/8 flex flex-col gap-6 shadow-2xl'
       >
         <div className='flex items-center justify-between pb-4 border-b border-white/8 gap-3 flex-wrap'>
-          <div>
+          <div className='flex items-center gap-2.5'>
             <h2 className='font-display text-lg font-bold text-white'>
               {t('credentialsTitle')}
             </h2>
+            {!isEditing && (
+              <span className='inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-white/5 uppercase tracking-wider'>
+                {t('editSpace')} mode: off
+              </span>
+            )}
           </div>
 
           <div className='flex items-center gap-2.5'>
@@ -131,24 +140,58 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
               <span>{t('printPlaque')}</span>
             </button>
 
-            <button
-              type='submit'
-              disabled={isSaving}
-              aria-label={t('saveChanges')}
-              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className='w-4 h-4 animate-spin' />
-                  <span>{t('saving')}</span>
-                </>
-              ) : (
-                <>
-                  <Save className='w-4 h-4' />
-                  <span>{t('saveChanges')}</span>
-                </>
-              )}
-            </button>
+            {isEditing ? (
+              <>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setValues(createSpaceFormValues(space));
+                    setIsEditing(false);
+                    setStatusMessage(null);
+                    triggerHaptic(50);
+                  }}
+                  disabled={isSaving}
+                  aria-label={t('cancel')}
+                  className='inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold border border-white/10 transition-all cursor-pointer active:scale-95 disabled:cursor-not-allowed disabled:opacity-50'
+                >
+                  <X className='w-4 h-4 text-zinc-400' />
+                  <span>{t('cancel')}</span>
+                </button>
+
+                <button
+                  type='submit'
+                  disabled={isSaving}
+                  aria-label={t('saveChanges')}
+                  className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95'
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className='w-4 h-4 animate-spin' />
+                      <span>{t('saving')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className='w-4 h-4' />
+                      <span>{t('saveChanges')}</span>
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <button
+                type='button'
+                onClick={() => {
+                  setIsEditing(true);
+                  setStatusMessage(null);
+                  triggerHaptic(50);
+                }}
+                aria-label={t('editSpace')}
+                className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-xs font-bold border border-emerald-500/30 hover:border-emerald-500/50 transition-all cursor-pointer active:scale-95 shadow-sm'
+              >
+                <Pencil className='w-4 h-4 text-emerald-400' />
+                <span>{t('editSpace')}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -172,6 +215,7 @@ export const SpaceEditor: React.FC<SpaceEditorProps> = ({
           onChange={handleFieldChange}
           copiedWifi={copiedWifi}
           onCopyWifiPassword={handleCopyWifiPassword}
+          disabled={!isEditing}
         />
 
         <SpaceDangerZone onRequestDelete={() => setIsDeleteModalOpen(true)} />
