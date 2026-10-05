@@ -16,17 +16,17 @@
     "signOutAria": "Sign out of account"
   },
   "hero": {
-    "pill": "⚡ NEXT-GEN HOSPITALITY AI · 50+ LANGUAGES DETECTED",
+    "pill": "NEXT-GEN HOSPITALITY AI · 50+ LANGUAGES DETECTED",
     "headlinePre": "Turn Your Property Manual into a",
     "headlineHighlight": "24/7 Polyglot AI Concierge",
     "headlinePost": "in 60 Seconds",
     "subtitle": "Guests scan an acrylic tabletop QR plaque with any smartphone camera. Zero app download required. Instant Wi-Fi, quiet hours, local dining secrets, and multilingual AI assistance.",
     "ctaPrimary": "Start Free with Google",
     "ctaDemo": "Try Live Demo (as Guest)",
-    "rating": "4.9/5 Rating",
-    "trustedBy": "Trusted by 250+ Villa & Boutique Hosts",
-    "zeroFee": "Zero setup fee",
-    "noCard": "No credit card required"
+    "noCard": "No credit card required",
+    "setupTime": "2-Minute Setup",
+    "freeTrial": "14-Day Free Trial",
+    "cancelAnytime": "Cancel Anytime"
   },
   "stats": {
     "autoResolution": "Auto-Resolution",
@@ -56,7 +56,7 @@
     "mobileCheckout": "Checkout 11:00",
     "mobilePoolRules": "Pool Rules",
     "chatGuestQuestion": "How do I turn on the hot tub heater in the patio?",
-    "chatAiResponse": "The hot tub heater panel is behind the stone column next to the pool bar. Press the red power switch once and turn the dial to 38°C. It reaches full heat in ~15 mins! 🌿",
+    "chatAiResponse": "The hot tub heater panel is behind the stone column next to the pool bar. Press the red power switch once and turn the dial to 38°C. It reaches full heat in ~15 mins!",
     "chatInputPlaceholder": "Try asking: Where are AC remotes?",
     "mobileFooter": "Live Web App · Instant Safari/Chrome",
     "mobileAction": "Launch Guest Preview →"
@@ -83,7 +83,7 @@
     "step3Desc": "Guests scan and get instant answers in their native language. Zero app download, zero account creation, zero barrier.",
     "step3Footer": "Zero host calls at 2 AM",
     "step3Scanned": "Guest Scanned QR",
-    "step3Load": "⚡ 0.8s load",
+    "step3Load": "0.8s load",
     "step3Wifi": "Wi-Fi Credentials",
     "step3Copy": "1-Tap Copy",
     "step3Lang": "Native Language",
@@ -446,7 +446,7 @@
     "metaTitle": "{name} · Digital Guide | SmartScan Stay",
     "metaDesc": "Digital guest guide for {name}. Instant access to Wi-Fi, check-in, taxi address, and quiet hours.",
     "ogDesc": "Digital guest guide for {name}. Instant access to Wi-Fi, check-in, taxi address, and quiet hours.",
-    "polyglotCtaBanner": "🌍 Ask anything in your native language · 50+ languages",
+    "polyglotCtaBanner": "Ask anything in your native language · 50+ languages",
     "ctaPromptTitle": "Ask us anything about the property in your language",
     "ctaPromptDesc": "Heating, AC, house rules, parking, or local recommendations – our 24/7 AI concierge is ready to help."
   },

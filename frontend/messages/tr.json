@@ -16,17 +16,17 @@
     "signOutAria": "Hesaptan çıkış yap"
   },
   "hero": {
-    "pill": "⚡ YENİ NESİL MİSAFİRPERVERLİK AI · 50+ DİL ALGILANDI",
+    "pill": "YENİ NESİL MİSAFİRPERVERLİK AI · 50+ DİL ALGILANDI",
     "headlinePre": "Mülkünüzün Kılavuzunu",
     "headlineHighlight": "7/24 Çok Dilli AI Konsiyerj'e",
     "headlinePost": "Dönüştürün — 60 Saniyede",
     "subtitle": "Misafirler herhangi bir akıllı telefon kamerasıyla akrilik QR plaketini tarar. Uygulama indirmesi gerekmez. Anında Wi-Fi, sessiz saatler, yerel restoranlar ve çok dilli AI yardımı.",
     "ctaPrimary": "Google ile Ücretsiz Başla",
     "ctaDemo": "Canlı Demoyu Dene (Misafir olarak)",
-    "rating": "4,9/5 Puan",
-    "trustedBy": "250+ Villa ve Butik Ev Sahibinin Güveni",
-    "zeroFee": "Kayıt ücreti yok",
-    "noCard": "Kredi kartı gerekmez"
+    "noCard": "Kredi kartı gerekmez",
+    "setupTime": "2 Dakikada Kurulum",
+    "freeTrial": "14 Gün Ücretsiz Deneme",
+    "cancelAnytime": "İstediğiniz zaman iptal edin"
   },
   "stats": {
     "autoResolution": "Otomatik Çözüm",
@@ -56,7 +56,7 @@
     "mobileCheckout": "Çıkış 11:00",
     "mobilePoolRules": "Havuz Kuralları",
     "chatGuestQuestion": "Verandadaki jakuzi ısıtıcısını nasıl açarım?",
-    "chatAiResponse": "Jakuzi paneli havuz barının yanındaki taş sütunun arkasındadır. Kırmızı güç düğmesine bir kez basın ve 38°C'ye çevirin. ~15 dakikada tamamen ısınır! 🌿",
+    "chatAiResponse": "Jakuzi paneli havuz barının yanındaki taş sütunun arkasındadır. Kırmızı güç düğmesine bir kez basın ve 38°C'ye çevirin. ~15 dakikada tamamen ısınır!",
     "chatInputPlaceholder": "Şunu sormayı deneyin: Klima kumandaları nerede?",
     "mobileFooter": "Canlı Web Uygulaması · Safari/Chrome",
     "mobileAction": "Misafir Önizlemesini Başlat →"
@@ -83,7 +83,7 @@
     "step3Desc": "Misafirler tarar ve anadillerinde anında yanıt alır. Uygulama indirmesi yok, hesap oluşturma yok, engel yok.",
     "step3Footer": "Gece 2'de sıfır ev sahibi araması",
     "step3Scanned": "Misafir QR'ı Taradı",
-    "step3Load": "⚡ 0.8 sn yükleme",
+    "step3Load": "0.8 sn yükleme",
     "step3Wifi": "Wi-Fi Giriş Bilgileri",
     "step3Copy": "1 Dokunuşla Kopyala",
     "step3Lang": "Ana Dil",
@@ -446,7 +446,7 @@
     "metaTitle": "{name} · Dijital Rehber | SmartScan Stay",
     "metaDesc": "{name} için dijital misafir rehberi. Wi-Fi, giriş saatleri, taksi adresi ve sessizlik saatlerine anında erişim.",
     "ogDesc": "{name} için dijital misafir rehberi. Wi-Fi, giriş saatleri, taksi adresi ve sessizlik saatlerine anında erişim.",
-    "polyglotCtaBanner": "🌍 Ana dilinizde dilediğinizi sorun · 50+ dil",
+    "polyglotCtaBanner": "Ana dilinizde dilediğinizi sorun · 50+ dil",
     "ctaPromptTitle": "Tesis hakkında merak ettiğiniz her şeyi kendi dilinizde sorun",
     "ctaPromptDesc": "Isıtma, klima, ev kuralları, otopark veya yerel öneriler – 7/24 AI konsiyerjimiz anında yanıtlar."
   },

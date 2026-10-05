@@ -16,17 +16,17 @@
     "signOutAria": "Vom Konto abmelden"
   },
   "hero": {
-    "pill": "⚡ KI DER NÄCHSTEN GENERATION · 50+ SPRACHEN ERKANNT",
+    "pill": "KI DER NÄCHSTEN GENERATION · 50+ SPRACHEN ERKANNT",
     "headlinePre": "Verwandle dein Eigentumshandbuch in einen",
     "headlineHighlight": "24/7 Polyglotten KI-Concierge",
     "headlinePost": "in 60 Sekunden",
     "subtitle": "Gäste scannen ein Acryl-QR-Plakat mit ihrer Smartphone-Kamera. Kein App-Download erforderlich. Sofortiger WLAN-Zugang, Ruhezeiten, lokale Restaurants und mehrsprachige KI-Unterstützung.",
     "ctaPrimary": "Kostenlos mit Google starten",
     "ctaDemo": "Live-Demo ausprobieren (als Gast)",
-    "rating": "Bewertung 4,9/5",
-    "trustedBy": "Vertraut von 250+ Villen & Boutique-Anbietern",
-    "zeroFee": "Keine Einrichtungsgebühr",
-    "noCard": "Keine Kreditkarte erforderlich"
+    "noCard": "Keine Kreditkarte erforderlich",
+    "setupTime": "In 2 Minuten eingerichtet",
+    "freeTrial": "14 Tage kostenlos testen",
+    "cancelAnytime": "Jederzeit kündbar"
   },
   "stats": {
     "autoResolution": "Auto-Auflösung",
@@ -56,7 +56,7 @@
     "mobileCheckout": "Check-out 11:00",
     "mobilePoolRules": "Pool-Regeln",
     "chatGuestQuestion": "Wie schalte ich die Whirlpool-Heizung auf der Terrasse ein?",
-    "chatAiResponse": "Das Bedienfeld der Whirlpool-Heizung befindet sich hinter der Steinsäule neben der Poolbar. Den roten Netzschalter einmal drücken und auf 38°C drehen. Erreicht volle Wärme in ~15 Min! 🌿",
+    "chatAiResponse": "Das Bedienfeld der Whirlpool-Heizung befindet sich hinter der Steinsäule neben der Poolbar. Den roten Netzschalter einmal drücken und auf 38°C drehen. Erreicht volle Wärme in ~15 Min!",
     "chatInputPlaceholder": "Versuche zu fragen: Wo sind die Klimaanlagen-Fernbedienungen?",
     "mobileFooter": "Live-Web-App · Sofort in Safari/Chrome",
     "mobileAction": "Gast-Vorschau starten →"
@@ -83,7 +83,7 @@
     "step3Desc": "Gäste scannen und erhalten sofortige Antworten in ihrer Muttersprache. Kein App-Download, keine Kontoerstellung, keine Hürden.",
     "step3Footer": "Keine Gastgeber-Anrufe um 2 Uhr nachts",
     "step3Scanned": "Gast hat QR-Code gescannt",
-    "step3Load": "⚡ 0,8s Ladezeit",
+    "step3Load": "0,8s Ladezeit",
     "step3Wifi": "WLAN-Zugangsdaten",
     "step3Copy": "1-Klick-Kopie",
     "step3Lang": "Muttersprache",
@@ -446,7 +446,7 @@
     "metaTitle": "{name} · Digitaler Gästeführer | SmartScan Stay",
     "metaDesc": "Digitaler Gästeführer für {name}. Sofortiger Zugriff auf WLAN, Check-in, Taxi-Adresse und Ruhezeiten.",
     "ogDesc": "Digitaler Gästeführer für {name}. Sofortiger Zugriff auf WLAN, Check-in, Taxi-Adresse und Ruhezeiten.",
-    "polyglotCtaBanner": "🌍 Fragen Sie alles in Ihrer Muttersprache · 50+ Sprachen",
+    "polyglotCtaBanner": "Fragen Sie alles in Ihrer Muttersprache · 50+ Sprachen",
     "ctaPromptTitle": "Fragen Sie uns alles über die Unterkunft auf Ihrer Sprache",
     "ctaPromptDesc": "Heizung, Klimaanlage, Hausregeln, Parkplätze oder Empfehlungen – unser 24/7 AI-Concierge antwortet sofort."
   },

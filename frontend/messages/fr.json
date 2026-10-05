@@ -16,17 +16,17 @@
     "signOutAria": "Se déconnecter du compte"
   },
   "hero": {
-    "pill": "⚡ IA HÔTELIÈRE NOUVELLE GÉNÉRATION · 50+ LANGUES DÉTECTÉES",
+    "pill": "IA HÔTELIÈRE NOUVELLE GÉNÉRATION · 50+ LANGUES DÉTECTÉES",
     "headlinePre": "Transformez votre manuel de propriété en",
     "headlineHighlight": "Concierge IA Polyglotte 24/7",
     "headlinePost": "en 60 secondes",
     "subtitle": "Les clients scannent une plaque QR en acrylique avec n'importe quel smartphone. Sans téléchargement d'application. Accès Wi-Fi instantané, heures de silence, restaurants locaux et assistance IA multilingue.",
     "ctaPrimary": "Démarrer gratuitement avec Google",
     "ctaDemo": "Essayer la démo (en tant qu'invité)",
-    "rating": "Note 4,9/5",
-    "trustedBy": "La confiance de 250+ villas et hôtes boutique",
-    "zeroFee": "Sans frais d'installation",
-    "noCard": "Aucune carte bancaire requise"
+    "noCard": "Aucune carte bancaire requise",
+    "setupTime": "Configuration en 2 minutes",
+    "freeTrial": "Essai gratuit de 14 jours",
+    "cancelAnytime": "Annulation à tout moment"
   },
   "stats": {
     "autoResolution": "Résolution automatique",
@@ -56,7 +56,7 @@
     "mobileCheckout": "Départ 11h00",
     "mobilePoolRules": "Règles piscine",
     "chatGuestQuestion": "Comment allumer le chauffage du jacuzzi sur la terrasse ?",
-    "chatAiResponse": "Le panneau de chauffage du jacuzzi se trouve derrière la colonne en pierre à côté du bar de la piscine. Appuyez une fois sur l'interrupteur rouge et tournez à 38°C. Chauffage complet en ~15 min ! 🌿",
+    "chatAiResponse": "Le panneau de chauffage du jacuzzi se trouve derrière la colonne en pierre à côté du bar de la piscine. Appuyez une fois sur l'interrupteur rouge et tournez à 38°C. Chauffage complet en ~15 min !",
     "chatInputPlaceholder": "Essayez de demander : Où sont les télécommandes de clim ?",
     "mobileFooter": "Application web en direct · Safari/Chrome",
     "mobileAction": "Lancer l'aperçu client →"
@@ -83,7 +83,7 @@
     "step3Desc": "Les clients scannent et obtiennent des réponses immédiates dans leur langue maternelle. Sans téléchargement, sans création de compte, sans barrière.",
     "step3Footer": "Zéro appel à 2h du matin",
     "step3Scanned": "Le voyageur a scanné le QR",
-    "step3Load": "⚡ Chargement en 0,8 s",
+    "step3Load": "Chargement en 0,8 s",
     "step3Wifi": "Identifiants Wi-Fi",
     "step3Copy": "Copie en 1 clic",
     "step3Lang": "Langue maternelle",
@@ -446,7 +446,7 @@
     "metaTitle": "{name} · Guide Numérique | SmartScan Stay",
     "metaDesc": "Guide numérique pour les clients de {name}. Accès instantané au Wi-Fi, à l'enregistrement, à l'adresse du taxi et aux heures de silence.",
     "ogDesc": "Guide numérique pour les clients de {name}. Accès instantané au Wi-Fi, à l'enregistrement, à l'adresse du taxi et aux heures de silence.",
-    "polyglotCtaBanner": "🌍 Posez vos questions dans votre langue maternelle · 50+ langues",
+    "polyglotCtaBanner": "Posez vos questions dans votre langue maternelle · 50+ langues",
     "ctaPromptTitle": "Posez-nous toutes vos questions sur l'hébergement dans votre langue",
     "ctaPromptDesc": "Chauffage, climatisation, règles de la maison, stationnement ou recommandations – notre concierge IA 24/7 vous répond instantanément."
   },

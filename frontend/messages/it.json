@@ -16,17 +16,17 @@
     "signOutAria": "Disconnetti dall'account"
   },
   "hero": {
-    "pill": "⚡ AI ALBERGHIERA DI NUOVA GENERAZIONE · 50+ LINGUE RILEVATE",
+    "pill": "AI ALBERGHIERA DI NUOVA GENERAZIONE · 50+ LINGUE RILEVATE",
     "headlinePre": "Trasforma il manuale della tua proprietà in",
     "headlineHighlight": "Concierge AI Poliglotta 24/7",
     "headlinePost": "in 60 secondi",
     "subtitle": "Gli ospiti scansionano una targa QR in acrilico con qualsiasi smartphone. Nessun download di app richiesto. Wi-Fi istantaneo, ore di silenzio, ristoranti locali e assistenza IA multilingue.",
     "ctaPrimary": "Inizia gratis con Google",
     "ctaDemo": "Prova la demo (come ospite)",
-    "rating": "Voto 4,9/5",
-    "trustedBy": "La fiducia di 250+ ville e host boutique",
-    "zeroFee": "Nessuna quota di iscrizione",
-    "noCard": "Nessuna carta di credito richiesta"
+    "noCard": "Nessuna carta di credito richiesta",
+    "setupTime": "Configurazione in 2 minuti",
+    "freeTrial": "14 giorni di prova gratuita",
+    "cancelAnytime": "Disdici quando vuoi"
   },
   "stats": {
     "autoResolution": "Risoluzione automatica",
@@ -56,7 +56,7 @@
     "mobileCheckout": "Check-out 11:00",
     "mobilePoolRules": "Regole piscina",
     "chatGuestQuestion": "Come accendo il riscaldamento dell'idromassaggio nel patio?",
-    "chatAiResponse": "Il pannello si trova dietro la colonna di pietra accanto al bar della piscina. Premi l'interruttore rosso e imposta su 38°C. Raggiunge il massimo calore in ~15 min! 🌿",
+    "chatAiResponse": "Il pannello si trova dietro la colonna di pietra accanto al bar della piscina. Premi l'interruttore rosso e imposta su 38°C. Raggiunge il massimo calore in ~15 min!",
     "chatInputPlaceholder": "Prova a chiedere: Dove sono i telecomandi del condizionatore?",
     "mobileFooter": "Web app in tempo reale · Safari/Chrome",
     "mobileAction": "Avvia anteprima ospite →"
@@ -83,7 +83,7 @@
     "step3Desc": "Gli ospiti scansionano e ottengono risposte immediate nella loro lingua madre. Nessun download, nessuna registrazione, nessuna barriera.",
     "step3Footer": "Zero chiamate all'host alle 2 di notte",
     "step3Scanned": "Ospite ha scansionato il QR",
-    "step3Load": "⚡ Caricamento in 0,8s",
+    "step3Load": "Caricamento in 0,8s",
     "step3Wifi": "Credenziali Wi-Fi",
     "step3Copy": "Copia con 1 tocco",
     "step3Lang": "Lingua madre",
@@ -446,7 +446,7 @@
     "metaTitle": "{name} · Guida Digitale | SmartScan Stay",
     "metaDesc": "Guida digitale per gli ospiti di {name}. Accesso istantaneo a Wi-Fi, check-in, indirizzo per taxi e orari di silenzio.",
     "ogDesc": "Guida digitale per gli ospiti di {name}. Accesso istantaneo a Wi-Fi, check-in, indirizzo per taxi e orari di silenzio.",
-    "polyglotCtaBanner": "🌍 Chiedi qualsiasi cosa nella tua lingua madre · 50+ lingue",
+    "polyglotCtaBanner": "Chiedi qualsiasi cosa nella tua lingua madre · 50+ lingue",
     "ctaPromptTitle": "Chiedici qualsiasi cosa sulla struttura nella tua lingua",
     "ctaPromptDesc": "Riscaldamento, aria condizionata, regole della casa, parcheggio o consigli: il nostro concierge IA 24/7 ti risponde all'istante."
   },

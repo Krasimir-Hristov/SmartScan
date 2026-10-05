@@ -16,17 +16,17 @@
     "signOutAria": "Cerrar sesión de la cuenta"
   },
   "hero": {
-    "pill": "⚡ IA HOTELERA DE NUEVA GENERACIÓN · 50+ IDIOMAS DETECTADOS",
+    "pill": "IA HOTELERA DE NUEVA GENERACIÓN · 50+ IDIOMAS DETECTADOS",
     "headlinePre": "Convierte el manual de tu propiedad en",
     "headlineHighlight": "Conserje IA Políglota 24/7",
     "headlinePost": "en 60 segundos",
     "subtitle": "Los huéspedes escanean una placa QR de acrílico con cualquier cámara de smartphone. Sin descarga de aplicaciones. Wi-Fi instantáneo, horas de silencio, restaurantes locales y asistencia IA multilingüe.",
     "ctaPrimary": "Empezar gratis con Google",
     "ctaDemo": "Probar la demo (como invitado)",
-    "rating": "Valoración 4,9/5",
-    "trustedBy": "La confianza de 250+ villas y anfitriones boutique",
-    "zeroFee": "Sin cuota de instalación",
-    "noCard": "Sin tarjeta de crédito"
+    "noCard": "Sin tarjeta de crédito",
+    "setupTime": "Configuración en 2 minutos",
+    "freeTrial": "Prueba gratuita de 14 días",
+    "cancelAnytime": "Cancela en cualquier momento"
   },
   "stats": {
     "autoResolution": "Resolución automática",
@@ -56,7 +56,7 @@
     "mobileCheckout": "Salida 11:00",
     "mobilePoolRules": "Reglas piscina",
     "chatGuestQuestion": "¿Cómo enciendo el calentador del jacuzzi en el patio?",
-    "chatAiResponse": "El panel del jacuzzi está detrás de la columna de piedra junto al bar de la piscina. Presione el interruptor rojo una vez y gire a 38°C. ¡Se calienta en ~15 min! 🌿",
+    "chatAiResponse": "El panel del jacuzzi está detrás de la columna de piedra junto al bar de la piscina. Presione el interruptor rojo una vez y gire a 38°C. ¡Se calienta en ~15 min!",
     "chatInputPlaceholder": "Pruebe a preguntar: ¿Dónde están los mandos del aire acondicionado?",
     "mobileFooter": "Aplicación web en vivo · Safari/Chrome",
     "mobileAction": "Iniciar vista previa de huésped →"
@@ -83,7 +83,7 @@
     "step3Desc": "Los huéspedes escanean y obtienen respuestas inmediatas en su idioma nativo. Sin descarga, sin registro, sin barreras.",
     "step3Footer": "Cero llamadas al anfitrión a las 2 de la madrugada",
     "step3Scanned": "Huésped escaneó el QR",
-    "step3Load": "⚡ Carga en 0,8 s",
+    "step3Load": "Carga en 0,8 s",
     "step3Wifi": "Credenciales Wi-Fi",
     "step3Copy": "Copia con 1 toque",
     "step3Lang": "Idioma nativo",
@@ -446,7 +446,7 @@
     "metaTitle": "{name} · Guía Digital | SmartScan Stay",
     "metaDesc": "Guía digital para huéspedes de {name}. Acceso instantáneo a Wi-Fi, check-in, dirección de taxi y horas de descanso.",
     "ogDesc": "Guía digital para huéspedes de {name}. Acceso instantáneo a Wi-Fi, check-in, dirección de taxi y horas de descanso.",
-    "polyglotCtaBanner": "🌍 Pregunte lo que sea en su idioma nativo · 50+ idiomas",
+    "polyglotCtaBanner": "Pregunte lo que sea en su idioma nativo · 50+ idiomas",
     "ctaPromptTitle": "Pregúntenos cualquier cosa sobre la propiedad en su idioma",
     "ctaPromptDesc": "Calefacción, aire acondicionado, normas, aparcamiento o recomendaciones: nuestro conserje IA 24/7 le responderá al instante."
   },
