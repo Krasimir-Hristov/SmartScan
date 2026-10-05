@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
+import { motion } from 'motion/react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Check, Sparkles, Shield, ArrowRight } from 'lucide-react';
@@ -12,7 +13,6 @@ export interface PricingSectionProps {
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ onOpenAuth }) => {
   const t = useTranslations('pricing');
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   const features = [
     t('feature1'),
@@ -42,40 +42,9 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onOpenAuth }) =>
           >
             {t('title')}
           </h2>
-          <p className="mt-3 text-base text-zinc-400 font-sans">
+          <p className="mt-3 text-base text-zinc-400 font-sans max-w-2xl mx-auto">
             {t('subtitle')}
           </p>
-
-          {/* Billing Switcher */}
-          <div className="mt-6 inline-flex items-center rounded-2xl bg-zinc-900/90 p-1 border border-zinc-800">
-            <button
-              type="button"
-              onClick={() => setBillingCycle('monthly')}
-              aria-label={t('monthly')}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
-                billingCycle === 'monthly'
-                  ? 'bg-emerald-500 text-zinc-950 shadow-md'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              {t('monthly')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillingCycle('annual')}
-              aria-label={`${t('annual')} — ${t('annualSave')}`}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5 ${
-                billingCycle === 'annual'
-                  ? 'bg-emerald-500 text-zinc-950 shadow-md'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <span>{t('annual')}</span>
-              <span className="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded-md border border-emerald-500/30">
-                {t('annualSave')}
-              </span>
-            </button>
-          </div>
         </div>
 
         {/* Centered Pricing Card */}
@@ -90,18 +59,18 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onOpenAuth }) =>
               </span>
             </div>
 
-            {/* Price Header */}
+            {/* Price Header — Pure Monthly Pricing */}
             <div className="text-center pb-8 border-b border-zinc-900">
               <div className="flex items-baseline justify-center gap-1">
                 <span className="font-display text-5xl sm:text-6xl font-black text-white tracking-tight">
-                  {billingCycle === 'monthly' ? t('monthlyPrice') : t('annualPrice')}
+                  {t('monthlyPrice')}
                 </span>
                 <span className="text-sm font-medium text-zinc-400">
-                  {billingCycle === 'monthly' ? t('monthlyPer') : t('annualPer')}
+                  {t('monthlyPer')}
                 </span>
               </div>
               <p className="mt-2 text-xs text-zinc-400 font-sans">
-                {billingCycle === 'monthly' ? t('billedMonthlyNote') : t('billedAnnuallyNote')}
+                {t('billedMonthlyNote')}
               </p>
             </div>
 
@@ -125,10 +94,22 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onOpenAuth }) =>
                 fullWidth
                 onClick={onOpenAuth}
                 aria-label={t('ctaTrial')}
-                className="py-4 text-base font-bold shadow-xl shadow-emerald-500/30 group cursor-pointer"
+                className="relative overflow-hidden py-4 text-base font-bold shadow-xl shadow-emerald-500/30 group cursor-pointer transition-all hover:shadow-emerald-500/50 hover:scale-[1.01] active:scale-[0.98]"
               >
-                <span>{t('ctaTrial')}</span>
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                {/* Luminous Shimmer Light Beam Effect */}
+                <motion.div
+                  initial={{ x: '-120%' }}
+                  animate={{ x: '220%' }}
+                  transition={{
+                    repeat: Infinity,
+                    repeatDelay: 2.5,
+                    duration: 1.4,
+                    ease: 'easeInOut',
+                  }}
+                  className="pointer-events-none absolute inset-0 -skew-x-12 bg-linear-to-r from-transparent via-white/40 to-transparent"
+                />
+                <span className="relative z-10">{t('ctaTrial')}</span>
+                <ArrowRight className="relative z-10 w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <div className="flex items-center gap-2 text-xs text-zinc-400">
                 <Shield className="w-3.5 h-3.5 text-emerald-400" />
