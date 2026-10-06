@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
 
 export interface GlobalErrorViewProps {
@@ -55,14 +56,14 @@ export const GlobalErrorView: React.FC<GlobalErrorViewProps> = ({ reset }) => {
                   <span>Презареди</span>
                 </button>
 
-                <a
+                <Link
                   href="/"
                   aria-label="Към началната страница / Return to Home"
                   className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 font-medium text-sm transition-all cursor-pointer"
                 >
                   <Home className="w-4 h-4" aria-hidden="true" />
                   <span>Начало</span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
