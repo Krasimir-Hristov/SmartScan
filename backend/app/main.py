@@ -1,6 +1,5 @@
 import logging
 import math
-from typing import Any
 
 from fastapi import FastAPI, Request, Response, status
 from fastapi.encoders import jsonable_encoder
