@@ -103,17 +103,18 @@ export async function createSpaceAction(
       .single();
 
     if (insertError || !createdSpace) {
+      console.error('Failed to create space:', insertError);
       return {
         success: false,
-        error: insertError?.message || 'Грешка при създаване на обекта.',
+        error: 'Грешка при създаване на обекта. Моля, опитайте отново.',
       };
     }
 
     revalidatePath('/dashboard');
     return { success: true, data: createdSpace as Space };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка на сървъра.';
-    return { success: false, error: message };
+    console.error('Unexpected error creating space:', err);
+    return { success: false, error: 'Неочаквана грешка на сървъра. Моля, опитайте отново.' };
   }
 }
 
@@ -186,9 +187,10 @@ export async function updateSpaceAction(
       .single();
 
     if (updateError || !updatedSpace) {
+      console.error('Failed to update space:', updateError);
       return {
         success: false,
-        error: updateError?.message || 'Грешка при обновяване на обекта.',
+        error: 'Грешка при обновяване на обекта. Моля, опитайте отново.',
       };
     }
 
@@ -199,8 +201,8 @@ export async function updateSpaceAction(
 
     return { success: true, data: updatedSpace as Space };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка на сървъра.';
-    return { success: false, error: message };
+    console.error('Unexpected error updating space:', err);
+    return { success: false, error: 'Неочаквана грешка на сървъра. Моля, опитайте отново.' };
   }
 }
 
@@ -250,17 +252,18 @@ export async function addKnowledgeChunkAction(
       .single();
 
     if (insertError || !chunk) {
+      console.error('Failed to add knowledge chunk:', insertError);
       return {
         success: false,
-        error: insertError?.message || 'Грешка при запис на знанието.',
+        error: 'Грешка при запис на знанието. Моля, опитайте отново.',
       };
     }
 
     revalidatePath('/dashboard');
     return { success: true, data: chunk as KnowledgeChunk };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка на сървъра.';
-    return { success: false, error: message };
+    console.error('Unexpected error adding knowledge chunk:', err);
+    return { success: false, error: 'Неочаквана грешка на сървъра. Моля, опитайте отново.' };
   }
 }
 
@@ -291,7 +294,8 @@ export async function deleteKnowledgeChunkAction(
       .maybeSingle();
 
     if (deleteError) {
-      return { success: false, error: deleteError.message };
+      console.error('Failed to delete knowledge chunk:', deleteError);
+      return { success: false, error: 'Грешка при изтриване на бележката. Моля, опитайте отново.' };
     }
 
     // Zero deleted rows (wrong id / not owned) must not be reported as success.
@@ -302,8 +306,8 @@ export async function deleteKnowledgeChunkAction(
     revalidatePath('/dashboard');
     return { success: true, data: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка при изтриване.';
-    return { success: false, error: message };
+    console.error('Unexpected error deleting knowledge chunk:', err);
+    return { success: false, error: 'Неочаквана грешка при изтриване. Моля, опитайте отново.' };
   }
 }
 
@@ -343,13 +347,14 @@ export async function getSpaceKnowledgeChunksAction(
       .order('created_at', { ascending: true });
 
     if (chunksError) {
-      return { success: false, error: chunksError.message };
+      console.error('Failed to get knowledge chunks:', chunksError);
+      return { success: false, error: 'Грешка при зареждане на знанията. Моля, опитайте отново.' };
     }
 
     return { success: true, data: (chunks as KnowledgeChunk[]) ?? [] };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Неочаквана грешка при зареждане на знанията.';
-    return { success: false, error: message };
+    console.error('Unexpected error loading knowledge chunks:', err);
+    return { success: false, error: 'Неочаквана грешка при зареждане на знанията. Моля, опитайте отново.' };
   }
 }
 
@@ -367,8 +372,8 @@ export async function deleteSpaceAction(
     revalidatePath('/dashboard');
     return { success: true, data: true };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Error deleting space.';
-    return { success: false, error: message };
+    console.error('Unexpected error deleting space:', err);
+    return { success: false, error: 'Възникна грешка при изтриване на обекта. Моля, опитайте отново.' };
   }
 
 }

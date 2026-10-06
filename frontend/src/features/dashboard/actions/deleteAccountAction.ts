@@ -54,10 +54,10 @@ export async function deleteAccountAction(
     try {
       await fetchBackend('spaces/host/purge', { method: 'DELETE' });
     } catch (backendError) {
-      const msg = backendError instanceof Error ? backendError.message : 'Unknown backend error';
+      console.error('Failed to safely purge account billing:', backendError);
       return {
         success: false,
-        error: `Failed to safely purge account billing: ${msg}`,
+        error: 'Възникна грешка при прекратяване на абонаментите на профила.',
       };
     }
 
@@ -77,9 +77,10 @@ export async function deleteAccountAction(
       (adminDeleteError as { status?: number } | undefined)?.status === 404;
 
     if (adminDeleteError && !isNotFound) {
+      console.error('Failed to delete user account via auth admin:', adminDeleteError);
       return {
         success: false,
-        error: 'Failed to delete user account: ' + adminDeleteError.message,
+        error: 'Възникна грешка при изтриване на профила. Моля, опитайте отново.',
       };
     }
 

@@ -533,5 +533,16 @@
     "qrError": "QR kodu oluşturulamadı. Lütfen tekrar deneyin.",
     "pdfError": "PDF oluşturulamadı. Lütfen tekrar deneyin.",
     "localOriginWarning": "Bağlantı yerel veya önizleme adresine işaret ediyor. Plaketi yazdırmadan önce genel alan adını ayarlayın."
+  },
+  "errorPages": {
+    "title500": "Bir hata oluştu",
+    "desc500": "Endişelenmeyin, ekibimize haber verildi. Lütfen sayfayı yenilemeyi deneyin.",
+    "retry": "Tekrar dene",
+    "home": "Ana Sayfaya Dön",
+    "stayTitle": "Rehbere geçici olarak ulaşılamıyor",
+    "stayDesc": "Tesis rehberine bağlanırken bir sorun oluştu. Lütfen birazdan tekrar deneyin.",
+    "title404": "Sayfa Bulunamadı",
+    "desc404": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
+    "backToDashboard": "Kontrol Paneline Dön"
   }
 }

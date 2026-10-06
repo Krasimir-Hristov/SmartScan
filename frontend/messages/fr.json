@@ -533,5 +533,16 @@
     "qrError": "Impossible de générer le code QR. Veuillez réessayer.",
     "pdfError": "Échec de la génération du PDF. Veuillez réessayer.",
     "localOriginWarning": "Le lien pointe vers une adresse locale ou de prévisualisation. Définissez le domaine public avant d’imprimer la plaque."
+  },
+  "errorPages": {
+    "title500": "Une erreur est survenue",
+    "desc500": "Ne vous inquiétez pas, notre équipe a été prévenue. Veuillez actualiser la page.",
+    "retry": "Réessayer",
+    "home": "Retour à l’accueil",
+    "stayTitle": "Guide temporairement indisponible",
+    "stayDesc": "Un problème est survenu lors de la connexion au guide. Veuillez réessayer dans un instant.",
+    "title404": "Page non trouvée",
+    "desc404": "La page que vous recherchez n’existe pas ou a été déplacée.",
+    "backToDashboard": "Vers le tableau de bord"
   }
 }

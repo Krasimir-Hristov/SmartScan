@@ -198,6 +198,8 @@ export const useSpeechRecognition = (
             'service-not-allowed',
             'language-not-supported',
             'audio-capture',
+            'network',
+            'bad-grammar',
           ];
           if (terminalErrors.includes(event.error)) {
             shouldRestartRef.current = false;

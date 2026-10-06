@@ -533,5 +533,16 @@
     "qrError": "No se pudo generar el código QR. Inténtelo de nuevo.",
     "pdfError": "No se pudo generar el PDF. Inténtelo de nuevo.",
     "localOriginWarning": "El enlace apunta a una dirección local o de vista previa. Configure el dominio público antes de imprimir la placa."
+  },
+  "errorPages": {
+    "title500": "Algo salió mal",
+    "desc500": "No se preocupe, nuestro equipo ya ha sido notificado. Intente recargar la página.",
+    "retry": "Intentar de nuevo",
+    "home": "Volver al inicio",
+    "stayTitle": "Guía temporalmente no disponible",
+    "stayDesc": "Hubo un problema al conectar con la guía del alojamiento. Inténtelo de nuevo en un momento.",
+    "title404": "Página no encontrada",
+    "desc404": "La página que busca no existe o ha sido movida.",
+    "backToDashboard": "Volver al panel"
   }
 }

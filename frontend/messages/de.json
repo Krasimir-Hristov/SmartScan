@@ -533,5 +533,16 @@
     "qrError": "Der QR-Code konnte nicht erstellt werden. Bitte erneut versuchen.",
     "pdfError": "PDF-Erstellung fehlgeschlagen. Bitte erneut versuchen.",
     "localOriginWarning": "Dieser Link zeigt auf eine lokale oder Vorschau-Adresse. Legen Sie vor dem Druck der Tafel die öffentliche Domain fest."
+  },
+  "errorPages": {
+    "title500": "Ein Fehler ist aufgetreten",
+    "desc500": "Keine Sorge, unser Team wurde benachrichtigt. Bitte laden Sie die Seite neu.",
+    "retry": "Erneut versuchen",
+    "home": "Zur Startseite",
+    "stayTitle": "Reiseführer vorübergehend nicht verfügbar",
+    "stayDesc": "Beim Verbinden mit dem Reiseführer ist ein Fehler aufgetreten. Bitte versuchen Sie es gleich noch einmal.",
+    "title404": "Seite nicht gefunden",
+    "desc404": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "backToDashboard": "Zum Dashboard"
   }
 }

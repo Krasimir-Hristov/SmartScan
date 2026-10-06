@@ -533,5 +533,16 @@
     "qrError": "Codul QR nu a putut fi generat. Vă rugăm să încercați din nou.",
     "pdfError": "Generarea PDF a eșuat. Vă rugăm să încercați din nou.",
     "localOriginWarning": "Linkul indică spre o adresă locală sau de previzualizare. Setați domeniul public înainte de tipărirea plăcii."
+  },
+  "errorPages": {
+    "title500": "A apărut o eroare",
+    "desc500": "Nu vă faceți griji, echipa noastră a fost notificată. Vă rugăm să reîncărcați pagina.",
+    "retry": "Încearcă din nou",
+    "home": "Înapoi la pagina principală",
+    "stayTitle": "Ghidul este temporar indisponibil",
+    "stayDesc": "A apărut o problemă la conectarea cu ghidul proprietății. Vă rugăm să încercați din nou în curând.",
+    "title404": "Pagina nu a fost găsită",
+    "desc404": "Pagina pe care o căutați nu există sau a fost mutată.",
+    "backToDashboard": "Înapoi la panou"
   }
 }

@@ -40,7 +40,7 @@ export async function createCheckoutSessionAction(
     return { success: true, data: { checkout_url: data.checkout_url } };
   } catch (error: unknown) {
     console.error('Checkout action error:', error);
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
+    return { success: false, error: 'Възникна грешка при връзката с плащанията. Моля, опитайте отново.' };
   }
 }
 
@@ -67,7 +67,7 @@ export async function createCustomerPortalAction(
     return { success: true, data: { portal_url: data.portal_url } };
   } catch (error: unknown) {
     console.error('Portal action error:', error);
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
+    return { success: false, error: 'Възникна грешка при отваряне на клиентския портал. Моля, опитайте отново.' };
   }
 }
 

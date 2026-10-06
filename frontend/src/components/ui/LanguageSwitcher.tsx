@@ -77,8 +77,12 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   const handleSelect = (code: string) => {
     setIsOpen(false);
     startTransition(async () => {
-      await setLocaleCookie(code);
-      router.refresh();
+      try {
+        await setLocaleCookie(code);
+        router.refresh();
+      } catch {
+        // Fallback: reload or retain state gracefully without crashing UI
+      }
     });
   };
 

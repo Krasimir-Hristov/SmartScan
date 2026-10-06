@@ -69,11 +69,19 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
   React.useEffect(() => {
     let isCancelled = false;
     // Always sync on mount and on every space switch
-    getSpaceKnowledgeChunksAction(spaceId).then((result) => {
-      if (!isCancelled && result.success && result.data) {
-        setChunks(result.data);
-      }
-    });
+    getSpaceKnowledgeChunksAction(spaceId)
+      .then((result) => {
+        if (!isCancelled && result.success && result.data) {
+          setChunks(result.data);
+        } else if (!isCancelled && !result.success) {
+          setFeedback({ type: 'error', text: result.error || 'Неуспешно зареждане на наръчника.' });
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setFeedback({ type: 'error', text: 'Възникна временна грешка при зареждане на знанията.' });
+        }
+      });
     return () => {
       isCancelled = true;
     };
