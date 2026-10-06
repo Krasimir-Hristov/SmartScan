@@ -543,6 +543,8 @@
     "stayDesc": "Un problème est survenu lors de la connexion au guide. Veuillez réessayer dans un instant.",
     "title404": "Page non trouvée",
     "desc404": "La page que vous recherchez n’existe pas ou a été déplacée.",
-    "backToDashboard": "Vers le tableau de bord"
+    "backToDashboard": "Vers le tableau de bord",
+    "sos": "Urgences (SOS 112)",
+    "sosAria": "Appel d'urgence 112"
   }
 }

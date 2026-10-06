@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { fetchBackend } from './backendClient';
 
@@ -373,7 +374,8 @@ export async function deleteSpaceAction(
     return { success: true, data: true };
   } catch (err: unknown) {
     console.error('Unexpected error deleting space:', err);
-    return { success: false, error: 'Възникна грешка при изтриване на обекта. Моля, опитайте отново.' };
+    const t = await getTranslations('dashboard');
+    return { success: false, error: t('deleteSpaceModalErrorServer') };
   }
 
 }

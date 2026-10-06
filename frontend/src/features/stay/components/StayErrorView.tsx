@@ -55,11 +55,11 @@ export const StayErrorView: React.FC<StayErrorViewProps> = ({ reset }) => {
             {/* Emergency SOS quick contact fallback */}
             <a
               href="tel:112"
-              aria-label="Спешен телефон 112 / Emergency SOS 112"
+              aria-label={t('sosAria')}
               className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 text-red-300 font-medium text-xs transition-all cursor-pointer"
             >
               <PhoneCall className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
-              <span>Спешна помощ (SOS 112)</span>
+              <span>{t('sos')}</span>
             </a>
           </div>
         </div>

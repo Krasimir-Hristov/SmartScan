@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { createClient as createServerSupabase } from '@/lib/supabase/server';
 import { createClient as createAdminSupabase } from '@supabase/supabase-js';
 import type { Database } from '@/lib/types/databaseTypes';
@@ -55,9 +56,10 @@ export async function deleteAccountAction(
       await fetchBackend('spaces/host/purge', { method: 'DELETE' });
     } catch (backendError) {
       console.error('Failed to safely purge account billing:', backendError);
+      const t = await getTranslations('dashboard');
       return {
         success: false,
-        error: 'Възникна грешка при прекратяване на абонаментите на профила.',
+        error: t('deleteModalErrorServer'),
       };
     }
 
@@ -78,9 +80,10 @@ export async function deleteAccountAction(
 
     if (adminDeleteError && !isNotFound) {
       console.error('Failed to delete user account via auth admin:', adminDeleteError);
+      const t = await getTranslations('dashboard');
       return {
         success: false,
-        error: 'Възникна грешка при изтриване на профила. Моля, опитайте отново.',
+        error: t('deleteModalErrorServer'),
       };
     }
 

@@ -543,6 +543,8 @@
     "stayDesc": "A apărut o problemă la conectarea cu ghidul proprietății. Vă rugăm să încercați din nou în curând.",
     "title404": "Pagina nu a fost găsită",
     "desc404": "Pagina pe care o căutați nu există sau a fost mutată.",
-    "backToDashboard": "Înapoi la panou"
+    "backToDashboard": "Înapoi la panou",
+    "sos": "Urgențe (SOS 112)",
+    "sosAria": "Apel de urgență 112"
   }
 }

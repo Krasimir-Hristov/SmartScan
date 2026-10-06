@@ -543,6 +543,8 @@
     "stayDesc": "Hubo un problema al conectar con la guía del alojamiento. Inténtelo de nuevo en un momento.",
     "title404": "Página no encontrada",
     "desc404": "La página que busca no existe o ha sido movida.",
-    "backToDashboard": "Volver al panel"
+    "backToDashboard": "Volver al panel",
+    "sos": "Emergencias (SOS 112)",
+    "sosAria": "Llamada de emergencia 112"
   }
 }

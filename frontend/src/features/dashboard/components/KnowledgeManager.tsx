@@ -73,6 +73,7 @@ export const KnowledgeManager: React.FC<KnowledgeManagerProps> = ({
       .then((result) => {
         if (!isCancelled && result.success && result.data) {
           setChunks(result.data);
+          setFeedback((prev) => (prev?.type === 'error' ? null : prev));
         } else if (!isCancelled && !result.success) {
           setFeedback({ type: 'error', text: result.error || 'Неуспешно зареждане на наръчника.' });
         }

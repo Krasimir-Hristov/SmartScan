@@ -543,6 +543,8 @@
     "stayDesc": "Si è verificato un problema di connessione con la guida della struttura. Riprova tra poco.",
     "title404": "Pagina non trovata",
     "desc404": "La pagina che stai cercando non esiste o è stata spostata.",
-    "backToDashboard": "Torna alla dashboard"
+    "backToDashboard": "Torna alla dashboard",
+    "sos": "Emergenza (SOS 112)",
+    "sosAria": "Chiamata di emergenza 112"
   }
 }

@@ -543,6 +543,8 @@
     "stayDesc": "Beim Verbinden mit dem Reiseführer ist ein Fehler aufgetreten. Bitte versuchen Sie es gleich noch einmal.",
     "title404": "Seite nicht gefunden",
     "desc404": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
-    "backToDashboard": "Zum Dashboard"
+    "backToDashboard": "Zum Dashboard",
+    "sos": "Notruf (SOS 112)",
+    "sosAria": "Notruf 112 anrufen"
   }
 }

@@ -46,7 +46,7 @@ export async function fetchBackend<T>(
     const data: unknown = JSON.parse(text);
     return data as T;
   } catch {
-    return {} as T;
+    throw new Error('Invalid JSON response received from backend service.');
   }
 }
 

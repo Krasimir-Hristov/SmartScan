@@ -1,6 +1,7 @@
 import logging
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, Response, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -95,8 +96,10 @@ logger = logging.getLogger("smartscan.api")
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(
     request: Request, exc: StarletteHTTPException
-) -> JSONResponse:
+) -> Response:
     """Pass through standard HTTP errors without leaking system traces."""
+    if exc.status_code in (status.HTTP_204_NO_CONTENT, status.HTTP_304_NOT_MODIFIED):
+        return Response(status_code=exc.status_code, headers=exc.headers)
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail},
@@ -108,10 +111,10 @@ async def http_exception_handler(
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """Pass through 422 validation errors with structured messages."""
+    """Pass through 422 validation errors with structured JSON-serializable messages."""
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors()},
+        content={"detail": jsonable_encoder(exc.errors())},
     )
 
 

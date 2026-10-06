@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Compass, Home, LayoutDashboard } from 'lucide-react';
 
-export const NotFoundView: React.FC = async () => {
+export const NotFoundView = async (): Promise<React.JSX.Element> => {
   const t = await getTranslations('errorPages');
 
   return (

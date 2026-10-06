@@ -81,7 +81,9 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         await setLocaleCookie(code);
         router.refresh();
       } catch {
-        // Fallback: reload or retain state gracefully without crashing UI
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
       }
     });
   };
