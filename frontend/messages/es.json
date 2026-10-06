@@ -544,7 +544,7 @@
     "title404": "Página no encontrada",
     "desc404": "La página que busca no existe o ha sido movida.",
     "backToDashboard": "Volver al panel",
-    "sos": "Emergencias (SOS 112)",
-    "sosAria": "Llamada de emergencia 112"
+    "sos": "Emergencias (EU 112)",
+    "sosAria": "Llamada de emergencia (EU 112)"
   }
 }

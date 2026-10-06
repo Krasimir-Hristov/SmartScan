@@ -544,7 +544,7 @@
     "title404": "Sayfa Bulunamadı",
     "desc404": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
     "backToDashboard": "Kontrol Paneline Dön",
-    "sos": "Acil Yardım (SOS 112)",
-    "sosAria": "Acil arama 112"
+    "sos": "Acil Yardım (EU 112)",
+    "sosAria": "Acil arama (EU 112)"
   }
 }

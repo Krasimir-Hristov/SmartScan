@@ -544,7 +544,7 @@
     "title404": "Seite nicht gefunden",
     "desc404": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
     "backToDashboard": "Zum Dashboard",
-    "sos": "Notruf (SOS 112)",
-    "sosAria": "Notruf 112 anrufen"
+    "sos": "Notruf (EU 112)",
+    "sosAria": "Notruf (EU 112) anrufen"
   }
 }

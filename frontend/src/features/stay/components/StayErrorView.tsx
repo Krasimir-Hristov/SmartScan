@@ -6,9 +6,13 @@ import { RotateCcw, ShieldAlert, PhoneCall } from 'lucide-react';
 
 export interface StayErrorViewProps {
   reset: () => void;
+  emergencyNumber?: string;
 }
 
-export const StayErrorView: React.FC<StayErrorViewProps> = ({ reset }) => {
+export const StayErrorView: React.FC<StayErrorViewProps> = ({
+  reset,
+  emergencyNumber = '112',
+}) => {
   const t = useTranslations('errorPages');
 
   return (
@@ -54,7 +58,7 @@ export const StayErrorView: React.FC<StayErrorViewProps> = ({ reset }) => {
 
             {/* Emergency SOS quick contact fallback */}
             <a
-              href="tel:112"
+              href={`tel:${emergencyNumber}`}
               aria-label={t('sosAria')}
               className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 text-red-300 font-medium text-xs transition-all cursor-pointer"
             >

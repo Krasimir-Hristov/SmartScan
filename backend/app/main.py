@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -107,14 +108,36 @@ async def http_exception_handler(
     )
 
 
+class ValidationErrorDetail(BaseModel):
+    """Pydantic v2 schema for individual validation error detail."""
+
+    model_config = ConfigDict(extra="allow")
+
+    loc: list[str | int]
+    msg: str
+    type: str
+
+
+class ValidationErrorResponse(BaseModel):
+    """Pydantic v2 schema for 422 HTTP validation error responses."""
+
+    model_config = ConfigDict(extra="allow")
+
+    detail: list[ValidationErrorDetail] = Field(default_factory=list)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """Pass through 422 validation errors with structured JSON-serializable messages."""
+    """Pass through 422 validation errors validated via Pydantic v2 schema."""
+    encoded_errors = jsonable_encoder(exc.errors())
+    validated_payload = ValidationErrorResponse.model_validate(
+        {"detail": encoded_errors}
+    )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": jsonable_encoder(exc.errors())},
+        content=validated_payload.model_dump(),
     )
 
 

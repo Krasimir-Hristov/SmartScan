@@ -544,7 +544,7 @@
     "title404": "Pagina nu a fost găsită",
     "desc404": "Pagina pe care o căutați nu există sau a fost mutată.",
     "backToDashboard": "Înapoi la panou",
-    "sos": "Urgențe (SOS 112)",
-    "sosAria": "Apel de urgență 112"
+    "sos": "Urgențe (EU 112)",
+    "sosAria": "Apel de urgență (EU 112)"
   }
 }

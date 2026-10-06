@@ -44,19 +44,19 @@ const MESSAGES: Record<
 };
 
 const getClientLocale = (): string => {
-  if (typeof document === 'undefined') return 'bg';
+  if (typeof document === 'undefined') return 'en';
   const match = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
-  const detected = match ? decodeURIComponent(match[1]).toLowerCase() : 'bg';
-  return detected === 'en' ? 'en' : 'bg';
+  const detected = match ? decodeURIComponent(match[1]).toLowerCase() : 'en';
+  return detected === 'bg' ? 'bg' : 'en';
 };
 
 const subscribe = () => () => {};
 const getSnapshot = () => getClientLocale();
-const getServerSnapshot = () => 'bg';
+const getServerSnapshot = () => 'en';
 
 export const GlobalErrorView: React.FC<GlobalErrorViewProps> = ({ reset }) => {
   const locale = React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const copy = MESSAGES[locale] ?? MESSAGES.bg;
+  const copy = MESSAGES[locale] ?? MESSAGES.en;
 
   return (
     <html lang={locale} className="dark h-full">
