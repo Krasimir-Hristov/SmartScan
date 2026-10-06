@@ -1,11 +1,13 @@
 import logging
+import math
+from typing import Any
 
 from fastapi import FastAPI, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -116,6 +118,11 @@ class ValidationErrorDetail(BaseModel):
     loc: list[str | int]
     msg: str
     type: str
+    input: JsonValue | None = None
+    ctx: dict[str, JsonValue] | None = None
+    url: str | None = None
+
+    __pydantic_extra__: dict[str, JsonValue]
 
 
 class ValidationErrorResponse(BaseModel):
@@ -124,6 +131,19 @@ class ValidationErrorResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     detail: list[ValidationErrorDetail] = Field(default_factory=list)
+
+
+def replace_non_finite_floats(obj: Any) -> Any:
+    """Recursively replace non-finite floats (NaN, Infinity) with None."""
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    elif isinstance(obj, dict):
+        return {k: replace_non_finite_floats(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [replace_non_finite_floats(v) for v in obj]
+    return obj
 
 
 @app.exception_handler(RequestValidationError)
@@ -135,9 +155,10 @@ async def validation_exception_handler(
     validated_payload = ValidationErrorResponse.model_validate(
         {"detail": encoded_errors}
     )
+    safe_payload = replace_non_finite_floats(validated_payload.model_dump())
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=validated_payload.model_dump(),
+        content=safe_payload,
     )
 
 
