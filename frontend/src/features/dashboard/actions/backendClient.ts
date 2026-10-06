@@ -33,8 +33,21 @@ export async function fetchBackend<T>(
     throw new Error(await readBackendError(response));
   }
 
-  const data: unknown = await response.json();
-  return data as T;
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return {} as T;
+  }
+
+  const text = await response.text();
+  if (!text || !text.trim()) {
+    return {} as T;
+  }
+
+  try {
+    const data: unknown = JSON.parse(text);
+    return data as T;
+  } catch {
+    throw new Error('Invalid JSON response received from backend service.');
+  }
 }
 
 /**

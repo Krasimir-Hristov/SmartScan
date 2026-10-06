@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { ActionResult } from '../types/dashboardTypes';
 import { fetchBackend } from './backendClient';
 
@@ -40,7 +41,8 @@ export async function createCheckoutSessionAction(
     return { success: true, data: { checkout_url: data.checkout_url } };
   } catch (error: unknown) {
     console.error('Checkout action error:', error);
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
+    const t = await getTranslations('billing');
+    return { success: false, error: t('checkoutError') };
   }
 }
 
@@ -67,7 +69,8 @@ export async function createCustomerPortalAction(
     return { success: true, data: { portal_url: data.portal_url } };
   } catch (error: unknown) {
     console.error('Portal action error:', error);
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
+    const t = await getTranslations('billing');
+    return { success: false, error: t('portalError') };
   }
 }
 

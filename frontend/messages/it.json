@@ -533,5 +533,18 @@
     "qrError": "Impossibile generare il codice QR. Riprova.",
     "pdfError": "Generazione PDF non riuscita. Riprova.",
     "localOriginWarning": "Il link punta a un indirizzo locale o di anteprima. Imposta il dominio pubblico prima di stampare la targa."
+  },
+  "errorPages": {
+    "title500": "Si è verificato un errore",
+    "desc500": "Non preoccuparti, il nostro team è stato informato. Prova a ricaricare la pagina.",
+    "retry": "Riprova",
+    "home": "Torna alla Home",
+    "stayTitle": "Guida temporaneamente non disponibile",
+    "stayDesc": "Si è verificato un problema di connessione con la guida della struttura. Riprova tra poco.",
+    "title404": "Pagina non trovata",
+    "desc404": "La pagina che stai cercando non esiste o è stata spostata.",
+    "backToDashboard": "Torna alla dashboard",
+    "sos": "Emergenza (EU 112)",
+    "sosAria": "Chiamata di emergenza (EU 112)"
   }
 }

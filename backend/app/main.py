@@ -1,10 +1,15 @@
-"""Main entry point for SmartScan Stay FastAPI application."""
+import logging
+import math
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.config import settings
@@ -86,6 +91,88 @@ app.add_middleware(BodySizeLimitMiddleware)
 # SlowAPI Rate Limiting State & Handler
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
+logger = logging.getLogger("smartscan.api")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(
+    request: Request, exc: StarletteHTTPException
+) -> Response:
+    """Pass through standard HTTP errors without leaking system traces."""
+    if exc.status_code in (status.HTTP_204_NO_CONTENT, status.HTTP_304_NOT_MODIFIED):
+        return Response(status_code=exc.status_code, headers=exc.headers)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=exc.headers,
+    )
+
+
+class ValidationErrorDetail(BaseModel):
+    """Pydantic v2 schema for individual validation error detail."""
+
+    model_config = ConfigDict(extra="allow")
+
+    loc: list[str | int]
+    msg: str
+    type: str
+    input: JsonValue | None = None
+    ctx: dict[str, JsonValue] | None = None
+    url: str | None = None
+
+    __pydantic_extra__: dict[str, JsonValue]
+
+
+class ValidationErrorResponse(BaseModel):
+    """Pydantic v2 schema for 422 HTTP validation error responses."""
+
+    model_config = ConfigDict(extra="allow")
+
+    detail: list[ValidationErrorDetail] = Field(default_factory=list)
+
+
+def replace_non_finite_floats(obj: JsonValue) -> JsonValue:
+    """Recursively replace non-finite floats (NaN, Infinity) with None."""
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    elif isinstance(obj, dict):
+        return {k: replace_non_finite_floats(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [replace_non_finite_floats(v) for v in obj]
+    return obj
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Pass through 422 validation errors validated via Pydantic v2 schema."""
+    encoded_errors = jsonable_encoder(exc.errors())
+    validated_payload = ValidationErrorResponse.model_validate(
+        {"detail": encoded_errors}
+    )
+    safe_payload = replace_non_finite_floats(validated_payload.model_dump())
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=safe_payload,
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    """Global catch-all for uncaught exceptions to prevent 500 HTML tracebacks."""
+    logger.exception("Unhandled server exception on %s: %s", request.url.path, exc)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": "Възникна временна грешка в сървъра. Моля, опитайте отново по-късно."
+        },
+    )
 
 # CORS configuration
 app.add_middleware(
