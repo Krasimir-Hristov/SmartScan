@@ -133,7 +133,7 @@ class ValidationErrorResponse(BaseModel):
     detail: list[ValidationErrorDetail] = Field(default_factory=list)
 
 
-def replace_non_finite_floats(obj: Any) -> Any:
+def replace_non_finite_floats(obj: JsonValue) -> JsonValue:
     """Recursively replace non-finite floats (NaN, Infinity) with None."""
     if isinstance(obj, float):
         if math.isnan(obj) or math.isinf(obj):
