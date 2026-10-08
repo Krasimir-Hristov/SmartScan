@@ -52,7 +52,7 @@ export const LandingFooter: React.FC = () => {
                   type="button"
                   onClick={() => handleLocaleChange(loc.code)}
                   disabled={isPending}
-                  aria-label={`Switch language to ${loc.label}`}
+                  aria-label={t('switchLanguage', { name: loc.label })}
                   title={loc.label}
                   className={cn(
                     'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-mono uppercase transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-60',
@@ -164,11 +164,11 @@ export const LandingFooter: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] font-mono text-zinc-400">
             <span className="inline-flex items-center gap-1.5">
               <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Stripe Verified Partner</span>
+              <span>{t('stripePartner')}</span>
             </span>
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>GDPR Compliant (EU Host)</span>
+              <span>{t('gdprCompliant')}</span>
             </span>
           </div>
 

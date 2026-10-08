@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { LegalNavbar } from './components/LegalNavbar';
 import { LegalHeader } from './components/LegalHeader';
@@ -13,7 +13,7 @@ export const TermsPage: React.FC = () => {
   const tTerms = useTranslations('terms');
   const [activeId, setActiveId] = useState<string>('definitions');
 
-  const doc = buildTermsDocument(tTerms);
+  const doc = useMemo(() => buildTermsDocument(tTerms), [tTerms]);
 
   // Scrollspy to highlight active clause in TOC
   useEffect(() => {

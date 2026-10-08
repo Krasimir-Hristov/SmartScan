@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { LegalNavbar } from './components/LegalNavbar';
 import { LegalHeader } from './components/LegalHeader';
@@ -13,7 +13,7 @@ export const PrivacyPage: React.FC = () => {
   const tPrivacy = useTranslations('privacy');
   const [activeId, setActiveId] = useState<string>('controller');
 
-  const doc = buildPrivacyDocument(tPrivacy);
+  const doc = useMemo(() => buildPrivacyDocument(tPrivacy), [tPrivacy]);
 
   // Scrollspy to highlight active clause in TOC
   useEffect(() => {

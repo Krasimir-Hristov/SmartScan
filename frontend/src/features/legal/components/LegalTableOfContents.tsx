@@ -30,7 +30,7 @@ export const LegalTableOfContents: React.FC<LegalTableOfContentsProps> = ({
           <span>{tLegal('tableOfContents')}</span>
         </div>
 
-        <nav className="flex flex-col gap-1 max-h-[calc(100vh-12rem)] overflow-y-auto pr-1">
+        <nav className="flex flex-col gap-1 max-h-[calc(100dvh-12rem)] overflow-y-auto pr-1">
           {clauses.map((clause) => {
             const isActive = activeId === clause.id;
             return (
