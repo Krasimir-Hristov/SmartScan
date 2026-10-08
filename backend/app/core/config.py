@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: str = Field(default="development")
     PORT: int = Field(default=8000)
-    ALLOWED_ORIGINS: str = Field(default="http://localhost:3000")
+    ALLOWED_ORIGINS: str = Field(default="http://localhost:3000,http://127.0.0.1:3000")
 
     # Shared secret injected by the Next.js proxy (proxy.ts) into x-internal-auth.
     # The backend trusts forwarded client IPs only when this secret matches.
