@@ -157,7 +157,9 @@
     "markets": "Desteklenen Turizm Pazarları:",
     "switchLanguage": "Dili {name} olarak değiştir",
     "stripePartner": "Doğrulanmış Stripe Ortağı",
-    "gdprCompliant": "GDPR Uyumlu (AB Sunucusu)"
+    "gdprCompliant": "GDPR Uyumlu (AB Sunucusu)",
+    "cookies": "Çerez Politikası",
+    "cookieSettings": "Çerez Ayarları"
   },
   "legal": {
     "badge": "YASAL VE UYUMLULUK",
@@ -176,7 +178,10 @@
     "contactDpo": "Politikalarımız hakkında sorularınız mı var? Veri Koruma Görevlimizle iletişime geçin",
     "langBg": "Български (BG)",
     "langEn": "English (EN)",
-    "switchToLang": "Dil sürümü"
+    "switchToLang": "Dil sürümü",
+    "viewCookies": "Çerez Politikası",
+    "cookiesTitle": "Çerez Politikası",
+    "cookiesSubtitle": "GDPR ve ePrivacy uyumluluğu, kesinlikle gerekli çerezler ve sıfır izleme"
   },
   "auth": {
     "welcomeBadge": "EV SAHİBİ PORTALI",
@@ -680,5 +685,55 @@
     "c9P2": "Yetkili otorite: Bulgaristan CPDP (www.cpdp.bg) veya ilgili AB otoritesi.",
     "c10Title": "Veri Koruma Görevlisi (DPO)",
     "c10P1": "Sorularınız için privacy@smartscanstay.com adresinden iletişime geçebilirsiniz."
+  },
+  "cookies": {
+    "title": "Çerez Politikası",
+    "subtitle": "GDPR ve ePrivacy Direktifi: Çerezler ve Yerel Depolama Hakkında Tam Şeffaflık",
+    "lastUpdated": "9 Ekim 2026",
+    "effectiveDate": "1 Ekim 2026",
+    "summary": "Bu Çerez Politikası, SmartScan Stay platformunun ev sahibi kimlik doğrulaması ve çok dilli misafir konsiyerj hizmeti sunmak için gerekli çerezleri ve LocalStorage kullanımını açıklar. Sıfır pazarlama izleyicisi ilkesini benimseriz.",
+    "c1Title": "Çerezler ve Yerel Depolama Nedir",
+    "c1P1": "Çerezler, bir web sitesini ziyaret ettiğinizde tarayıcınız tarafından cihazınıza kaydedilen küçük metin dosyalarıdır.",
+    "c1P2": "SmartScan Stay, GDPR kapsamındaki veri minimizasyonu ilkesine bağlı kalarak yalnızca teknik olarak zorunlu çerezleri kullanır.",
+    "c1CalloutTitle": "Zero-Marketing Standardı",
+    "c1CalloutText": "SmartScan Stay hiçbir zaman reklam pikselleri, üçüncü taraf pazarlama çerezleri veya misafir profillemesi kullanmaz.",
+    "c2Title": "Kesinlikle Gerekli (Temel) Çerezler",
+    "c2P1": "Bu çerezler güvenlik, kimlik doğrulama ve platform yönlendirmesi için zorunludur. ePrivacy Direktifi uyarınca önceden onay gerektirmez:",
+    "c2B1": "'NEXT_LOCALE': Desteklenen 10 turizm pazarı arasından seçtiğiniz dil tercihini saklar.",
+    "c2B2": "'sb-*-auth-token': Google OAuth ile ev sahibi girişi için şifreli HttpOnly Supabase oturum belirteçleri.",
+    "c2B3": "'smartscan_proxy_shield': Proxy atlatma girişimlerine karşı koruma sağlayan güvenlik belirteci (CVE-2025-29927).",
+    "c2CalloutTitle": "Otomatik Koruma",
+    "c2CalloutText": "Tüm belirteçler XSS ve CSRF risklerini önlemek için HttpOnly, Secure ve SameSite=Lax bayraklarıyla korunur.",
+    "c3Title": "Sıfır Reklam İzleyicisi ve Üçüncü Taraflar",
+    "c3P1": "SmartScan Stay, istilacı analiz ve pazarlama araçlarının kullanımını kesinlikle reddeder.",
+    "c3P2": "Misafir web uygulamasında (/stay/[slug]) Google AdSense veya Facebook Pikseli bulunmaz. Tüm AI sohbetleri geçicidir ve alana özeldir.",
+    "c3B1": "Misafirin taksi veya 112 araması dışında konum takibi yapılmaz.",
+    "c3B2": "Reklam ağlarına veri satışı veya paylaşımı yapılmaz.",
+    "c3B3": "Ayrılış sonrasında davranışsal izleme yapılmaz.",
+    "c4Title": "Tercihlerin Saklanması (LocalStorage)",
+    "c4P1": "Çerezlere ek olarak, tarayıcı LocalStorage belleği hız ve tercih koruma amacıyla kullanılır:",
+    "c4B1": "'smartscan_cookie_consent': Çerez onay tercihlerinizi kaydeder (geçerlilik: 180 gün).",
+    "c4B2": "'smartscan_recent_space': Hızlı geçiş için Ev Sahibi Panelindeki son aktif alanı hatırlar.",
+    "c5Title": "Tarayıcıda Çerezleri Yönetme ve Silme",
+    "c5P1": "Tarayıcı ayarlarınızdan çerezleri istediğiniz zaman yönetebilir veya silebilirsiniz.",
+    "c5P2": "Zorunlu çerezlerin engellenmesi ev sahibi girişini ve dil kaydını devre dışı bırakır.",
+    "c5B1": "Google Chrome: Ayarlar → Gizlilik ve güvenlik → Üçüncü taraf çerezleri.",
+    "c5B2": "Apple Safari: Tercihler → Gizlilik → Tüm çerezleri engelle.",
+    "c5B3": "Mozilla Firefox: Ayarlar → Gizlilik ve Güvenlik → Çerezler ve Site Verileri.",
+    "c5B4": "Microsoft Edge: Ayarlar → Çerezler ve site izinleri.",
+    "c6Title": "Politika Güncellemeleri ve DPO İletişim",
+    "c6P1": "SmartScan Stay, teknik veya yasal gerekliliklere göre bu politikayı güncelleme hakkını saklı tutar.",
+    "c6P2": "Sorularınız veya GDPR haklarınız için Veri Koruma Görevlimize ulaşın: dpo@smartscanstay.com."
+  },
+  "cookieBanner": {
+    "title": "Gizlilik ve Çerez Tercihleri",
+    "gdprBadge": "GDPR (AB Barındırma)",
+    "stripeBadge": "Stripe Ortağı",
+    "closeAria": "Çerez bildirimini kapat",
+    "description": "SmartScan Stay, dil tercihlerini korumak ve Google OAuth ile güvenli ev sahibi girişi sağlamak için kesinlikle gerekli çerezleri kullanır. Abonelikler Stripe üzerinden güvenle işlenir. Reklamsız ve misafir profillemesi olmadan tam gizlilik standardı uygularız.",
+    "cookiePolicyLink": "Tam Çerez Politikasını oku",
+    "privacyLink": "Gizlilik Politikası",
+    "essentialOnly": "Yalnızca Gerekli",
+    "acceptAll": "Tümünü Kabul Et"
   }
 }

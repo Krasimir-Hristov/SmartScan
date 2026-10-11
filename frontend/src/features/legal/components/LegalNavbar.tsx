@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { NavbarAuthAction } from '@/features/landing/components/NavbarAuthAction';
 import { AuthModal } from '@/features/landing/components/AuthModal';
-import { QrCode, ArrowLeft, Shield, FileText } from 'lucide-react';
+import { QrCode, ArrowLeft, Shield, FileText, Cookie } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SupportedLegalDoc } from '../types/legalTypes';
 
@@ -52,7 +52,7 @@ export const LegalNavbar: React.FC<LegalNavbarProps> = ({ currentDoc }) => {
             </Link>
           </div>
 
-          {/* Center Tabs: Terms vs Privacy */}
+          {/* Center Tabs: Terms vs Privacy vs Cookies */}
           <nav
             className="flex items-center gap-1 p-1 rounded-full bg-zinc-900/80 border border-white/5 backdrop-blur-md"
             aria-label="Legal Documents Navigation"
@@ -83,6 +83,20 @@ export const LegalNavbar: React.FC<LegalNavbarProps> = ({ currentDoc }) => {
             >
               <Shield className="w-3.5 h-3.5" />
               <span>{tLegal('viewPrivacy')}</span>
+            </Link>
+
+            <Link
+              href="/cookies"
+              aria-current={currentDoc === 'cookies' ? 'page' : undefined}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer',
+                currentDoc === 'cookies'
+                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs shadow-emerald-500/20 font-bold'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              )}
+            >
+              <Cookie className="w-3.5 h-3.5" />
+              <span>{tLegal('viewCookies')}</span>
             </Link>
           </nav>
 

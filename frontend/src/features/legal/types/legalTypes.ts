@@ -24,4 +24,4 @@ export interface LegalDocument {
   clauses: LegalClause[];
 }
 
-export type SupportedLegalDoc = 'terms' | 'privacy';
+export type SupportedLegalDoc = 'terms' | 'privacy' | 'cookies';

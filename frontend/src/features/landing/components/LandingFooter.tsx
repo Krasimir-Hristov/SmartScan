@@ -8,6 +8,7 @@ import { locales } from '@/lib/i18n/config';
 import { setLocaleCookie } from '@/features/i18n/actions';
 import { QrCode, Globe, ShieldCheck, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { triggerCookieSettings } from '@/features/cookies';
 
 export const LandingFooter: React.FC = () => {
   const t = useTranslations('footer');
@@ -156,6 +157,24 @@ export const LandingFooter: React.FC = () => {
             >
               {t('terms')}
             </Link>
+            <Link
+              href="/cookies"
+              className={cn(
+                'transition-colors cursor-pointer',
+                pathname === '/cookies'
+                  ? 'text-emerald-400 font-semibold'
+                  : 'text-zinc-400 hover:text-white'
+              )}
+            >
+              {t('cookies')}
+            </Link>
+            <button
+              type="button"
+              onClick={triggerCookieSettings}
+              className="text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            >
+              {t('cookieSettings')}
+            </button>
           </nav>
         </div>
 

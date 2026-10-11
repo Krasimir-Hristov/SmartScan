@@ -3,6 +3,7 @@ import { Space_Grotesk, Manrope, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { CookieConsentBanner } from '@/features/cookies';
 import './globals.css';
 
 // ─── Design System Fonts ──────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ const RootLayout = async ({ children }: RootLayoutProps) => {
         <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>
             {children}
+            <CookieConsentBanner />
           </QueryProvider>
         </NextIntlClientProvider>
       </body>

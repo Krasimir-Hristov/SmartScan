@@ -157,7 +157,9 @@
     "markets": "Marchés touristiques supportés :",
     "switchLanguage": "Changer la langue en {name}",
     "stripePartner": "Partenaire vérifié Stripe",
-    "gdprCompliant": "Conforme au RGPD (Hébergement UE)"
+    "gdprCompliant": "Conforme au RGPD (Hébergement UE)",
+    "cookies": "Politique de cookies",
+    "cookieSettings": "Paramètres des cookies"
   },
   "legal": {
     "badge": "MENTIONS LÉGALES & CONFORMITÉ",
@@ -176,7 +178,10 @@
     "contactDpo": "Des questions sur nos politiques ? Contactez notre délégué à la protection des données",
     "langBg": "Български (BG)",
     "langEn": "English (EN)",
-    "switchToLang": "Version linguistique"
+    "switchToLang": "Version linguistique",
+    "viewCookies": "Politique de cookies",
+    "cookiesTitle": "Politique relative aux cookies",
+    "cookiesSubtitle": "Conformité RGPD et ePrivacy, cookies strictement nécessaires et zéro pistage"
   },
   "auth": {
     "welcomeBadge": "PORTAIL HÔTE",
@@ -680,5 +685,55 @@
     "c9P2": "Autorité chef de file : CPDP Bulgarie (www.cpdp.bg) ou la CNIL en France.",
     "c10Title": "Délégué à la Protection des Données (DPO)",
     "c10P1": "Pour toute demande RGPD, écrivez à privacy@smartscanstay.com."
+  },
+  "cookies": {
+    "title": "Politique relative aux cookies",
+    "subtitle": "RGPD & Directive ePrivacy : Transparence totale sur les cookies et le stockage local",
+    "lastUpdated": "9 octobre 2026",
+    "effectiveDate": "1er octobre 2026",
+    "summary": "Cette politique explique comment SmartScan Stay utilise des cookies strictement nécessaires et le stockage local (LocalStorage) pour sécuriser l’accès des hôtes et offrir une assistance multilingue aux invités, sans aucun traceur publicitaire.",
+    "c1Title": "Que sont les cookies et le stockage local",
+    "c1P1": "Les cookies sont de petits fichiers texte enregistrés sur votre appareil par votre navigateur afin de conserver des états techniques essentiels.",
+    "c1P2": "SmartScan Stay respecte le principe de minimisation des données du RGPD en n’utilisant que des cookies techniques indispensables.",
+    "c1CalloutTitle": "Standard Zéro-Marketing",
+    "c1CalloutText": "SmartScan Stay n’utilise aucun pixel publicitaire, cookie tiers ou profilage commercial des invités.",
+    "c2Title": "Cookies strictement nécessaires (essentiels)",
+    "c2P1": "Ces cookies sont indispensables à la sécurité, à l’authentification et à la navigation. En vertu de l’art. 5(3) de la directive ePrivacy, ils ne requièrent aucun consentement préalable :",
+    "c2B1": "'NEXT_LOCALE': Mémorise votre langue préférée parmi les 10 marchés touristiques supportés.",
+    "c2B2": "'sb-*-auth-token': Jetons de session HttpOnly chiffrés de Supabase pour la connexion hôte via Google OAuth.",
+    "c2B3": "'smartscan_proxy_shield': Jeton de validation d’en-têtes pour protéger la couche proxy (CVE-2025-29927).",
+    "c2CalloutTitle": "Sécurité automatique",
+    "c2CalloutText": "Tous les jetons bénéficient des attributs HttpOnly, Secure et SameSite=Lax contre les attaques XSS et CSRF.",
+    "c3Title": "Zéro traceur publicitaire et absence de tiers",
+    "c3P1": "SmartScan Stay refuse expressément l’usage d’outils intrusifs d’analyse ou de ciblage publicitaire.",
+    "c3P2": "L’application mobile pour les invités (/stay/[slug]) est exempte de Google AdSense, Facebook Pixel ou SDKs tiers. Les échanges IA restent éphémères et cloisonnés à l’hébergement.",
+    "c3B1": "Aucun suivi de localisation en dehors des appels lancés par l’invité vers les taxis ou le 112.",
+    "c3B2": "Aucune revente ou cession de données à des courtiers publicitaires.",
+    "c3B3": "Aucun traçage comportemental après le départ de l’invité.",
+    "c4Title": "Stockage des préférences (LocalStorage)",
+    "c4P1": "En plus des cookies, le stockage LocalStorage du navigateur est utilisé pour optimiser la rapidité et conserver les choix :",
+    "c4B1": "'smartscan_cookie_consent': Enregistre le choix de consentement aux cookies (validité : 180 jours).",
+    "c4B2": "'smartscan_recent_space': Mémorise le dernier logement actif dans le tableau de bord hôte.",
+    "c5Title": "Gestion et suppression des cookies dans votre navigateur",
+    "c5P1": "Vous pouvez à tout moment inspecter, bloquer ou supprimer les cookies via les paramètres de votre navigateur.",
+    "c5P2": "La désactivation des cookies nécessaires empêchera la connexion hôte et la mémorisation de la langue.",
+    "c5B1": "Google Chrome : Paramètres → Confidentialité et sécurité → Cookies tiers.",
+    "c5B2": "Apple Safari : Réglages → Confidentialité → Bloquer tous les cookies.",
+    "c5B3": "Mozilla Firefox : Paramètres → Vie privée et sécurité → Cookies et données de sites.",
+    "c5B4": "Microsoft Edge : Paramètres → Cookies et autorisations de site.",
+    "c6Title": "Mises à jour et contact avec le DPO",
+    "c6P1": "SmartScan Stay se réserve le droit d’adapter cette politique aux évolutions techniques et réglementaires européennes.",
+    "c6P2": "Pour toute question ou exercice de vos droits RGPD, contactez notre Délégué à la Protection des Données à dpo@smartscanstay.com."
+  },
+  "cookieBanner": {
+    "title": "Préférences de confidentialité et cookies",
+    "gdprBadge": "RGPD (Hébergement UE)",
+    "stripeBadge": "Partenaire Stripe",
+    "closeAria": "Fermer l'avis relatif aux cookies",
+    "description": "SmartScan Stay utilise des cookies strictement nécessaires pour la mémorisation de la langue et l'authentification sécurisée via Google OAuth. Les abonnements sont gérés en toute sécurité par Stripe. Nous appliquons une politique stricte sans traceurs publicitaires et sans profilage des invités.",
+    "cookiePolicyLink": "Lire la politique relative aux cookies",
+    "privacyLink": "Politique de confidentialité",
+    "essentialOnly": "Essentiels uniquement",
+    "acceptAll": "Tout accepter"
   }
 }

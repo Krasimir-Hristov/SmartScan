@@ -19,7 +19,7 @@
 | **Стъпка 9**  | Stripe Granular Billing (Host-Level Multi-Item)                 | 🟢 Завършена            | 04.10.2026        |
 | **Стъпка 10** | Pre-Deployment Verification, E2E Testing & Production Hardening | 🟡 В ход / Верифицирана | 04.10.2026        |
 | **Стъпка 12** | Footer Интеграция & Legal Pages (GDPR & Stripe)                 | 🟢 Завършена            | 08.10.2026        |
-| **Стъпка 13** | Cookie Consent Banner                                           | ⚪ Планирана            | -                 |
+| **Стъпка 13** | Cookie Consent Banner & Политика за бисквитките (Куки ТТ) | 🟡 В ход / ТТ завършено | 09.10.2026        |
 | **Стъпка 14** | Contact Form (Форма за обратна връзка)                          | ⚪ Планирана            | -                 |
 
 ---
@@ -191,10 +191,14 @@
 
 ---
 
-### [ ] Стъпка 13: Cookie Consent Banner
+### [ ] Стъпка 13: Cookie Consent Banner & Политика за бисквитките (Куки ТТ)
 
-- [ ] **Cookie Consent (GDPR):** Елегантен банер за съгласие с бисквитките (Obsidian дизайн) с опции за "Приеми всички" и "Само задължителни".
-- [ ] **Cookie Policy:** Създаване на страница "Политика за бисквитките", към която банерът ще препраща.
+- [ ] **Техническо задание (Куки ТТ):** Пълна архитектурна и регулаторна спецификация в [`docs/steps/step-13-cookie-consent.md`](docs/steps/step-13-cookie-consent.md) (GDPR чл. 6, чл. 7 и ePrivacy чл. 5(3)).
+- [ ] **Навигационна интеграция в менютата:** Включен линк „Бисквитки“ във футър навигацията ([`LandingFooter.tsx`](frontend/src/features/landing/components/LandingFooter.tsx)) и централен таб в правния навбар ([`LegalNavbar.tsx`](frontend/src/features/legal/components/LegalNavbar.tsx)) на всички 10 туристически езика.
+- [ ] **Страница Политика за бисквитките (`/cookies`):** Пълноправен правен документ ([`CookiesPage.tsx`](frontend/src/features/legal/CookiesPage.tsx)) с 6 структурирани клаузи, Scrollspy съдържание и 100% паритет на преводите в `frontend/messages/`.
+- [ ] **Cookie Consent (GDPR) Banner UI:** Елегантен плаващ Obsidian банер за съгласие с опции „Приеми всички“ и „Само задължителни“ (Equal Prominence стандарт).
+- [ ] **Съхранение на съгласието:** Управление на избора в `smartscan_cookie_consent` (180 дни валидност) с нулев рекламен трекинг.
+- [ ] **Интерактивен бутон за настройки:** Възможност за повторно отваряне на банера и промяна на избора от футъра.
 
 ---
 

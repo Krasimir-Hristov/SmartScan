@@ -157,7 +157,9 @@
     "markets": "Supported Tourism Markets:",
     "switchLanguage": "Switch language to {name}",
     "stripePartner": "Stripe Verified Partner",
-    "gdprCompliant": "GDPR Compliant (EU Host)"
+    "gdprCompliant": "GDPR Compliant (EU Host)",
+    "cookies": "Cookie Policy",
+    "cookieSettings": "Cookie Settings"
   },
   "legal": {
     "badge": "LEGAL & COMPLIANCE",
@@ -176,7 +178,10 @@
     "contactDpo": "Questions regarding our policies? Contact our Data Protection Officer",
     "langBg": "Български (BG)",
     "langEn": "English (EN)",
-    "switchToLang": "Language version"
+    "switchToLang": "Language version",
+    "viewCookies": "Cookie Policy",
+    "cookiesTitle": "Cookie Policy",
+    "cookiesSubtitle": "GDPR & ePrivacy Compliance, Strictly Necessary Cookies & Zero Marketing Trackers"
   },
   "auth": {
     "welcomeBadge": "HOST PORTAL",
@@ -680,5 +685,55 @@
     "c9P2": "The lead supervisory authority in Bulgaria is the Commission for Personal Data Protection (CPDP), located at 2 Prof. Tsvetan Lazarov Blvd., Sofia 1592, Bulgaria (www.cpdp.bg).",
     "c10Title": "Data Protection Officer (DPO) Contact",
     "c10P1": "To exercise any of your GDPR rights, submit a data inquiry, or request account data export, please contact our Data Protection Officer at privacy@smartscanstay.com."
+  },
+  "cookies": {
+    "title": "Cookie Policy",
+    "subtitle": "GDPR & ePrivacy Directive: Full Transparency on Cookies & Local Storage",
+    "lastUpdated": "October 9, 2026",
+    "effectiveDate": "October 1, 2026",
+    "summary": "This Cookie Policy explains how SmartScan Stay uses strictly necessary cookies and browser LocalStorage to provide secure host authentication and multi-lingual guest concierge assistance. We adhere strictly to a zero-marketing-trackers standard.",
+    "c1Title": "What Are Cookies & Local Storage",
+    "c1P1": "Cookies are small text files placed on your device by your web browser when visiting websites. They are used to retain essential technical states and user preferences.",
+    "c1P2": "SmartScan Stay adheres to the principle of Data Minimization under the GDPR. We deploy only technically essential cookies and local storage items necessary for the platform to function securely and reliably.",
+    "c1CalloutTitle": "Zero-Marketing Architecture",
+    "c1CalloutText": "SmartScan Stay never deploys advertising pixels, third-party marketing cookies, or cross-site tracking beacons.",
+    "c2Title": "Strictly Necessary (Essential) Cookies",
+    "c2P1": "These cookies are strictly required for security, host authentication, and basic platform routing. Under Article 5(3) of the EU ePrivacy Directive, prior consent is not required for strictly necessary technical cookies:",
+    "c2B1": "'NEXT_LOCALE': Persists your preferred language among the 10 supported tourism markets across page visits.",
+    "c2B2": "'sb-*-auth-token': Encrypted HttpOnly Supabase authentication session tokens for host sign-in via Google OAuth.",
+    "c2B3": "'smartscan_proxy_shield': Cryptographic internal header validation token guarding against CVE-2025-29927 bypass attempts.",
+    "c2CalloutTitle": "Automated Protection",
+    "c2CalloutText": "All authentication tokens are safeguarded with HttpOnly, Secure, and SameSite=Lax flags, mitigating XSS and CSRF risks.",
+    "c3Title": "Zero Third-Party Marketing Trackers",
+    "c3P1": "Unlike conventional web portals, SmartScan Stay strictly refrains from incorporating invasive tracking scripts or analytical profiling networks.",
+    "c3P2": "The mobile guest PWA (/stay/[slug]) operates completely free of Google AdSense, Meta Pixel, TikTok Pixel, or behavioral analytics SDKs. All AI interactions remain ephemeral and strictly isolated to the property space.",
+    "c3B1": "No device location tracking beyond guest-initiated calls to local taxis or emergency 112.",
+    "c3B2": "No data trading, commercial sharing, or sale to advertising networks or data brokers.",
+    "c3B3": "No cross-session behavioral tracking after guest departure.",
+    "c4Title": "Local Storage Preferences (LocalStorage)",
+    "c4P1": "In addition to cookies, your browser LocalStorage is utilized for instantaneous performance and preference retention:",
+    "c4B1": "'smartscan_cookie_consent': Records whether you accepted or customized cookie consent preferences (retention: 180 days).",
+    "c4B2": "'smartscan_recent_space': Remembers your last active property space in the Host Dashboard for swift switching.",
+    "c5Title": "Managing & Deleting Cookies in Your Browser",
+    "c5P1": "You retain the legal right to inspect, manage, or delete cookies at any time directly through your web browser settings (Chrome, Safari, Firefox, Edge).",
+    "c5P2": "Please note that disabling strictly necessary cookies will prevent host login and language persistence.",
+    "c5B1": "Google Chrome: Settings → Privacy and Security → Third-party cookies.",
+    "c5B2": "Apple Safari: Settings → Privacy → Block all cookies.",
+    "c5B3": "Mozilla Firefox: Settings → Privacy & Security → Cookies and Site Data.",
+    "c5B4": "Microsoft Edge: Settings → Cookies and site permissions.",
+    "c6Title": "Policy Revisions & DPO Contact",
+    "c6P1": "SmartScan Stay reserves the right to amend this Cookie Policy in alignment with technical evolutions or European regulatory guidelines.",
+    "c6P2": "For inquiries regarding cookie management or to exercise your GDPR privacy rights, please reach out to our Data Protection Officer at dpo@smartscanstay.com."
+  },
+  "cookieBanner": {
+    "title": "Privacy & Cookie Preferences",
+    "gdprBadge": "GDPR (EU Host)",
+    "stripeBadge": "Stripe Partner",
+    "closeAria": "Close cookie notification",
+    "description": "SmartScan Stay uses strictly essential cookies for language persistence and secure host authentication via Google OAuth. Host subscriptions are securely processed via Stripe. We strictly enforce a zero-marketing-trackers standard with zero guest profiling.",
+    "cookiePolicyLink": "Read full Cookie Policy",
+    "privacyLink": "Privacy Policy",
+    "essentialOnly": "Essential Only",
+    "acceptAll": "Accept All"
   }
 }

@@ -157,7 +157,9 @@
     "markets": "Piețe turistice suportate:",
     "switchLanguage": "Schimbă limba în {name}",
     "stripePartner": "Partener verificat Stripe",
-    "gdprCompliant": "Conform GDPR (Găzduire în UE)"
+    "gdprCompliant": "Conform GDPR (Găzduire în UE)",
+    "cookies": "Politica de cookie-uri",
+    "cookieSettings": "Setări cookie-uri"
   },
   "legal": {
     "badge": "LEGAL ȘI CONFORMITATE",
@@ -176,7 +178,10 @@
     "contactDpo": "Întrebări despre politicile noastre? Contactați responsabilul cu protecția datelor",
     "langBg": "Български (BG)",
     "langEn": "English (EN)",
-    "switchToLang": "Versiune lingvistică"
+    "switchToLang": "Versiune lingvistică",
+    "viewCookies": "Politica de cookie-uri",
+    "cookiesTitle": "Politica de cookie-uri",
+    "cookiesSubtitle": "Conformitate GDPR & ePrivacy, cookie-uri strict necesare și zero urmărire"
   },
   "auth": {
     "welcomeBadge": "PORTAL GAZDĂ",
@@ -680,5 +685,55 @@
     "c9P2": "Autoritatea principală: CPDP Bulgaria (www.cpdp.bg) sau ANSPDCP România.",
     "c10Title": "Responsabil Protecția Datelor (DPO)",
     "c10P1": "Pentru solicitări GDPR contactați privacy@smartscanstay.com."
+  },
+  "cookies": {
+    "title": "Politica de cookie-uri",
+    "subtitle": "GDPR și Directiva ePrivacy: Transparență totală privind cookie-urile și stocarea locală",
+    "lastUpdated": "9 octombrie 2026",
+    "effectiveDate": "1 octombrie 2026",
+    "summary": "Această politică explică modul în care SmartScan Stay utilizează cookie-uri strict necesare și LocalStorage pentru autentificarea gazdelor și asistența multilingvă a oaspeților, fără niciun tracker publicitar.",
+    "c1Title": "Ce sunt cookie-urile și stocarea locală",
+    "c1P1": "Cookie-urile sunt fișiere text de mici dimensiuni salvate pe dispozitivul dvs. de către browser pentru a menține stări tehnice esențiale.",
+    "c1P2": "SmartScan Stay respectă principiul minimizării datelor conform GDPR, utilizând doar elemente strict necesare funcționării securizate a platformei.",
+    "c1CalloutTitle": "Standard Zero-Marketing",
+    "c1CalloutText": "SmartScan Stay nu utilizează pixeli de urmărire, cookie-uri de marketing terțe sau profilare a oaspeților.",
+    "c2Title": "Cookie-uri strict necesare (esențiale)",
+    "c2P1": "Aceste cookie-uri sunt indispensabile pentru securitate, autentificare și rutare. Conform art. 5(3) din Directiva ePrivacy, nu este necesar consimțământul prealabil:",
+    "c2B1": "'NEXT_LOCALE': Memorează limba preferată dintre cele 10 piețe turistice acceptate.",
+    "c2B2": "'sb-*-auth-token': Token-uri de sesiune securizate HttpOnly Supabase pentru autentificarea gazdei prin Google OAuth.",
+    "c2B3": "'smartscan_proxy_shield': Token de validare a anteturilor pentru protecție împotriva bypass-urilor proxy (CVE-2025-29927).",
+    "c2CalloutTitle": "Protecție automată",
+    "c2CalloutText": "Toate token-urile sunt protejate cu atributele HttpOnly, Secure și SameSite=Lax împotriva atacurilor XSS și CSRF.",
+    "c3Title": "Fără trackere publicitare terțe",
+    "c3P1": "SmartScan Stay refuză categoric utilizarea oricăror instrumente intruzive de analiză sau marketing.",
+    "c3P2": "Aplicația mobilă pentru oaspeți (/stay/[slug]) nu include Google AdSense, Facebook Pixel sau SDK-uri de reclame. Conversațiile AI sunt efemere și strict izolate la proprietate.",
+    "c3B1": "Fără urmărirea locației în afara apelurilor inițiate de oaspete către taxi sau 112.",
+    "c3B2": "Fără vânzare sau partajare de date cu agenții de publicitate.",
+    "c3B3": "Fără monitorizarea istoricului după plecarea oaspetelui.",
+    "c4Title": "Stocarea preferințelor (LocalStorage)",
+    "c4P1": "Memoria LocalStorage din browser este utilizată pentru performanță sporită și reținerea opțiunilor:",
+    "c4B1": "'smartscan_cookie_consent': Reține consimțământul acordat pentru cookie-uri (valabilitate: 180 zile).",
+    "c4B2": "'smartscan_recent_space': Păstrează ultima proprietate activă din panoul gazdei pentru comutare rapidă.",
+    "c5Title": "Gestionarea și ștergerea cookie-urilor din browser",
+    "c5P1": "Puteți inspecta, bloca sau șterge cookie-urile în orice moment direct din setările browserului dvs.",
+    "c5P2": "Dezactivarea cookie-urilor esențiale va împiedica autentificarea gazdelor și păstrarea limbii selectate.",
+    "c5B1": "Google Chrome: Setări → Confidențialitate și securitate → Cookie-uri terțe.",
+    "c5B2": "Apple Safari: Configurări → Confidențialitate → Blocare toate cookie-urile.",
+    "c5B3": "Mozilla Firefox: Opțiuni → Confidențialitate și securitate → Cookie-uri și date de site.",
+    "c5B4": "Microsoft Edge: Setări → Cookie-uri și permisiuni de site.",
+    "c6Title": "Actualizări și contact DPO",
+    "c6P1": "SmartScan Stay poate actualiza această politică în funcție de modificările tehnice sau de cerințele UE.",
+    "c6P2": "Pentru întrebări privind protecția datelor sau exercitarea drepturilor GDPR, contactați responsabilul DPO la dpo@smartscanstay.com."
+  },
+  "cookieBanner": {
+    "title": "Preferințe de confidențialitate și cookie-uri",
+    "gdprBadge": "GDPR (Găzduire în UE)",
+    "stripeBadge": "Partener Stripe",
+    "closeAria": "Închide notificarea privind cookie-urile",
+    "description": "SmartScan Stay utilizează cookie-uri strict esențiale pentru păstrarea limbii și autentificarea securizată prin Google OAuth. Plățile sunt procesate securizat prin Stripe. Respectăm un standard strict fără trackere publicitare și fără profilarea oaspeților.",
+    "cookiePolicyLink": "Citește politica completă de cookie-uri",
+    "privacyLink": "Politica de confidențialitate",
+    "essentialOnly": "Doar esențiale",
+    "acceptAll": "Acceptă toate"
   }
 }

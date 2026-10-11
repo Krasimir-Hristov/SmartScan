@@ -28,6 +28,8 @@
 | **Стъпка 8** | [**Step 08: Physical QR Plaques**](steps/step-08-qr-print-plaques.md) | 🟢 Завършена | A4/A5/A6 табелки: WYSIWYG модал, истински печатни стилове (`@page` + `print-color-adjust: exact`), векторен QR код и векторни знамена в PDF-а, каноничен домейн за QR линка. |
 | **Стъпка 9** | [**Step 09: Stripe Granular Billing**](steps/step-09-stripe-granular-billing.md) | 🟢 Завършена | Грануларно таксуване €9/месец на обект, Stripe Checkout & Customer Portal, сезонен паузинг, защита срещу Ghost Billing при изтриване на профил. |
 | **Стъпка 10**| *Step 10: Production Hardening* | ⚪ Очаква | E2E тестове, пълен одит на сигурността, Core Web Vitals одит. |
+| **Стъпка 12**| **Step 12: Footer & Legal Pages** | 🟢 Завършена | Луксозен футър, Общи условия (/terms) и Поверителност (/privacy) на 10 езика. |
+| **Стъпка 13**| [**Step 13: Cookie Consent & Policy (Куки ТТ)**](steps/step-13-cookie-consent.md) | 🟡 В ход | GDPR & ePrivacy ТТ, навигационна интеграция в менютата и страница /cookies. |
 
 ---
 
