@@ -43,7 +43,6 @@ type PlaquePrintStyle = React.CSSProperties & {
 const SCREEN_PADDING_CLASS: Record<PlaqueFormat, string> = {
   A4: 'p-6 sm:p-8',
   A5: 'p-6 sm:p-7',
-  A6: 'p-5 sm:p-6',
 };
 
 const LanguageRow: React.FC<{

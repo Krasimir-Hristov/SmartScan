@@ -1,6 +1,6 @@
 import { locales, type LocaleCode } from '@/lib/i18n/config';
 
-export type PlaqueFormat = 'A4' | 'A5' | 'A6';
+export type PlaqueFormat = 'A4' | 'A5';
 export type PlaqueTheme = 'light' | 'dark';
 
 /**
@@ -124,19 +124,9 @@ export const PLAQUE_PRINT_SPECS: Record<PlaqueFormat, PlaquePrintSpec> = {
     qrRenderSizePx: 152,
     screenMaxWidthClass: 'max-w-[430px]',
   },
-  A6: {
-    format: 'A6',
-    widthMm: 105,
-    heightMm: 148,
-    pageSizeCss: '105mm 148mm',
-    designWidthPx: 380,
-    designPaddingPx: 24,
-    qrRenderSizePx: 128,
-    screenMaxWidthClass: 'max-w-[380px]',
-  },
 };
 
-export const PLAQUE_FORMATS: readonly PlaqueFormat[] = ['A4', 'A5', 'A6'];
+export const PLAQUE_FORMATS: readonly PlaqueFormat[] = ['A4', 'A5'];
 
 /* -------------------------------------------------------------------------- */
 /*  Pure helpers                                                              */

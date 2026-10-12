@@ -20,7 +20,6 @@ export interface PlaqueFormatControlsProps {
 const FORMAT_BADGE_KEY: Record<PlaqueFormat, string> = {
   A4: 'formatA4Badge',
   A5: 'formatA5Badge',
-  A6: 'formatA6Badge',
 };
 
 export const PlaqueFormatControls: React.FC<PlaqueFormatControlsProps> = ({
@@ -40,7 +39,7 @@ export const PlaqueFormatControls: React.FC<PlaqueFormatControlsProps> = ({
           <span>{t('formatLabel')}</span>
         </span>
 
-        <div className='grid grid-cols-3 gap-2 mt-1'>
+        <div className='grid grid-cols-2 gap-2 mt-1'>
           {PLAQUE_FORMATS.map((candidate) => (
             <button
               key={candidate}
