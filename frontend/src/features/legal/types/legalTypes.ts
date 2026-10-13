@@ -6,6 +6,11 @@ export interface LegalCallout {
   text: string;
 }
 
+export interface LegalTable {
+  headers: string[];
+  rows: string[][];
+}
+
 export interface LegalClause {
   id: string;
   number: string;
@@ -13,6 +18,7 @@ export interface LegalClause {
   paragraphs: string[];
   bulletPoints?: string[];
   callout?: LegalCallout;
+  table?: LegalTable;
 }
 
 export interface LegalDocument {

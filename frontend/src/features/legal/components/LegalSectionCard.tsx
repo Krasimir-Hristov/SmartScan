@@ -49,6 +49,43 @@ export const LegalSectionCard: React.FC<LegalSectionCardProps> = ({
         </ul>
       )}
 
+      {/* Structured Legal / Cookie Table */}
+      {clause.table && clause.table.rows.length > 0 && (
+        <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-zinc-950/60 shadow-inner">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm border-collapse">
+              <thead className="border-b border-zinc-800 bg-zinc-900/90 font-mono text-[11px] sm:text-xs text-emerald-300 uppercase tracking-wider">
+                <tr>
+                  {clause.table.headers.map((header, idx) => (
+                    <th key={idx} scope="col" className="px-3.5 py-3 font-semibold whitespace-nowrap">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60 text-zinc-300 font-sans">
+                {clause.table.rows.map((row, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-zinc-900/40 transition-colors">
+                    {row.map((cell, cIdx) => (
+                      <td
+                        key={cIdx}
+                        className={cn(
+                          'px-3.5 py-3 leading-relaxed align-top',
+                          cIdx === 0 && 'font-mono font-medium text-emerald-400 text-xs whitespace-nowrap',
+                          cIdx === row.length - 1 && 'font-mono text-[11px] text-zinc-400'
+                        )}
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Callout Card */}
       {clause.callout && (
         <div

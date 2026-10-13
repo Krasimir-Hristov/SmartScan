@@ -116,14 +116,11 @@ def is_billable_space_id(space_id: str) -> bool:
         return False
 
 
-def _resolve_price_id(space_type: str | None) -> str:
-    """Map a space vertical to its Stripe Price id."""
-    normalized = (space_type or "stay").strip()
-    if normalized in ("menu", "real_estate"):
-        # Verticals without a dedicated configured price fall back to the Stay
-        # price so billing never hard-fails; each vertical gets its own env var
-        # when it launches.
-        return settings.STRIPE_PRICE_ID_STAY
+def _resolve_price_id(space_type: str | None = None) -> str:
+    """Map a space to its Stripe Price id.
+
+    SmartScan uses a single flat price of €9.99/mo per space with no annual plans.
+    """
     return settings.STRIPE_PRICE_ID_STAY
 
 
