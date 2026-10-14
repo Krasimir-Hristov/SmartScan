@@ -1,8 +1,8 @@
 # Стъпка 13: Cookie Consent Banner & Политика за бисквитките (Куки ТТ)
 
-> **Статус**: 🟡 В ход / Недовършена (Техническо задание и навигационна интеграция)  
-> **Дата на заданието**: 9 октомври 2026 г.  
-> **Нормативна рамка**: Регламент (ЕС) 2016/679 (GDPR), Директива 2002/58/ЕО (ePrivacy Directive).  
+> **Статус**: 🟢 Завършена и слята в `main` (commit `1228a38` и `c119b8f`)  
+> **Дата на завършване**: 12 октомври 2026 г.  
+> **Нормативна рамка**: Регламент (ЕС) 2016/679 (GDPR чл. 6 и чл. 7), Директива 2002/58/ЕО (ePrivacy Directive чл. 5(3)).  
 > **Референтни документи**: [`ROADMAP.md`](../../ROADMAP.md), [`AGENTS.md`](../../AGENTS.md), [`docs/README.md`](../README.md).
 
 ---
@@ -35,82 +35,58 @@ SmartScan Stay оперира като мулти-тенант SaaS платфо
 
 ---
 
-## 3. Техническа спецификация на Cookie Consent Banner
+## 3. Архитектура на модул `src/features/cookies/`
 
-### 3.1. Визуален дизайн (Obsidian High-Tech Luxury)
-- **Разположение**: Фиксиран плаващ банер в долната част на екрана (`fixed bottom-4 sm:bottom-6 inset-x-4 sm:inset-x-auto sm:right-6 sm:max-w-md z-50`).
-- **Стилизация**:
-  - Фон: `#09090b` с `backdrop-blur-xl`, бордюр `border-emerald-500/20`, мека сянка `shadow-2xl shadow-black/80`.
-  - Градиентен акцент: Тънък горен бордюр `bg-linear-to-r from-emerald-500/40 via-teal-500/40 to-transparent`.
-  - Икони: Векторна SVG икона `Cookie` от `lucide-react` с изумруден цвят (`text-emerald-400`).
-- **Мобилна ергономия**:
-  - Отчита долната безопасна зона: `pb-[calc(env(safe-area-inset-bottom)+1rem)]`.
-  - Без изместване на съдържанието (CLS = 0) — плаващо абсолютно/фиксирано позициониране.
-  - Бутони с минимална зона за докосване `44px` и задължителен клас `cursor-pointer`.
-
-### 3.2. Функционално поведение и бутони
-1. **Бутон „Приеми всички“ (`Accept All`)**:
-   - Главен CTA бутон с акцент: `bg-linear-to-r from-emerald-400 to-teal-500 text-zinc-950 font-bold`.
-   - Записва `{ consent: 'all', timestamp: Date.now() }` в `smartscan_cookie_consent`.
-   - Затваря банера с плавна анимация (`motion/react`).
-2. **Бутон „Само задължителни“ (`Essential Only`)**:
-   - Вторичен бутон с равен визуален приоритет: `bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/10`.
-   - Записва `{ consent: 'essential', timestamp: Date.now() }` в `smartscan_cookie_consent`.
-   - Затваря банера без активиране на каквито и да е аналитични скриптове.
-3. **Линк „Политика за бисквитките“**:
-   - Препраща директно към новосъздадената страница `/cookies`.
-4. **Валидност на съгласието**:
-   - 180 дни (6 месеца). След изтичане банерът се визуализира отново за повторно потвърждение.
-
----
-
-## 4. Спецификация на страницата „Политика за бисквитките“ (`/cookies`)
-
-### 4.1. Архитектура и компонентна йерархия
 ```text
 frontend/src/
 ├── app/
-│   └── cookies/
-│       └── page.tsx           # Асинхронен Next.js 16 route с generateMetadata()
+│   ├── cookies/
+│   │   └── page.tsx           # Асинхронен Next.js 16 route с generateMetadata()
+│   └── layout.tsx             # Root Layout с инжектиран <CookieConsentBanner />
 │
-└── features/legal/
-    ├── CookiesPage.tsx        # Основен клиентски компонент (LegalHeader, TOC, SectionCards)
-    ├── content/
-    │   └── cookiesContent.ts  # Строител на съдържанието (buildCookiesDocument)
-    └── components/
-        └── LegalNavbar.tsx    # 3 таба: Terms (/terms), Privacy (/privacy), Cookies (/cookies)
+└── features/cookies/
+    ├── components/
+    │   ├── CookieConsentBanner.tsx # Плаващ Obsidian банер за съгласие с анимации
+    │   └── CookieAuditTable.tsx    # Интерактивна одит таблица с категории бисквитки
+    ├── hooks/
+    │   └── useCookieConsent.ts     # Хук за управление на избора и съгласието
+    ├── lib/
+    │   └── cookieUtils.ts          # Четене, запис и слушател за отваряне на настройките
+    ├── types/
+    │   └── cookieTypes.ts          # ConsentChoice ('all' | 'essential'), CookieAuditItem
+    └── index.ts                    # Barrel Export (CookieConsentBanner, triggerCookieSettings)
 ```
 
-### 4.2. Секции и клаузи на документа
-1. **01. Какво представляват бисквитките и локалното хранилище**: Определение, техническо предназначение, GDPR принцип за минимизиране на данните.
-2. **02. Строго необходими (Essential) бисквитки**: Описание на `NEXT_LOCALE`, сесийни токени на Supabase, криптографски прокси токен, HttpOnly & Secure защита.
-3. **03. Нулев рекламен трекинг и липса на трети страни**: Гаранция срещу рекламни пиксели (Google AdSense, Meta Pixel), липса на проследяване на гостите.
-4. **04. Съхранение на предпочитанията (LocalStorage)**: Техническо описание на `smartscan_cookie_consent` и `smartscan_recent_space`.
-5. **05. Управление и изтриване на бисквитки през браузъра**: Инструкции за Google Chrome, Apple Safari, Mozilla Firefox и Microsoft Edge.
-6. **06. Актуализации на политиката и контакт с DPO**: Ревизии, данни за връзка с Отговорника по защита на данните (`dpo@smartscanstay.com`).
+---
+
+## 4. Ключови компоненти и функционалности
+
+### 4.1. Cookie Consent Banner ([`CookieConsentBanner.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/cookies/components/CookieConsentBanner.tsx))
+- **Разположение**: Фиксиран плаващ банер в долната част на екрана (`fixed bottom-4 sm:bottom-6 right-4 sm:right-6 sm:max-w-md z-50`).
+- **Obsidian High-Tech Luxury стил**:
+  - Фоново стъкло `#09090b` с `backdrop-blur-xl`, бордюр `border-emerald-500/20` и акцентен горен бордюр `bg-linear-to-r from-emerald-500/40 via-teal-500/40 to-transparent`.
+  - SVG икона `Cookie` от `lucide-react` с изумруден цвят.
+- **Equal Prominence бутони**:
+  - `Приеми всички` (`Accept All`): `bg-linear-to-r from-emerald-400 to-teal-500 text-zinc-950 font-bold`.
+  - `Само задължителни` (`Essential Only`): `bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-white/10`.
+  - Равен визуален размер и достъпност с `cursor-pointer`.
+- **Разгъване на детайли**:
+  - Бутон „Персонализирай / Детайли“ за разгъване на подробните категории бисквитки и изрично потвърждение на нулевия рекламен трекинг.
+
+### 4.2. Интерактивна одит таблица ([`CookieAuditTable.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/cookies/components/CookieAuditTable.tsx))
+- Вградена в страницата [`/cookies`](file:///d:/myProjects/smart_scan/frontend/src/app/cookies/page.tsx).
+- Показва всяка бисквитка, провайдър, техническо предназначение, продължителност и категория (Strictly Necessary vs Functional).
+- Напълно преведена на 10-те европейски туристически езика.
+
+### 4.3. Управление на съгласието и Повторно отваряне
+- Съхранение в `smartscan_cookie_consent` за 180 дни (6 месеца).
+- Бутон **„Настройки за бисквитки“** във футъра ([`LandingFooter.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/LandingFooter.tsx)) извиква `triggerCookieSettings()`, което отваря банера повторно за промяна на избора по всяко време съгласно чл. 7(3) от GDPR.
 
 ---
 
-## 5. Навигационна интеграция (Менюта)
+## 5. Верификация и резултати от тестовете
 
-- **Футър на Landing страницата ([`LandingFooter.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/landing/components/LandingFooter.tsx))**:
-  - Включен линк `/cookies` до „Поверителност“ и „Условия за ползване“.
-  - 10-езикова локализация чрез ключ `footer.cookies`.
-- **Правен навбар ([`LegalNavbar.tsx`](file:///d:/myProjects/smart_scan/frontend/src/features/legal/components/LegalNavbar.tsx))**:
-  - Включен централен навигационен таб с икона `Cookie` и активен стейт при маршрут `/cookies`.
-  - 10-езикова локализация чрез ключ `legal.viewCookies`.
-- **10 Туристически локала ([`frontend/messages/`](file:///d:/myProjects/smart_scan/frontend/messages/))**:
-  - Пълна локализация на терминологията за бисквитките за `bg`, `en`, `de`, `ro`, `el`, `ru`, `tr`, `es`, `it`, `fr`.
-
----
-
-## 6. Чек-лист за бъдещо финализиране (Отворена задача)
-
-> [!NOTE]
-> В съответствие с указанията, функционалността е описана и интегрирана в навигационните менюта, като задачата умишлено **НЕ се маркира като завършена** и остава активна за последваща реализация на динамичния UI банер и интерактивния превключвател на съгласията.
-
-- [ ] **CookieConsentBanner UI компонент**: Създаване на плаващ Obsidian Luxury компонент в `src/features/cookies/components/CookieConsentBanner.tsx`.
-- [ ] **Хук за съгласие (`useCookieConsent`)**: Управление на четенето и записа в `localStorage` и `cookie` с елиминиране на hydration mismatch.
-- [ ] **Интеграция в Root Layout**: Зареждане на банера в `src/app/layout.tsx` или `LandingPage.tsx`.
-- [ ] **Интерактивен бутон за отваряне на настройките**: Добавяне на бутон „Настройки за бисквитки“ във футъра за отваряне на банера по всяко време.
-- [ ] **End-to-End тест**: Тест на избора „Приеми всички“ и „Само задължителни“ и запазване на стейта при презареждане.
+- **TypeScript (`npx tsc --noEmit`)**: 0 грешки.
+- **ESLint**: 0 грешки.
+- **Next.js Production Build**: Страницата `/cookies` и банерът се компилират чисто в статични и динамични маршрути.
+- **GDPR & ePrivacy съвместимост**: Проверена Equal Prominence на бутоните и 100% блокиране на външни тракери.
