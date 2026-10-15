@@ -818,6 +818,8 @@
     "errorValidation": "Please verify all required fields and check that your email address is valid.",
     "errorNameLength": "Name must be between 2 and 100 characters.",
     "errorEmailFormat": "Please enter a valid email address.",
+    "errorPhoneLength": "Phone number must be at most 35 characters.",
+    "errorPhoneFormat": "Please enter a valid phone number.",
     "errorMessageLength": "Message must be between 10 and 3,000 characters.",
     "errorConsent": "You must agree to the Privacy Policy to submit an inquiry."
   }

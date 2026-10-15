@@ -818,6 +818,8 @@
     "errorValidation": "Lütfen zorunlu alanları kontrol edin ve geçerli bir e-posta adresi girin.",
     "errorNameLength": "İsim 2 ile 100 karakter arasında olmalıdır.",
     "errorEmailFormat": "Lütfen geçerli bir e-posta adresi girin.",
+    "errorPhoneLength": "Telefon numarası en fazla 35 karakter olabilir.",
+    "errorPhoneFormat": "Lütfen geçerli bir telefon numarası girin.",
     "errorMessageLength": "Mesaj 10 ile 3.000 karakter arasında olmalıdır.",
     "errorConsent": "Mesaj göndermek için Gizlilik Politikasını onaylamalısınız."
   }

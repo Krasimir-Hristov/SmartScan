@@ -1,9 +1,9 @@
 'use server';
 
-import { createHash } from 'crypto';
+import { createHmac } from 'crypto';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { ContactActionResult, ContactFormData } from '../types/contactTypes';
 
 const contactSchema = z.object({
@@ -22,6 +22,7 @@ const contactSchema = z.object({
     .string()
     .trim()
     .max(35, { message: 'PHONE_TOO_LONG' })
+    .regex(/^[\+0-9\s\(\)\-\.]*$/, { message: 'PHONE_INVALID' })
     .optional(),
   subject: z.enum(['general', 'sales', 'support', 'legal'], {
     error: 'INVALID_SUBJECT',
@@ -38,7 +39,7 @@ const contactSchema = z.object({
 });
 
 /**
- * Extracts client IP and generates a privacy-preserving SHA-256 hash.
+ * Extracts client IP and generates a privacy-preserving SHA-256 HMAC keyed by a server secret.
  */
 function getClientIpHash(headerStore: Headers): string {
   const platformForwarded = headerStore.get('x-vercel-forwarded-for');
@@ -53,13 +54,18 @@ function getClientIpHash(headerStore: Headers): string {
     headerStore.get('x-real-ip') ||
     '127.0.0.1';
 
-  return createHash('sha256')
-    .update(`${clientIp}-smartscan-stay-contact-salt`)
+  const secret =
+    process.env.BACKEND_PROXY_SECRET ||
+    process.env.SUPABASE_SECRET_KEY ||
+    'smartscan-contact-salt-runtime';
+
+  return createHmac('sha256', secret)
+    .update(clientIp)
     .digest('hex');
 }
 
 /**
- * Server Action to submit contact messages to Supabase without exposing public contacts.
+ * Server Action to submit contact messages via rate-limited admin RPC.
  */
 export async function sendContactAction(
   formData: ContactFormData
@@ -95,10 +101,10 @@ export async function sendContactAction(
     const ipHash = getClientIpHash(headerStore);
     const userAgent = headerStore.get('user-agent')?.slice(0, 500) || null;
 
-    // 4. Supabase Client
-    const supabase = await createClient();
+    // 4. Supabase Admin Client
+    const supabase = createAdminClient();
 
-    // 5. Submit via atomic rate-limited RPC
+    // 5. Submit via atomic rate-limited RPC with advisory locking
     const { data: rpcResponse, error: rpcError } = await supabase.rpc(
       'submit_contact_message',
       {
@@ -112,7 +118,15 @@ export async function sendContactAction(
       }
     );
 
-    if (!rpcError && typeof rpcResponse === 'object' && rpcResponse !== null) {
+    if (rpcError) {
+      console.error('[ContactAction] RPC execution failed:', rpcError.message);
+      return {
+        success: false,
+        error: 'SERVER_ERROR',
+      };
+    }
+
+    if (typeof rpcResponse === 'object' && rpcResponse !== null) {
       const result = rpcResponse as Record<string, unknown>;
       if (result.success === true) {
         // Architectural Hook for future scaling:
@@ -120,41 +134,32 @@ export async function sendContactAction(
         // 2. Notification dispatch to owner inbox via Resend / SMTP
         return { success: true };
       }
+
       if (result.error === 'RATE_LIMIT') {
         return {
           success: false,
           error: 'RATE_LIMIT',
         };
       }
-    }
 
-    // Fallback: Direct table insert if RPC is not yet synchronized
-    const { error: insertError } = await supabase
-      .from('contact_messages')
-      .insert({
-        name: validData.name,
-        email: validData.email,
-        phone: validData.phone || null,
-        subject: validData.subject,
-        message: validData.message,
-        ip_hash: ipHash,
-        user_agent: userAgent,
-        status: 'unread',
-        priority: 'normal',
-        metadata: {},
-      });
+      if (result.error === 'INVALID_PHONE') {
+        return {
+          success: false,
+          error: 'VALIDATION_FAILED',
+          fieldErrors: { phone: 'PHONE_INVALID' },
+        };
+      }
 
-    if (insertError) {
-      // In development or preview environments where migrations are pending,
-      // log to console and return user-friendly error
-      console.warn('[ContactAction] Failed to insert contact message:', insertError.message);
       return {
         success: false,
-        error: 'DATABASE_ERROR',
+        error: 'SERVER_ERROR',
       };
     }
 
-    return { success: true };
+    return {
+      success: false,
+      error: 'SERVER_ERROR',
+    };
   } catch (error) {
     console.error('[ContactAction] Unexpected error processing contact form:', error);
     return {

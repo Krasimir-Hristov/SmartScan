@@ -4,7 +4,7 @@ import React from 'react';
 import { ContactNavbar } from './components/ContactNavbar';
 import { ContactHeader } from './components/ContactHeader';
 import { ContactForm } from './components/ContactForm';
-import { LandingFooter } from '@/features/landing/components/LandingFooter';
+import { LandingFooter } from '@/features/landing';
 
 export const ContactPage: React.FC = () => {
   return (

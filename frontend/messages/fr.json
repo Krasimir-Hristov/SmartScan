@@ -818,6 +818,8 @@
     "errorValidation": "Veuillez vérifier les champs obligatoires et saisir une adresse e-mail valide.",
     "errorNameLength": "Le nom doit comporter entre 2 et 100 caractères.",
     "errorEmailFormat": "Veuillez saisir une adresse e-mail valide.",
+    "errorPhoneLength": "Le numéro de téléphone doit comporter 35 caractères maximum.",
+    "errorPhoneFormat": "Veuillez saisir un numéro de téléphone valide.",
     "errorMessageLength": "Le message doit comporter entre 10 et 3 000 caractères.",
     "errorConsent": "Vous devez accepter la Politique de Confidentialité pour envoyer le message."
   }

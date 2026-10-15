@@ -818,6 +818,8 @@
     "errorValidation": "Vă rugăm să verificați câmpurile obligatorii și să introduceți o adresă de e-mail validă.",
     "errorNameLength": "Numele trebuie să conțină între 2 și 100 de caractere.",
     "errorEmailFormat": "Vă rugăm să introduceți o adresă de e-mail validă.",
+    "errorPhoneLength": "Numărul de telefon poate avea cel mult 35 de caractere.",
+    "errorPhoneFormat": "Vă rugăm să introduceți un număr de telefon valid.",
     "errorMessageLength": "Mesajul trebuie să conțină între 10 și 3.000 de caractere.",
     "errorConsent": "Trebuie să acceptați Politica de confidențialitate pentru a trimite mesajul."
   }

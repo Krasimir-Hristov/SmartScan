@@ -818,6 +818,8 @@
     "errorValidation": "Bitte überprüfen Sie die Pflichtfelder und geben Sie eine gültige E-Mail-Adresse ein.",
     "errorNameLength": "Der Name muss zwischen 2 und 100 Zeichen lang sein.",
     "errorEmailFormat": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "errorPhoneLength": "Die Telefonnummer darf maximal 35 Zeichen lang sein.",
+    "errorPhoneFormat": "Bitte geben Sie eine gültige Telefonnummer ein.",
     "errorMessageLength": "Die Nachricht muss zwischen 10 und 3.000 Zeichen lang sein.",
     "errorConsent": "Sie müssen der Datenschutzerklärung zustimmen, um die Anfrage abzusenden."
   }
