@@ -8,6 +8,8 @@ export type Json =
 
 export type SpaceType = 'stay' | 'menu' | 'real_estate' | 'auto' | 'insurance';
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'paused' | 'canceled';
+export type ContactMessageStatus = 'unread' | 'read' | 'archived' | 'replied';
+export type ContactMessagePriority = 'low' | 'normal' | 'high' | 'urgent';
 
 /**
  * Strongly typed settings structure for stay_settings JSONB column.
@@ -141,6 +143,66 @@ export interface Database {
           }
         ];
       };
+      contact_messages: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          subject: string;
+          message: string;
+          status: ContactMessageStatus;
+          priority: ContactMessagePriority;
+          ai_summary: string | null;
+          ai_sentiment: string | null;
+          ai_suggested_reply: string | null;
+          metadata: Json;
+          ip_hash: string | null;
+          user_agent: string | null;
+          replied_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email: string;
+          phone?: string | null;
+          subject: string;
+          message: string;
+          status?: ContactMessageStatus;
+          priority?: ContactMessagePriority;
+          ai_summary?: string | null;
+          ai_sentiment?: string | null;
+          ai_suggested_reply?: string | null;
+          metadata?: Json;
+          ip_hash?: string | null;
+          user_agent?: string | null;
+          replied_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          phone?: string | null;
+          subject?: string;
+          message?: string;
+          status?: ContactMessageStatus;
+          priority?: ContactMessagePriority;
+          ai_summary?: string | null;
+          ai_sentiment?: string | null;
+          ai_suggested_reply?: string | null;
+          metadata?: Json;
+          ip_hash?: string | null;
+          user_agent?: string | null;
+          replied_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -174,6 +236,18 @@ export interface Database {
           similarity: number;
         }[];
       };
+      submit_contact_message: {
+        Args: {
+          p_name: string;
+          p_email: string;
+          p_subject: string;
+          p_message: string;
+          p_phone?: string | null;
+          p_ip_hash?: string | null;
+          p_user_agent?: string | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       space_type: SpaceType;
@@ -195,3 +269,7 @@ export type KnowledgeChunkUpdate = Database['public']['Tables']['knowledge_chunk
 
 export type GuestSpace = Database['public']['Functions']['get_guest_space_by_slug']['Returns'][number];
 export type MatchedKnowledge = Database['public']['Functions']['match_space_knowledge']['Returns'][number];
+
+export type ContactMessage = Database['public']['Tables']['contact_messages']['Row'];
+export type ContactMessageInsert = Database['public']['Tables']['contact_messages']['Insert'];
+export type ContactMessageUpdate = Database['public']['Tables']['contact_messages']['Update'];
