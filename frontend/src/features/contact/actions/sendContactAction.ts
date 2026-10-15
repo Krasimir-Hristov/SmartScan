@@ -58,11 +58,12 @@ function getClientIpHash(headerStore: Headers): string {
 
   const secret =
     process.env.BACKEND_PROXY_SECRET ||
-    process.env.SUPABASE_SECRET_KEY;
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!secret) {
     throw new Error(
-      'Missing server secret for IP hashing: BACKEND_PROXY_SECRET or SUPABASE_SECRET_KEY must be configured.'
+      'Missing server secret for IP hashing: BACKEND_PROXY_SECRET, SUPABASE_SECRET_KEY, or SUPABASE_SERVICE_ROLE_KEY must be configured.'
     );
   }
 
