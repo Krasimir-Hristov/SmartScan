@@ -159,7 +159,8 @@
     "stripePartner": "Stripe Verified Partner",
     "gdprCompliant": "GDPR Compliant (EU Host)",
     "cookies": "Cookie Policy",
-    "cookieSettings": "Cookie Settings"
+    "cookieSettings": "Cookie Settings",
+    "contact": "Contact"
   },
   "legal": {
     "badge": "LEGAL & COMPLIANCE",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing & Advertising Profilers",
     "catMarketingBadge": "0 active (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay operates strictly with zero advertising trackers. No Meta Pixel, no Google Ads, no guest profiling."
+  },
+  "contact": {
+    "metaTitle": "Contact Us | SmartScan Stay",
+    "metaDesc": "Send an inquiry or request assistance from the SmartScan Stay team. Fast response within 24 hours.",
+    "badge": "GET IN TOUCH",
+    "title": "Send Us a Message",
+    "subtitle": "Have questions about SmartScan Stay, property onboarding, or custom integrations? Fill out the form below and our team will get back to you.",
+    "responseTime": "Reply within 24 hours",
+    "privacyProtected": "Encrypted & GDPR Compliant",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "e.g. Alexander Petrov",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "alexander@example.com",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "e.g. +359 88 123 4567",
+    "optional": "optional",
+    "subjectLabel": "Subject / Inquiry Type",
+    "subjectGeneral": "General Inquiry",
+    "subjectSales": "Sales & Property Onboarding",
+    "subjectSupport": "Host Technical Support",
+    "subjectLegal": "Privacy & GDPR Data Inquiry",
+    "messageLabel": "Your Message",
+    "messagePlaceholder": "Tell us how we can assist you...",
+    "consentText": "I agree to the processing of my contact details to receive a response in accordance with the",
+    "privacyLink": "Privacy Policy",
+    "submitButton": "Send Message",
+    "sendingButton": "Sending message...",
+    "successTitle": "Message Sent Successfully!",
+    "successMessage": "Thank you for reaching out. We have received your inquiry and our team will get back to you shortly.",
+    "sendAnother": "Send another message",
+    "backToHome": "Back to Home",
+    "errorGeneric": "An unexpected error occurred while sending your message. Please try again later.",
+    "errorRateLimit": "Too many messages sent. Please wait a few minutes before trying again.",
+    "errorValidation": "Please verify all required fields and check that your email address is valid.",
+    "errorNameLength": "Name must be between 2 and 100 characters.",
+    "errorEmailFormat": "Please enter a valid email address.",
+    "errorMessageLength": "Message must be between 10 and 3,000 characters.",
+    "errorConsent": "You must agree to the Privacy Policy to submit an inquiry."
   }
 }

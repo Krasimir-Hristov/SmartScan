@@ -159,7 +159,8 @@
     "stripePartner": "Επαληθευμένος συνεργάτης Stripe",
     "gdprCompliant": "Συμβατό με GDPR (Φιλοξενία στην ΕΕ)",
     "cookies": "Πολιτική Cookies",
-    "cookieSettings": "Ρυθμίσεις cookies"
+    "cookieSettings": "Ρυθμίσεις cookies",
+    "contact": "Επικοινωνία"
   },
   "legal": {
     "badge": "ΝΟΜΙΚΑ & ΣΥΜΜΟΡΦΩΣΗ",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing & Advertising Profilers",
     "catMarketingBadge": "0 active (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay operates strictly with zero advertising trackers. No Meta Pixel, no Google Ads, no guest profiling."
+  },
+  "contact": {
+    "metaTitle": "Επικοινωνία | SmartScan Stay",
+    "metaDesc": "Στείλτε μήνυμα ή ζητήστε υποστήριξη από την ομάδα του SmartScan Stay. Άμεση απάντηση εντός 24 ωρών.",
+    "badge": "ΕΠΙΚΟΙΝΩΝΗΣΤΕ ΜΑΖΙ ΜΑΣ",
+    "title": "Στείλτε μας μήνυμα",
+    "subtitle": "Έχετε ερωτήσεις σχετικά με το SmartScan Stay, την προσθήκη καταλυμάτων ή εξατομικευμένες λύσεις; Συμπληρώστε τη φόρμα και θα επικοινωνήσουμε άμεσα μαζί σας.",
+    "responseTime": "Απάντηση εντός 24 ωρών",
+    "privacyProtected": "Κρυπτογραφημένο & GDPR",
+    "nameLabel": "Το όνομά σας",
+    "namePlaceholder": "π.χ. Νικόλαος Γεωργίου",
+    "emailLabel": "Διεύθυνση email",
+    "emailPlaceholder": "nikolaos@example.gr",
+    "phoneLabel": "Αριθμός τηλεφώνου",
+    "phonePlaceholder": "π.χ. +30 691 123 4567",
+    "optional": "προαιρετικό",
+    "subjectLabel": "Θέμα / Είδος αιτήματος",
+    "subjectGeneral": "Γενικό ερώτημα",
+    "subjectSales": "Πωλήσεις & Ενσωμάτωση καταλύματος",
+    "subjectSupport": "Τεχνική υποστήριξη οικοδεσποτών",
+    "subjectLegal": "Προσωπικά δεδομένα & Αίτημα GDPR",
+    "messageLabel": "Το μήνυμά σας",
+    "messagePlaceholder": "Περιγράψτε πώς μπορούμε να σας βοηθήσουμε...",
+    "consentText": "Συμφωνώ με την επεξεργασία των στοιχείων επικοινωνίας μου για την απάντηση στο αίτημα σύμφωνα με την",
+    "privacyLink": "Πολιτική Απορρήτου",
+    "submitButton": "Αποστολή μηνύματος",
+    "sendingButton": "Αποστολή μηνύματος...",
+    "successTitle": "Το μήνυμα εστάλη επιτυχώς!",
+    "successMessage": "Σας ευχαριστούμε για την επικοινωνία. Λάβαμε το αίτημά σας και η ομάδα μας θα σας απαντήσει σύντομα.",
+    "sendAnother": "Αποστολή άλλου μηνύματος",
+    "backToHome": "Επιστροφή στην αρχική",
+    "errorGeneric": "Παρουσιάστηκε μη αναμενόμενο σφάλμα. Παρακαλούμε δοκιμάστε ξανά αργότερα.",
+    "errorRateLimit": "Υπερβολικός αριθμός αιτημάτων. Παρακαλούμε περιμένετε λίγα λεπτά.",
+    "errorValidation": "Παρακαλούμε ελέγξτε τα υποχρεωτικά πεδία και καταχωρίστε έγκυρο email.",
+    "errorNameLength": "Το όνομα πρέπει να είναι μεταξύ 2 και 100 χαρακτήρων.",
+    "errorEmailFormat": "Παρακαλούμε εισάγετε έγκυρη διεύθυνση email.",
+    "errorMessageLength": "Το μήνυμα πρέπει να είναι μεταξύ 10 και 3.000 χαρακτήρων.",
+    "errorConsent": "Πρέπει να συναινέσετε στην Πολιτική Απορρήτου για την αποστολή."
   }
 }

@@ -159,7 +159,8 @@
     "stripePartner": "Partenaire vérifié Stripe",
     "gdprCompliant": "Conforme au RGPD (Hébergement UE)",
     "cookies": "Politique de cookies",
-    "cookieSettings": "Paramètres des cookies"
+    "cookieSettings": "Paramètres des cookies",
+    "contact": "Contact"
   },
   "legal": {
     "badge": "MENTIONS LÉGALES & CONFORMITÉ",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing & Profilage publicitaire",
     "catMarketingBadge": "0 actif (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay fonctionne sans traceurs publicitaires. Pas de Meta Pixel, pas de Google Ads, aucun profilage des invités."
+  },
+  "contact": {
+    "metaTitle": "Contactez-nous | SmartScan Stay",
+    "metaDesc": "Envoyez une demande ou sollicitez l'assistance de l'équipe SmartScan Stay. Réponse rapide sous 24h.",
+    "badge": "CONTACTEZ-NOUS",
+    "title": "Envoyez-nous un message",
+    "subtitle": "Vous avez des questions sur SmartScan Stay, l'ajout d'hébergements ou des besoins sur mesure ? Remplissez ce formulaire et nous vous répondrons rapidement.",
+    "responseTime": "Réponse sous 24h",
+    "privacyProtected": "Chiffré & Conforme RGPD",
+    "nameLabel": "Votre nom",
+    "namePlaceholder": "ex. Thomas Dubois",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "thomas@example.fr",
+    "phoneLabel": "Numéro de téléphone",
+    "phonePlaceholder": "ex. +33 6 12 34 56 78",
+    "optional": "facultatif",
+    "subjectLabel": "Sujet / Type de demande",
+    "subjectGeneral": "Demande générale",
+    "subjectSales": "Ventes et intégration d'hébergements",
+    "subjectSupport": "Support technique pour les hôtes",
+    "subjectLegal": "Confidentialité & Demande RGPD",
+    "messageLabel": "Votre message",
+    "messagePlaceholder": "Décrivez comment nous pouvons vous aider...",
+    "consentText": "J'accepte le traitement de mes coordonnées pour répondre à cette demande conformément à la",
+    "privacyLink": "Politique de Confidentialité",
+    "submitButton": "Envoyer le message",
+    "sendingButton": "Envoi du message...",
+    "successTitle": "Message envoyé avec succès !",
+    "successMessage": "Merci de nous avoir contactés. Nous avons bien reçu votre demande et notre équipe vous répondra très prochainement.",
+    "sendAnother": "Envoyer un autre message",
+    "backToHome": "Retour à l'accueil",
+    "errorGeneric": "Une erreur inattendue est survenue lors de l'envoi. Veuillez réessayer plus tard.",
+    "errorRateLimit": "Trop de messages envoyés. Veuillez patienter quelques minutes.",
+    "errorValidation": "Veuillez vérifier les champs obligatoires et saisir une adresse e-mail valide.",
+    "errorNameLength": "Le nom doit comporter entre 2 et 100 caractères.",
+    "errorEmailFormat": "Veuillez saisir une adresse e-mail valide.",
+    "errorMessageLength": "Le message doit comporter entre 10 et 3 000 caractères.",
+    "errorConsent": "Vous devez accepter la Politique de Confidentialité pour envoyer le message."
   }
 }

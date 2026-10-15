@@ -159,7 +159,8 @@
     "stripePartner": "Partner verificato Stripe",
     "gdprCompliant": "Conforme al GDPR (Hosting UE)",
     "cookies": "Informativa sui cookie",
-    "cookieSettings": "Impostazioni cookie"
+    "cookieSettings": "Impostazioni cookie",
+    "contact": "Contatti"
   },
   "legal": {
     "badge": "NOTE LEGALI E CONFORMITÀ",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing e profilazione",
     "catMarketingBadge": "0 attivi (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay opera senza tracker pubblicitari. Nessun Meta Pixel, nessun Google Ads, nessun tracciamento degli ospiti."
+  },
+  "contact": {
+    "metaTitle": "Contattaci | SmartScan Stay",
+    "metaDesc": "Invia una richiesta o chiedi assistenza al team di SmartScan Stay. Risposta rapida entro 24 ore.",
+    "badge": "CONTATTACI",
+    "title": "Inviaci un messaggio",
+    "subtitle": "Hai domande su SmartScan Stay, sull'attivazione di alloggi o su integrazioni personalizzate? Compila il modulo e il nostro team ti risponderà al più presto.",
+    "responseTime": "Risposta entro 24 ore",
+    "privacyProtected": "Crittografato & Conforme GDPR",
+    "nameLabel": "Il tuo nome",
+    "namePlaceholder": "es. Marco Rossi",
+    "emailLabel": "Indirizzo email",
+    "emailPlaceholder": "marco@example.it",
+    "phoneLabel": "Numero di telefono",
+    "phonePlaceholder": "es. +39 345 123 4567",
+    "optional": "opzionale",
+    "subjectLabel": "Oggetto / Tipo di richiesta",
+    "subjectGeneral": "Richiesta generale",
+    "subjectSales": "Vendite e onboarding alloggi",
+    "subjectSupport": "Supporto tecnico host",
+    "subjectLegal": "Privacy & Richiesta GDPR",
+    "messageLabel": "Il tuo messaggio",
+    "messagePlaceholder": "Descrivi come possiamo aiutarti...",
+    "consentText": "Acconsento al trattamento dei miei dati di contatto per rispondere a questa richiesta in conformità con la",
+    "privacyLink": "Informativa sulla Privacy",
+    "submitButton": "Invia messaggio",
+    "sendingButton": "Invio in corso...",
+    "successTitle": "Messaggio inviato con successo!",
+    "successMessage": "Grazie per averci contattato. Abbiamo ricevuto la tua richiesta e il nostro team ti risponderà a breve.",
+    "sendAnother": "Invia un altro messaggio",
+    "backToHome": "Torna alla Home",
+    "errorGeneric": "Si è verificato un errore imprevisto durante l'invio. Riprova più tardi.",
+    "errorRateLimit": "Troppi messaggi inviati. Attendi qualche minuto prima di riprovare.",
+    "errorValidation": "Verifica i campi obbligatori e inserisci un indirizzo email valido.",
+    "errorNameLength": "Il nome deve contenere tra 2 e 100 caratteri.",
+    "errorEmailFormat": "Inserisci un indirizzo email valido.",
+    "errorMessageLength": "Il messaggio deve contenere tra 10 e 3.000 caratteri.",
+    "errorConsent": "È necessario accettare l'Informativa sulla Privacy per inviare il messaggio."
   }
 }

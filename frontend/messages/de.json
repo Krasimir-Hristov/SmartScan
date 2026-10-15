@@ -159,7 +159,8 @@
     "stripePartner": "Verifizierter Stripe-Partner",
     "gdprCompliant": "DSGVO-konform (EU-Hosting)",
     "cookies": "Cookie-Richtlinie",
-    "cookieSettings": "Cookie-Einstellungen"
+    "cookieSettings": "Cookie-Einstellungen",
+    "contact": "Kontakt"
   },
   "legal": {
     "badge": "RECHTLICHES & COMPLIANCE",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing & Werbe-Profiling",
     "catMarketingBadge": "0 aktiv (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay setzt keine Tracking-Pixel ein. Kein Meta-Pixel, keine Google Ads, kein Gäste-Profiling."
+  },
+  "contact": {
+    "metaTitle": "Kontakt | SmartScan Stay",
+    "metaDesc": "Senden Sie eine Anfrage oder fordern Sie Unterstützung vom SmartScan Stay-Team an. Schnelle Antwort innerhalb von 24 Stunden.",
+    "badge": "KONTAKTIEREN SIE UNS",
+    "title": "Nachricht senden",
+    "subtitle": "Haben Sie Fragen zu SmartScan Stay, Objektverwaltung oder maßgeschneiderten Lösungen? Füllen Sie das Formular aus – wir antworten schnellstmöglich.",
+    "responseTime": "Antwort innerhalb von 24 Std.",
+    "privacyProtected": "Verschlüsselt & DSGVO-konform",
+    "nameLabel": "Ihr Name",
+    "namePlaceholder": "z. B. Maximilian Schmidt",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "maximilian@example.de",
+    "phoneLabel": "Telefonnummer",
+    "phonePlaceholder": "z. B. +49 170 1234567",
+    "optional": "optional",
+    "subjectLabel": "Thema / Art der Anfrage",
+    "subjectGeneral": "Allgemeine Anfrage",
+    "subjectSales": "Vertrieb & Unterkunfts-Onboarding",
+    "subjectSupport": "Technischer Support für Gastgeber",
+    "subjectLegal": "Datenschutz & DSGVO-Anfrage",
+    "messageLabel": "Ihre Nachricht",
+    "messagePlaceholder": "Beschreiben Sie, wie wir Ihnen helfen können...",
+    "consentText": "Ich erkläre mich mit der Verarbeitung meiner Kontaktdaten zur Beantwortung dieser Anfrage gemäß der",
+    "privacyLink": "Datenschutzerklärung",
+    "submitButton": "Nachricht absenden",
+    "sendingButton": "Nachricht wird gesendet...",
+    "successTitle": "Nachricht erfolgreich gesendet!",
+    "successMessage": "Vielen Dank für Ihre Kontaktaufnahme. Ihre Anfrage ist eingegangen und unser Team wird sich in Kürze bei Ihnen melden.",
+    "sendAnother": "Weitere Nachricht senden",
+    "backToHome": "Zurück zur Startseite",
+    "errorGeneric": "Beim Senden ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "errorRateLimit": "Zu viele Anfragen gesendet. Bitte warten Sie einige Minuten.",
+    "errorValidation": "Bitte überprüfen Sie die Pflichtfelder und geben Sie eine gültige E-Mail-Adresse ein.",
+    "errorNameLength": "Der Name muss zwischen 2 und 100 Zeichen lang sein.",
+    "errorEmailFormat": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "errorMessageLength": "Die Nachricht muss zwischen 10 und 3.000 Zeichen lang sein.",
+    "errorConsent": "Sie müssen der Datenschutzerklärung zustimmen, um die Anfrage abzusenden."
   }
 }

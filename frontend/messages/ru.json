@@ -159,7 +159,8 @@
     "stripePartner": "Проверенный партнер Stripe",
     "gdprCompliant": "Соответствие GDPR (Хостинг в ЕС)",
     "cookies": "Политика cookie",
-    "cookieSettings": "Настройки cookie"
+    "cookieSettings": "Настройки cookie",
+    "contact": "Контакты"
   },
   "legal": {
     "badge": "ПРАВОВАЯ ИНФОРМАЦИЯ И СООТВЕТСТВИЕ",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing & Advertising Profilers",
     "catMarketingBadge": "0 active (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay operates strictly with zero advertising trackers. No Meta Pixel, no Google Ads, no guest profiling."
+  },
+  "contact": {
+    "metaTitle": "Контакты | SmartScan Stay",
+    "metaDesc": "Отправьте запрос или обратитесь за поддержкой к команде SmartScan Stay. Быстрый ответ в течение 24 часов.",
+    "badge": "СВЯЖИТЕСЬ С НАМИ",
+    "title": "Отправьте нам сообщение",
+    "subtitle": "Есть вопросы о SmartScan Stay, подключении объектов или индивидуальных интеграциях? Заполните форму, и мы свяжемся с вами.",
+    "responseTime": "Ответ в течение 24 часов",
+    "privacyProtected": "Защищено & GDPR",
+    "nameLabel": "Ваше имя",
+    "namePlaceholder": "напр. Дмитрий Смирнов",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "dmitry@example.com",
+    "phoneLabel": "Номер телефона",
+    "phonePlaceholder": "напр. +7 999 123-45-67",
+    "optional": "необязательно",
+    "subjectLabel": "Тема / Тип обращения",
+    "subjectGeneral": "Общий вопрос",
+    "subjectSales": "Продажи и подключение объектов",
+    "subjectSupport": "Техническая поддержка хостов",
+    "subjectLegal": "Конфиденциальность и запросы GDPR",
+    "messageLabel": "Ваше сообщение",
+    "messagePlaceholder": "Опишите, чем мы можем вам помочь...",
+    "consentText": "Я согласен на обработку контактных данных для ответа на данное обращение в соответствии с",
+    "privacyLink": "Политикой конфиденциальности",
+    "submitButton": "Отправить сообщение",
+    "sendingButton": "Отправка сообщения...",
+    "successTitle": "Сообщение успешно отправлено!",
+    "successMessage": "Спасибо за обращение. Мы получили ваше сообщение, и наша команда свяжется с вами в ближайшее время.",
+    "sendAnother": "Отправить еще одно сообщение",
+    "backToHome": "Вернуться на главную",
+    "errorGeneric": "Произошла непредвиденная ошибка при отправке. Пожалуйста, повторите попытку позже.",
+    "errorRateLimit": "Слишком много сообщений. Пожалуйста, подождите несколько минут перед новой попыткой.",
+    "errorValidation": "Пожалуйста, проверьте обязательные поля и укажите корректный email.",
+    "errorNameLength": "Имя должно содержать от 2 до 100 символов.",
+    "errorEmailFormat": "Пожалуйста, введите корректный адрес электронной почты.",
+    "errorMessageLength": "Сообщение должно содержать от 10 до 3000 символов.",
+    "errorConsent": "Для отправки необходимо согласиться с Политикой конфиденциальности."
   }
 }

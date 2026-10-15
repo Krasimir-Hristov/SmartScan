@@ -168,6 +168,17 @@ export const LandingFooter: React.FC = () => {
             >
               {t('cookies')}
             </Link>
+            <Link
+              href="/contact"
+              className={cn(
+                'transition-colors cursor-pointer',
+                pathname === '/contact'
+                  ? 'text-emerald-400 font-semibold'
+                  : 'text-zinc-400 hover:text-white'
+              )}
+            >
+              {t('contact')}
+            </Link>
             <button
               type="button"
               onClick={triggerCookieSettings}

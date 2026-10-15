@@ -159,7 +159,8 @@
     "stripePartner": "Doğrulanmış Stripe Ortağı",
     "gdprCompliant": "GDPR Uyumlu (AB Sunucusu)",
     "cookies": "Çerez Politikası",
-    "cookieSettings": "Çerez Ayarları"
+    "cookieSettings": "Çerez Ayarları",
+    "contact": "İletişim"
   },
   "legal": {
     "badge": "YASAL VE UYUMLULUK",
@@ -781,5 +782,43 @@
     "catMarketingTitle": "Marketing & Advertising Profilers",
     "catMarketingBadge": "0 active (Zero-Trackers)",
     "catMarketingDesc": "SmartScan Stay operates strictly with zero advertising trackers. No Meta Pixel, no Google Ads, no guest profiling."
+  },
+  "contact": {
+    "metaTitle": "İletişim | SmartScan Stay",
+    "metaDesc": "SmartScan Stay ekibine soru veya destek talebi iletin. 24 saat içinde hızlı geri dönüş.",
+    "badge": "BİZE ULAŞIN",
+    "title": "Bize Mesaj Gönderin",
+    "subtitle": "SmartScan Stay, mülk entegrasyonu veya özel çözümler hakkında sorularınız mı var? Formu doldurun, ekibimiz en kısa sürede sizinle iletişime geçsin.",
+    "responseTime": "24 saat içinde yanıt",
+    "privacyProtected": "Şifreli & GDPR Uyumlu",
+    "nameLabel": "Adınız Soyadınız",
+    "namePlaceholder": "ör. Emre Yılmaz",
+    "emailLabel": "E-posta Adresi",
+    "emailPlaceholder": "emre@example.com",
+    "phoneLabel": "Telefon Numarası",
+    "phonePlaceholder": "ör. +90 532 123 4567",
+    "optional": "isteğe bağlı",
+    "subjectLabel": "Konu / Talep Türü",
+    "subjectGeneral": "Genel Soru",
+    "subjectSales": "Satış & Tesis Entegrasyonu",
+    "subjectSupport": "Ev Sahipleri İçin Teknik Destek",
+    "subjectLegal": "Gizlilik & KVKK / GDPR Talebi",
+    "messageLabel": "Mesajınız",
+    "messagePlaceholder": "Size nasıl yardımcı olabileceğimizi açıklayın...",
+    "consentText": "İletişim bilgilerimin bu talebe yanıt verilmesi amacıyla işlenmesini kabul ediyorum:",
+    "privacyLink": "Gizlilik Politikası",
+    "submitButton": "Mesajı Gönder",
+    "sendingButton": "Mesaj gönderiliyor...",
+    "successTitle": "Mesajınız Başarıyla Gönderildi!",
+    "successMessage": "Bize ulaştığınız için teşekkür ederiz. Talebiniz alınmıştır, ekibimiz en kısa sürede sizinle iletişime geçecektir.",
+    "sendAnother": "Yeni bir mesaj gönder",
+    "backToHome": "Ana Sayfaya Dön",
+    "errorGeneric": "Mesaj gönderilirken beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+    "errorRateLimit": "Çok fazla istek gönderildi. Lütfen birkaç dakika bekleyin.",
+    "errorValidation": "Lütfen zorunlu alanları kontrol edin ve geçerli bir e-posta adresi girin.",
+    "errorNameLength": "İsim 2 ile 100 karakter arasında olmalıdır.",
+    "errorEmailFormat": "Lütfen geçerli bir e-posta adresi girin.",
+    "errorMessageLength": "Mesaj 10 ile 3.000 karakter arasında olmalıdır.",
+    "errorConsent": "Mesaj göndermek için Gizlilik Politikasını onaylamalısınız."
   }
 }
