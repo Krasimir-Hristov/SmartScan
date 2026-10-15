@@ -2,7 +2,7 @@
 -- Migration: 20261014000001_create_contact_messages.sql
 -- Description: Contact Form Messages Schema (Step 14):
 --   1. Create public.contact_messages table for visitor/client inquiries
---   2. Bounded phone number with format CHECK constraint, Email, Name, Subject, and Message
+--   2. Bounded phone number with format CHECK constraint (requires at least 1 digit), Email, Name, Subject, and Message
 --   3. AI scalability fields: ai_summary, ai_sentiment, ai_suggested_reply, priority, metadata
 --   4. Strict status enum constraint ('unread', 'read', 'archived', 'replied')
 --   5. Hashed IP tracking for rate limiting (no plain PII stored)
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL,
-    phone VARCHAR(35) CHECK (phone IS NULL OR (length(phone) >= 5 AND length(phone) <= 35 AND phone ~ '^[\+0-9\s\(\)\-\.]+$')),
+    phone VARCHAR(35) CHECK (phone IS NULL OR (length(phone) >= 5 AND length(phone) <= 35 AND phone ~ '[0-9]' AND phone ~ '^[\+0-9\s\(\)\-\.]+$')),
     subject VARCHAR(50) NOT NULL DEFAULT 'general',
     message TEXT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'unread'
@@ -111,7 +111,8 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'error', 'INVALID_EMAIL');
     END IF;
 
-    IF v_clean_phone IS NOT NULL AND (length(v_clean_phone) < 5 OR length(v_clean_phone) > 35 OR v_clean_phone !~ '^[\+0-9\s\(\)\-\.]+$') THEN
+    -- Phone validation requires at least 1 digit and valid format
+    IF v_clean_phone IS NOT NULL AND (length(v_clean_phone) < 5 OR length(v_clean_phone) > 35 OR v_clean_phone !~ '[0-9]' OR v_clean_phone !~ '^[\+0-9\s\(\)\-\.]+$') THEN
         RETURN jsonb_build_object('success', false, 'error', 'INVALID_PHONE');
     END IF;
 

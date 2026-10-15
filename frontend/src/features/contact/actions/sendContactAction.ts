@@ -23,6 +23,7 @@ const contactSchema = z.object({
     .trim()
     .max(35, { message: 'PHONE_TOO_LONG' })
     .regex(/^[\+0-9\s\(\)\-\.]*$/, { message: 'PHONE_INVALID' })
+    .refine((val) => !val || /[0-9]/.test(val), { message: 'PHONE_INVALID' })
     .optional(),
   subject: z.enum(['general', 'sales', 'support', 'legal'], {
     error: 'INVALID_SUBJECT',
@@ -40,6 +41,7 @@ const contactSchema = z.object({
 
 /**
  * Extracts client IP and generates a privacy-preserving SHA-256 HMAC keyed by a server secret.
+ * Requires BACKEND_PROXY_SECRET or SUPABASE_SECRET_KEY to be configured in the environment.
  */
 function getClientIpHash(headerStore: Headers): string {
   const platformForwarded = headerStore.get('x-vercel-forwarded-for');
@@ -56,8 +58,13 @@ function getClientIpHash(headerStore: Headers): string {
 
   const secret =
     process.env.BACKEND_PROXY_SECRET ||
-    process.env.SUPABASE_SECRET_KEY ||
-    'smartscan-contact-salt-runtime';
+    process.env.SUPABASE_SECRET_KEY;
+
+  if (!secret) {
+    throw new Error(
+      'Missing server secret for IP hashing: BACKEND_PROXY_SECRET or SUPABASE_SECRET_KEY must be configured.'
+    );
+  }
 
   return createHmac('sha256', secret)
     .update(clientIp)
