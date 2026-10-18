@@ -27,8 +27,8 @@ export const AdminLoginCard: React.FC<AdminLoginCardProps> = ({
   isTestLoginEnabled,
 }) => {
   const router = useRouter();
-  const [email, setEmail] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const [email, setEmail] = useState(isTestLoginEnabled ? 'admin' : '');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTestLoading, setIsTestLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

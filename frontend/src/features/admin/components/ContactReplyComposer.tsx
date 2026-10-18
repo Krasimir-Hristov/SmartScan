@@ -65,6 +65,7 @@ export const ContactReplyComposer: React.FC<ContactReplyComposerProps> = ({
             {new Date(message.replied_at).toLocaleString('bg-BG', {
               dateStyle: 'short',
               timeStyle: 'short',
+              timeZone: 'Europe/Sofia',
             })}
           </span>
         )}

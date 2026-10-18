@@ -2,6 +2,7 @@
 
 import { createHmac } from 'crypto';
 import { headers } from 'next/headers';
+import { after } from 'next/server';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { ContactActionResult, ContactFormData } from '../types/contactTypes';
@@ -138,28 +139,33 @@ export async function sendContactAction(
       const result = rpcResponse as Record<string, unknown>;
       if (result.success === true) {
         if (typeof result.id === 'string') {
-          const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
-          const proxySecret = process.env.BACKEND_PROXY_SECRET || '';
-          const triageHeaders: Record<string, string> = {
-            'Content-Type': 'application/json',
-          };
-          if (proxySecret) {
-            triageHeaders['x-internal-auth'] = proxySecret;
-          }
+          const messageId = result.id;
+          after(async () => {
+            try {
+              const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
+              const proxySecret = process.env.BACKEND_PROXY_SECRET || '';
+              const triageHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+              };
+              if (proxySecret) {
+                triageHeaders['x-internal-auth'] = proxySecret;
+              }
 
-          void fetch(`${backendUrl}/api/py/admin/triage`, {
-            method: 'POST',
-            headers: triageHeaders,
-            body: JSON.stringify({
-              message_id: result.id,
-              name: validData.name,
-              email: validData.email,
-              subject: validData.subject,
-              message: validData.message,
-            }),
-            signal: AbortSignal.timeout(10000),
-          }).catch(() => {
-            // Non-blocking background triage; admin can also trigger manually in /admin
+              await fetch(`${backendUrl}/api/py/admin/triage`, {
+                method: 'POST',
+                headers: triageHeaders,
+                body: JSON.stringify({
+                  message_id: messageId,
+                  name: validData.name,
+                  email: validData.email,
+                  subject: validData.subject,
+                  message: validData.message,
+                }),
+                signal: AbortSignal.timeout(10000),
+              });
+            } catch {
+              // Non-blocking background triage; admin can also trigger manually in /admin
+            }
           });
         }
         return { success: true };

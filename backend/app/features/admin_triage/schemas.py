@@ -14,7 +14,7 @@ class AdminTriageRequest(BaseModel):
 
     model_config = ConfigDict(strict=True)
 
-    message_id: UUID | None = None
+    message_id: str | UUID | None = None
     name: str = Field(..., min_length=1, max_length=120)
     email: str = Field(..., min_length=3, max_length=160)
     subject: str = Field(default="general", min_length=1, max_length=60)

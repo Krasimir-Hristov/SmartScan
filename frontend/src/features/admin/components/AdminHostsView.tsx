@@ -51,24 +51,38 @@ export const AdminHostsView: React.FC<AdminHostsViewProps> = ({
   const handleExtendTrial = async (hostId: string, email: string) => {
     setLoadingHostId(hostId);
     setStatusNotice(null);
-    const res = await extendHostTrialAction(hostId, 7);
-    setLoadingHostId(null);
-    if (res.success) {
-      setStatusNotice(`✓ Пробният период на ${email} беше удължен със +7 дни.`);
-      onRefreshRequested();
+    try {
+      const res = await extendHostTrialAction(hostId, 7);
+      if (res.success) {
+        setStatusNotice(`✓ Пробният период на ${email} беше удължен със +7 дни.`);
+        onRefreshRequested();
+      } else {
+        setStatusNotice(`Грешка: ${res.error || 'Неуспешно удължаване на пробния период.'}`);
+      }
+    } catch {
+      setStatusNotice('Системна грешка при удължаване на пробния период.');
+    } finally {
+      setLoadingHostId(null);
     }
   };
 
   const handleToggleSpace = async (spaceId: string, currentActive: boolean) => {
     setLoadingSpaceId(spaceId);
     setStatusNotice(null);
-    const res = await toggleSpaceActiveAdminAction(spaceId, !currentActive);
-    setLoadingSpaceId(null);
-    if (res.success) {
-      setStatusNotice(
-        `✓ Статусът на обекта беше променен на ${!currentActive ? 'Активен' : 'Паузиран'}.`
-      );
-      onRefreshRequested();
+    try {
+      const res = await toggleSpaceActiveAdminAction(spaceId, !currentActive);
+      if (res.success) {
+        setStatusNotice(
+          `✓ Статусът на обекта беше променен на ${!currentActive ? 'Активен' : 'Паузиран'}.`
+        );
+        onRefreshRequested();
+      } else {
+        setStatusNotice(`Грешка: ${res.error || 'Неуспешна промяна на обекта.'}`);
+      }
+    } catch {
+      setStatusNotice('Системна грешка при промяна на обекта.');
+    } finally {
+      setLoadingSpaceId(null);
     }
   };
 
@@ -153,7 +167,7 @@ export const AdminHostsView: React.FC<AdminHostsViewProps> = ({
                       {host.isTrialOpen
                         ? `Активен Trial до ${new Date(
                             host.trialEndsAt || ''
-                          ).toLocaleDateString('bg-BG')}`
+                          ).toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia' })}`
                         : 'Изтекъл / Стандартен Trial'}
                     </span>
                   </div>
@@ -171,7 +185,9 @@ export const AdminHostsView: React.FC<AdminHostsViewProps> = ({
                     <span>•</span>
                     <span className="font-sans text-zinc-500">
                       Регистриран:{' '}
-                      {new Date(host.createdAt).toLocaleDateString('bg-BG')}
+                      {new Date(host.createdAt).toLocaleDateString('bg-BG', {
+                        timeZone: 'Europe/Sofia',
+                      })}
                     </span>
                   </div>
                 </div>

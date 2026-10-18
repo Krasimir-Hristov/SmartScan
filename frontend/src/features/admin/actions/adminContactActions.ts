@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { getAuthenticatedAdmin } from '@/lib/auth/adminDal';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type {
-  ContactMessage,
   ContactMessagePriority,
   ContactMessageStatus,
 } from '@/lib/types/databaseTypes';
@@ -13,6 +13,26 @@ import type {
   AiSentimentType,
   AiTriageActionResponse,
 } from '../types/adminTypes';
+import { buildLocalFallbackTriage } from './contactTriageFallback';
+
+const uuidSchema = z.string().uuid({ message: 'Невалиден идентификатор на съобщение.' });
+
+const updateStatusSchema = z.object({
+  messageId: uuidSchema,
+  status: z.enum(['unread', 'read', 'replied', 'archived'] as const, {
+    message: 'Невалиден статус на съобщение.',
+  }),
+  priority: z
+    .enum(['low', 'normal', 'high', 'urgent'] as const, {
+      message: 'Невалиден приоритет.',
+    })
+    .optional(),
+});
+
+const sendReplySchema = z.object({
+  messageId: uuidSchema,
+  replyText: z.string().trim().min(5, { message: 'Текстът на отговора е твърде кратък.' }),
+});
 
 interface BackendTriagePayload {
   triage?: {
@@ -20,78 +40,6 @@ interface BackendTriagePayload {
     ai_sentiment?: AiSentimentType;
     priority?: ContactMessagePriority;
     ai_suggested_reply?: string;
-  };
-}
-
-function buildLocalFallbackTriage(msg: ContactMessage): {
-  ai_summary: string;
-  ai_sentiment: AiSentimentType;
-  priority: ContactMessagePriority;
-  ai_suggested_reply: string;
-} {
-  const combined = `${msg.subject} ${msg.message}`.toLowerCase();
-  const hasCyrillic = /[а-яА-Я]/.test(msg.message);
-  const hasGerman = /\b(und|wir|für|ferienwohnung|preis|pause)\b/i.test(msg.message);
-
-  let sentiment: AiSentimentType = 'neutral';
-  let priority: ContactMessagePriority = 'normal';
-
-  if (/(спешно|не работи|грешка|проблем с плащане|urgent|error|broken|billing)/.test(combined)) {
-    sentiment = 'urgent';
-    priority = 'urgent';
-  } else if (/(трудно|не мога|помощ|issue|cannot|stuck)/.test(combined)) {
-    sentiment = 'frustrated';
-    priority = 'high';
-  } else if (
-    msg.subject === 'sales' ||
-    /(вили|апартамента|оферта|партньорство|villas|properties|ferienwohnungen)/.test(combined)
-  ) {
-    sentiment = 'positive';
-    priority = 'high';
-  }
-
-  const cleanSnippet = msg.message.replace(/\s+/g, ' ').trim().slice(0, 110);
-  const subjectMap: Record<string, string> = {
-    sales: 'Продажби & B2B интерес',
-    support: 'Техническо запитване',
-    legal: 'Правен / GDPR въпрос',
-    general: 'Общо запитване',
-  };
-  const topicLabel = subjectMap[msg.subject] || 'Клиентско запитване';
-  const ai_summary = `${topicLabel} от ${msg.name}: „${cleanSnippet}${msg.message.length > 110 ? '...' : ''}“`;
-
-  let ai_suggested_reply: string;
-  if (hasCyrillic) {
-    ai_suggested_reply =
-      `Здравейте, ${msg.name},\n\n` +
-      `Благодарим Ви за интереса към SmartScan Stay! Разгледахме Вашето запитване.\n\n` +
-      `Платформата предлага единен прозрачен план от €9.99/месец на обект с 14-дневен безплатен пробен период, ` +
-      `автоматичен AI консиерж на 50+ езика, готови за печат A4/A5 QR табелки и безплатно сезонно паузиране извън активния сезон.\n\n` +
-      `С удоволствие ще Ви съдействаме с настройката. Пишете ни, ако имате допълнителни въпроси!\n\n` +
-      `Поздрави,\nЕкипът на SmartScan Stay`;
-  } else if (hasGerman) {
-    ai_suggested_reply =
-      `Hallo ${msg.name},\n\n` +
-      `vielen Dank für Ihre Nachricht an SmartScan Stay!\n\n` +
-      `Unser Tarif beträgt transparent €9,99 pro Monat und Unterkunft – inklusive 14-tägiger kostenloser Testphase, ` +
-      `druckfertiger A4/A5 QR-Aufsteller und kostenloser saisonaler Pausierung außerhalb der Saison.\n\n` +
-      `Gerne unterstützen wir Sie bei der Einrichtung Ihrer Unterkünfte.\n\n` +
-      `Beste Grüße,\nIhr SmartScan Stay Team`;
-  } else {
-    ai_suggested_reply =
-      `Hello ${msg.name},\n\n` +
-      `Thank you for contacting SmartScan Stay! We have reviewed your message.\n\n` +
-      `SmartScan Stay operates on a flat €9.99/month per property plan with a 14-day free trial, ` +
-      `instant A4/A5 vector QR plaques, a 50+ language AI concierge, and free seasonal pausing during off-peak months.\n\n` +
-      `Let us know if we can help you onboard your properties right away.\n\n` +
-      `Best regards,\nThe SmartScan Stay Team`;
-  }
-
-  return {
-    ai_summary,
-    ai_sentiment: sentiment,
-    priority,
-    ai_suggested_reply,
   };
 }
 
@@ -107,12 +55,21 @@ export async function runContactAiTriageAction(
     return { success: false, error: 'Неоторизиран достъп.' };
   }
 
+  const validIdResult = uuidSchema.safeParse(messageId);
+  if (!validIdResult.success) {
+    return {
+      success: false,
+      error: validIdResult.error.issues[0]?.message || 'Невалиден ID.',
+    };
+  }
+  const validMessageId = validIdResult.data;
+
   try {
     const supabaseAdmin = createAdminClient();
     const { data: msg, error: fetchErr } = await supabaseAdmin
       .from('contact_messages')
       .select('*')
-      .eq('id', messageId)
+      .eq('id', validMessageId)
       .maybeSingle();
 
     if (fetchErr || !msg) {
@@ -132,11 +89,11 @@ export async function runContactAiTriageAction(
         headers['x-internal-auth'] = proxySecret;
       }
 
+      // Do not send message_id so FastAPI does not mutate DB; this action remains the sole writer
       const response = await fetch(`${backendUrl}/api/py/admin/triage`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          message_id: msg.id,
           name: msg.name,
           email: msg.email,
           subject: msg.subject,
@@ -168,7 +125,7 @@ export async function runContactAiTriageAction(
         priority: triageData.priority,
         ai_suggested_reply: triageData.ai_suggested_reply,
       })
-      .eq('id', messageId)
+      .eq('id', validMessageId)
       .select('*')
       .single();
 
@@ -190,7 +147,7 @@ export async function runContactAiTriageAction(
 }
 
 /**
- * Updates the status and/or priority of a contact message.
+ * Updates the status and/or priority of a contact message after strict Zod validation.
  */
 export async function updateContactStatusAction(
   messageId: string,
@@ -202,21 +159,31 @@ export async function updateContactStatusAction(
     return { success: false, error: 'Неоторизиран достъп.' };
   }
 
+  const validation = updateStatusSchema.safeParse({ messageId, status, priority });
+  if (!validation.success) {
+    return {
+      success: false,
+      error: validation.error.issues[0]?.message || 'Невалидни входни параметри.',
+    };
+  }
+
+  const { messageId: validId, status: validStatus, priority: validPriority } = validation.data;
+
   try {
     const supabaseAdmin = createAdminClient();
     const updatePayload: {
       status: ContactMessageStatus;
       priority?: ContactMessagePriority;
-    } = { status };
+    } = { status: validStatus };
 
-    if (priority) {
-      updatePayload.priority = priority;
+    if (validPriority) {
+      updatePayload.priority = validPriority;
     }
 
     const { data: updated, error } = await supabaseAdmin
       .from('contact_messages')
       .update(updatePayload)
-      .eq('id', messageId)
+      .eq('id', validId)
       .select('*')
       .single();
 
@@ -232,8 +199,8 @@ export async function updateContactStatusAction(
 }
 
 /**
- * Records and dispatches the administrator's reply to a customer inquiry,
- * automatically setting status = 'replied' and replied_at = now().
+ * Persists the administrator's reply text and marks the inquiry as replied (status = 'replied').
+ * Note: Delivery to the recipient is handled through the composer's mailto client link.
  */
 export async function sendContactReplyAction(
   messageId: string,
@@ -244,13 +211,15 @@ export async function sendContactReplyAction(
     return { success: false, error: 'Неоторизиран достъп.' };
   }
 
-  const trimmedReply = replyText.trim();
-  if (trimmedReply.length < 5) {
+  const validation = sendReplySchema.safeParse({ messageId, replyText });
+  if (!validation.success) {
     return {
       success: false,
-      error: 'Текстът на отговора е твърде кратък.',
+      error: validation.error.issues[0]?.message || 'Невалиден отговор.',
     };
   }
+
+  const { messageId: validId, replyText: validReply } = validation.data;
 
   try {
     const supabaseAdmin = createAdminClient();
@@ -259,11 +228,11 @@ export async function sendContactReplyAction(
     const { data: updated, error } = await supabaseAdmin
       .from('contact_messages')
       .update({
-        admin_reply: trimmedReply,
+        admin_reply: validReply,
         status: 'replied',
         replied_at: nowIso,
       })
-      .eq('id', messageId)
+      .eq('id', validId)
       .select('*')
       .single();
 
@@ -274,7 +243,7 @@ export async function sendContactReplyAction(
     revalidatePath('/admin');
     return { success: true, updatedMessage: updated };
   } catch {
-    return { success: false, error: 'Системна грешка при изпращане на отговора.' };
+    return { success: false, error: 'Системна грешка при запазване на отговора.' };
   }
 }
 
@@ -350,12 +319,20 @@ export async function deleteContactMessageAction(
     return { success: false, error: 'Неоторизиран достъп.' };
   }
 
+  const validation = uuidSchema.safeParse(messageId);
+  if (!validation.success) {
+    return {
+      success: false,
+      error: validation.error.issues[0]?.message || 'Невалиден ID.',
+    };
+  }
+
   try {
     const supabaseAdmin = createAdminClient();
     const { error } = await supabaseAdmin
       .from('contact_messages')
       .delete()
-      .eq('id', messageId);
+      .eq('id', validation.data);
 
     if (error) {
       return { success: false, error: 'Неуспешно изтриване на запитването.' };
@@ -367,4 +344,3 @@ export async function deleteContactMessageAction(
     return { success: false, error: 'Системна грешка при изтриване на запитването.' };
   }
 }
-

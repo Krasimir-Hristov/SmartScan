@@ -132,9 +132,8 @@ export async function loginAdminWithPasswordAction(
   password: string
 ): Promise<AdminActionResponse> {
   const cleanEmail = email.trim().toLowerCase();
-  const cleanPassword = password.trim();
 
-  if (!cleanEmail || !cleanPassword) {
+  if (!cleanEmail || !password) {
     return {
       success: false,
       error: 'Моля, въведете имейл и парола.',
@@ -142,27 +141,24 @@ export async function loginAdminWithPasswordAction(
   }
 
   try {
+    const isTestLoginAllowed =
+      process.env.NODE_ENV !== 'production' ||
+      process.env.ALLOW_TEST_ADMIN_LOGIN === 'true';
+
+    const testPassword = (process.env.TEST_ADMIN_PASSWORD || 'admin123').trim();
     const isTestCandidate =
-      (cleanEmail === 'admin' ||
-        cleanEmail === 'admin@test.bg' ||
-        cleanEmail === 'admin@smartscan.stay') &&
-      (cleanPassword === 'admin' ||
-        cleanPassword === 'admin123' ||
-        cleanPassword === 'SmartScanAdmin2026!');
+      (cleanEmail === 'admin' || cleanEmail === TEST_ADMIN_EMAIL) &&
+      (password === testPassword || password === 'admin');
 
     // If logging in with the test admin credentials, auto-provision and log in immediately
-    if (
-      isTestCandidate &&
-      (process.env.NODE_ENV !== 'production' ||
-        process.env.ALLOW_TEST_ADMIN_LOGIN === 'true')
-    ) {
+    if (isTestCandidate && isTestLoginAllowed) {
       return loginAsTestAdminAction();
     }
 
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
-      password: cleanPassword,
+      password,
     });
 
     if (error || !data.user) {
@@ -187,8 +183,7 @@ export async function loginAdminWithPasswordAction(
     const isAdmin =
       hostRow?.is_platform_admin === true ||
       allowedEmails.includes(cleanEmail) ||
-      cleanEmail === TEST_ADMIN_EMAIL ||
-      data.user.user_metadata?.is_platform_admin === true;
+      data.user.app_metadata?.is_platform_admin === true;
 
     if (!isAdmin) {
       await supabase.auth.signOut();

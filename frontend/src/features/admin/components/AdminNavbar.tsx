@@ -36,7 +36,11 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await logoutAdminAction();
+      const result = await logoutAdminAction();
+      if (!result.success) {
+        setIsLoggingOut(false);
+        return;
+      }
       router.push('/admin/login');
       router.refresh();
     } catch {

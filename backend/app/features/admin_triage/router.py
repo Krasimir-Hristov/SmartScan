@@ -16,13 +16,11 @@ router = APIRouter(prefix="/admin", tags=["Admin Triage"])
 
 
 def _verify_internal_proxy_secret(request: Request) -> None:
-    """Ensures requests originate from trusted Next.js Server Actions / proxy when secret is set."""
+    """Ensures requests originate from trusted Next.js Server Actions with a valid internal secret."""
     expected_secret = settings.BACKEND_PROXY_SECRET.strip()
-    if not expected_secret:
-        return
-
     provided_secret = (request.headers.get("x-internal-auth") or "").strip()
-    if not provided_secret or not hmac.compare_digest(provided_secret, expected_secret):
+
+    if not expected_secret or not provided_secret or not hmac.compare_digest(provided_secret, expected_secret):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Неоторизиран вътрешен достъп до админ модула.",

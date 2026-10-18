@@ -1,5 +1,6 @@
 """Gemini Flash AI Triaging service for customer contact inquiries."""
 
+import asyncio
 import json
 import logging
 import re
@@ -215,14 +216,17 @@ async def analyze_contact_inquiry(payload: AdminTriageRequest) -> AdminTriageRes
         supabase = get_supabase_client()
         if supabase is not None:
             try:
-                supabase.table("contact_messages").update(
-                    {
-                        "ai_summary": triage_result.ai_summary,
-                        "ai_sentiment": triage_result.ai_sentiment,
-                        "priority": triage_result.priority,
-                        "ai_suggested_reply": triage_result.ai_suggested_reply,
-                    }
-                ).eq("id", str(payload.message_id)).execute()
+                def _sync_db_update() -> None:
+                    supabase.table("contact_messages").update(
+                        {
+                            "ai_summary": triage_result.ai_summary,
+                            "ai_sentiment": triage_result.ai_sentiment,
+                            "priority": triage_result.priority,
+                            "ai_suggested_reply": triage_result.ai_suggested_reply,
+                        }
+                    ).eq("id", str(payload.message_id)).execute()
+
+                await asyncio.to_thread(_sync_db_update)
                 persisted = True
             except Exception as db_exc:  # noqa: BLE001
                 logger.warning("Failed to persist AI triage to Supabase: %s", db_exc)
