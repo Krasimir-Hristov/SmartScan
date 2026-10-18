@@ -156,6 +156,7 @@ export interface Database {
           ai_summary: string | null;
           ai_sentiment: string | null;
           ai_suggested_reply: string | null;
+          admin_reply: string | null;
           metadata: Json;
           ip_hash: string | null;
           user_agent: string | null;
@@ -175,6 +176,7 @@ export interface Database {
           ai_summary?: string | null;
           ai_sentiment?: string | null;
           ai_suggested_reply?: string | null;
+          admin_reply?: string | null;
           metadata?: Json;
           ip_hash?: string | null;
           user_agent?: string | null;
@@ -194,12 +196,70 @@ export interface Database {
           ai_summary?: string | null;
           ai_sentiment?: string | null;
           ai_suggested_reply?: string | null;
+          admin_reply?: string | null;
           metadata?: Json;
           ip_hash?: string | null;
           user_agent?: string | null;
           replied_at?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      hosts: {
+        Row: {
+          id: string;
+          stripe_customer_id: string | null;
+          trial_ends_at: string | null;
+          trial_claimed_at: string | null;
+          is_platform_admin: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          stripe_customer_id?: string | null;
+          trial_ends_at?: string | null;
+          trial_claimed_at?: string | null;
+          is_platform_admin?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          stripe_customer_id?: string | null;
+          trial_ends_at?: string | null;
+          trial_claimed_at?: string | null;
+          is_platform_admin?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      space_analytics_events: {
+        Row: {
+          id: string;
+          space_id: string;
+          event_type: 'qr_scan' | 'chat_message' | 'resolved_query';
+          locale: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          space_id: string;
+          event_type: 'qr_scan' | 'chat_message' | 'resolved_query';
+          locale?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          space_id?: string;
+          event_type?: 'qr_scan' | 'chat_message' | 'resolved_query';
+          locale?: string | null;
+          metadata?: Json;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -273,3 +333,6 @@ export type MatchedKnowledge = Database['public']['Functions']['match_space_know
 export type ContactMessage = Database['public']['Tables']['contact_messages']['Row'];
 export type ContactMessageInsert = Database['public']['Tables']['contact_messages']['Insert'];
 export type ContactMessageUpdate = Database['public']['Tables']['contact_messages']['Update'];
+
+export type HostRecord = Database['public']['Tables']['hosts']['Row'];
+export type SpaceAnalyticsEvent = Database['public']['Tables']['space_analytics_events']['Row'];
