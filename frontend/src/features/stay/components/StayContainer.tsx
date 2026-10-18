@@ -8,9 +8,13 @@ interface StayContainerProps {
 
 export const StayContainer: React.FC<StayContainerProps> = ({ children }) => {
   return (
-    <div className="min-h-dvh bg-[#070709] text-zinc-100 flex justify-center items-start selection:bg-emerald-500 selection:text-zinc-950 font-sans">
-      {/* Desktop simulated phone frame wrapper */}
-      <div className="w-full max-w-md min-h-dvh bg-[#09090b] sm:border-x sm:border-white/[0.08] sm:shadow-2xl sm:shadow-emerald-950/20 flex flex-col relative pb-[env(safe-area-inset-bottom,1.5rem)]">
+    <div className="min-h-dvh w-full bg-[#070709] text-zinc-100 flex flex-col selection:bg-emerald-500 selection:text-zinc-950 font-sans relative">
+      {/* Ambient glow backdrop */}
+      <div
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-emerald-500/[0.03] blur-3xl -z-10"
+        aria-hidden="true"
+      />
+      <div className="w-full flex-1 flex flex-col relative pb-[env(safe-area-inset-bottom,1.5rem)]">
         {children}
       </div>
     </div>

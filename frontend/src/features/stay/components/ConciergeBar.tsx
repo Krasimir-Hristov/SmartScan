@@ -20,11 +20,19 @@ export interface ConciergeBarProps {
   stayData?: SpaceStayData;
 }
 
-export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
+export const ConciergeBar: React.FC<ConciergeBarProps> = ({
+  spaceId,
+  stayData,
+}) => {
   const t = useTranslations('stay');
   const locale = useLocale();
   const [inputQuery, setInputQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const promptList =
+    stayData?.knowledgeChips && stayData.knowledgeChips.length > 0
+      ? stayData.knowledgeChips.map((c) => c.title)
+      : [t('chipHeating'), t('chipDining'), t('chipParking'), t('chipTrash')];
 
   const {
     messages,
@@ -102,7 +110,7 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
 
       {/* Welcome Call to Action Prompt */}
       {messages.length === 0 && (
-        <div className='flex flex-col gap-1.5 p-3.5 rounded-xl bg-linear-to-b from-white/4 to-transparent border border-white/5'>
+        <div className='flex flex-col gap-3 p-3.5 rounded-xl bg-linear-to-b from-white/4 to-transparent border border-white/5'>
           <div className='flex items-center gap-2 text-emerald-400'>
             <Sparkles className='w-4 h-4 shrink-0' />
             <span className='text-xs font-semibold text-white'>
@@ -112,6 +120,23 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
           <p className='text-[11px] text-zinc-400 leading-relaxed'>
             {t('ctaPromptDesc')}
           </p>
+          <div className='flex flex-wrap gap-1.5 pt-1'>
+            {promptList.map((chipText, idx) => (
+              <button
+                key={idx}
+                type='button'
+                onClick={() => {
+                  if (isStreaming) return;
+                  sendMessage(chipText);
+                }}
+                disabled={isStreaming}
+                className='text-[11px] px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/15 border border-white/10 hover:border-emerald-500/30 text-zinc-300 hover:text-emerald-300 transition-colors text-left flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-[0.98]'
+              >
+                <Sparkles className='w-3 h-3 text-emerald-400 shrink-0' />
+                <span>{chipText}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -130,7 +155,7 @@ export const ConciergeBar: React.FC<ConciergeBarProps> = ({ spaceId }) => {
           aria-live='polite'
           aria-relevant='additions'
           aria-busy={isStreaming}
-          className='flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 py-1 scroll-smooth'
+          className='flex flex-col gap-2.5 max-h-72 sm:max-h-80 md:max-h-[440px] lg:max-h-[540px] overflow-y-auto pr-1 py-1 scroll-smooth'
         >
           {messages.map((msg) => {
             if (msg.role === 'assistant' && !msg.content && msg.isStreaming) {

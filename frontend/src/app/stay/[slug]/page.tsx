@@ -31,9 +31,9 @@ const StayPage: React.FC<StayPageProps> = async ({ params }) => {
   const initialData = await getSpaceStayDataWithFallback(slug);
 
   return (
-    <main className="min-h-dvh bg-[#070709]">
+    <div className="min-h-dvh bg-[#070709]">
       <StayExperience slug={slug} initialData={initialData} />
-    </main>
+    </div>
   );
 };
 
