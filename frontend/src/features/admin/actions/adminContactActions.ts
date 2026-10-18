@@ -77,6 +77,7 @@ export async function runContactAiTriageAction(
     }
 
     let triageData = buildLocalFallbackTriage(msg);
+    let triageSource: 'ai' | 'fallback' = 'fallback';
 
     const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://127.0.0.1:8000';
     const proxySecret = process.env.BACKEND_PROXY_SECRET || '';
@@ -111,6 +112,7 @@ export async function runContactAiTriageAction(
             priority: json.triage.priority || triageData.priority,
             ai_suggested_reply: json.triage.ai_suggested_reply,
           };
+          triageSource = 'ai';
         }
       }
     } catch {
@@ -137,6 +139,7 @@ export async function runContactAiTriageAction(
     return {
       success: true,
       updatedMessage: updated,
+      source: triageSource,
     };
   } catch {
     return {

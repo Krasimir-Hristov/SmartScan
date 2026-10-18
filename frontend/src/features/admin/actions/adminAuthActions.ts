@@ -77,18 +77,22 @@ async function ensureTestAdminProvisioned(): Promise<string | null> {
   }
 }
 
+function isTestAdminLoginPermitted(): boolean {
+  if (process.env.ALLOW_TEST_ADMIN_LOGIN !== undefined) {
+    return process.env.ALLOW_TEST_ADMIN_LOGIN === 'true';
+  }
+  return process.env.NODE_ENV !== 'production';
+}
+
 /**
  * 1-Click Test Admin Login for development and staging verification.
  * Provisions the test admin user in Supabase and establishes an authenticated admin session.
  */
 export async function loginAsTestAdminAction(): Promise<AdminActionResponse> {
-  if (
-    process.env.NODE_ENV === 'production' &&
-    process.env.ALLOW_TEST_ADMIN_LOGIN !== 'true'
-  ) {
+  if (!isTestAdminLoginPermitted()) {
     return {
       success: false,
-      error: 'Тестовият 1-клик вход е деактивиран в продукционна среда.',
+      error: 'Тестовият 1-клик вход е деактивиран.',
     };
   }
 
@@ -141,17 +145,14 @@ export async function loginAdminWithPasswordAction(
   }
 
   try {
-    const isTestLoginAllowed =
-      process.env.NODE_ENV !== 'production' ||
-      process.env.ALLOW_TEST_ADMIN_LOGIN === 'true';
-
+    const isTestAllowed = isTestAdminLoginPermitted();
     const testPassword = (process.env.TEST_ADMIN_PASSWORD || 'admin123').trim();
     const isTestCandidate =
       (cleanEmail === 'admin' || cleanEmail === TEST_ADMIN_EMAIL) &&
       (password === testPassword || password === 'admin');
 
     // If logging in with the test admin credentials, auto-provision and log in immediately
-    if (isTestCandidate && isTestLoginAllowed) {
+    if (isTestCandidate && isTestAllowed) {
       return loginAsTestAdminAction();
     }
 

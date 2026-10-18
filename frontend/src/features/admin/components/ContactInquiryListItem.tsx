@@ -74,7 +74,7 @@ export const ContactInquiryListItem: React.FC<ContactInquiryListItemProps> = ({
           {item.ai_summary || item.message}
         </p>
 
-        <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-zinc-800/60 text-[10px] text-zinc-500">
+        <div className="flex items-center justify-between gap-2 mt-2 pt-2 pr-8 border-t border-zinc-800/60 text-[10px] text-zinc-500">
           <span className="truncate">{item.email}</span>
           <span>
             {new Date(item.created_at).toLocaleDateString('bg-BG', {

@@ -1,25 +1,20 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { AlertCircle, CheckCircle2, Inbox } from 'lucide-react';
+import { Inbox } from 'lucide-react';
 import type {
   ContactMessage,
   ContactMessagePriority,
   ContactMessageStatus,
 } from '@/lib/types/databaseTypes';
-import {
-  deleteContactMessageAction,
-  runContactAiTriageAction,
-  seedSampleContactInquiriesAction,
-  sendContactReplyAction,
-  updateContactStatusAction,
-} from '../actions/adminContactActions';
+import { useContactInquiryActions } from '../hooks/useContactInquiryActions';
 import { ContactFilterBar } from './ContactFilterBar';
 import { ContactInquiryListItem } from './ContactInquiryListItem';
 import { ContactInquiryInspector } from './ContactInquiryInspector';
 import { ContactAiTriageCard } from './ContactAiTriageCard';
 import { ContactReplyComposer } from './ContactReplyComposer';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { FeedbackBanner } from './FeedbackBanner';
 
 export interface AdminContactsViewProps {
   contacts: ContactMessage[];
@@ -42,19 +37,34 @@ export const AdminContactsView: React.FC<AdminContactsViewProps> = ({
   const [statusFilter, setStatusFilter] = useState<ContactMessageStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<ContactMessagePriority | 'all'>('all');
 
-  const [isRunningTriage, setIsRunningTriage] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isSendingReply, setIsSendingReply] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // Scope drafts per inquiry ID so drafts are preserved when switching between inquiries
+  const [draftsByMessageId, setDraftsByMessageId] = useState<Record<string, string>>({});
 
-  const [draftReply, setDraftReply] = useState('');
-  const [feedbackBanner, setFeedbackBanner] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
-
-  const [messageToDelete, setMessageToDelete] = useState<ContactMessage | null>(null);
+  const {
+    isRunningTriage,
+    isUpdatingStatus,
+    isSendingReply,
+    isSeeding,
+    isDeleting,
+    feedbackBanner,
+    setFeedbackBanner,
+    messageToDelete,
+    setMessageToDelete,
+    handleRunTriage,
+    handleStatusChange,
+    handleSendReply,
+    handleSeedSamples,
+    handleConfirmDelete,
+  } = useContactInquiryActions({
+    selectedContactId,
+    onSelectContactId,
+    onRefreshRequested,
+    onMessageUpdated,
+    onMessageDeleted,
+    onTriageSuggestedReply: (messageId, reply) => {
+      setDraftsByMessageId((prev) => ({ ...prev, [messageId]: reply }));
+    },
+  });
 
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
@@ -81,161 +91,13 @@ export const AdminContactsView: React.FC<AdminContactsViewProps> = ({
     return filteredContacts[0] || null;
   }, [contacts, selectedContactId, filteredContacts]);
 
-  const handleRunTriage = async () => {
+  const activeDraft = activeMessage
+    ? draftsByMessageId[activeMessage.id] ?? activeMessage.ai_suggested_reply ?? ''
+    : '';
+
+  const handleDraftChange = (nextText: string) => {
     if (!activeMessage) return;
-    setIsRunningTriage(true);
-    setFeedbackBanner(null);
-
-    try {
-      const res = await runContactAiTriageAction(activeMessage.id);
-      if (res.success && res.updatedMessage) {
-        onMessageUpdated(res.updatedMessage);
-        if (res.updatedMessage.ai_suggested_reply) {
-          setDraftReply(res.updatedMessage.ai_suggested_reply);
-        }
-        setFeedbackBanner({
-          type: 'success',
-          text: '✓ Gemini 2.5 Flash успешно класифицира запитването и генерира отговор.',
-        });
-      } else {
-        setFeedbackBanner({
-          type: 'error',
-          text: res.error || 'Неуспешен AI триаж на запитването.',
-        });
-      }
-    } catch {
-      setFeedbackBanner({
-        type: 'error',
-        text: 'Системна грешка при изпълнение на AI триажа.',
-      });
-    } finally {
-      setIsRunningTriage(false);
-    }
-  };
-
-  const handleStatusChange = async (
-    status: ContactMessageStatus,
-    priority?: ContactMessagePriority
-  ) => {
-    if (!activeMessage) return;
-    setIsUpdatingStatus(true);
-    setFeedbackBanner(null);
-
-    try {
-      const res = await updateContactStatusAction(activeMessage.id, status, priority);
-      if (res.success && res.updatedMessage) {
-        onMessageUpdated(res.updatedMessage);
-        setFeedbackBanner({
-          type: 'success',
-          text: `✓ Статусът беше обновен на „${status}“.`,
-        });
-      } else {
-        setFeedbackBanner({
-          type: 'error',
-          text: res.error || 'Неуспешна промяна на статуса.',
-        });
-      }
-    } catch {
-      setFeedbackBanner({
-        type: 'error',
-        text: 'Системна грешка при обновяване на статуса.',
-      });
-    } finally {
-      setIsUpdatingStatus(false);
-    }
-  };
-
-  const handleSendReply = async () => {
-    if (!activeMessage || !draftReply.trim()) return;
-    setIsSendingReply(true);
-    setFeedbackBanner(null);
-
-    try {
-      const res = await sendContactReplyAction(activeMessage.id, draftReply);
-      if (res.success && res.updatedMessage) {
-        onMessageUpdated(res.updatedMessage);
-        setFeedbackBanner({
-          type: 'success',
-          text: '✓ Отговорът беше запазен в историята и статусът бе маркиран като „Отговорено“.',
-        });
-      } else {
-        setFeedbackBanner({
-          type: 'error',
-          text: res.error || 'Грешка при запис на отговора.',
-        });
-      }
-    } catch {
-      setFeedbackBanner({
-        type: 'error',
-        text: 'Системна грешка при изпращане на отговора.',
-      });
-    } finally {
-      setIsSendingReply(false);
-    }
-  };
-
-  const handleSeedSamples = async () => {
-    setIsSeeding(true);
-    setFeedbackBanner(null);
-    try {
-      const res = await seedSampleContactInquiriesAction();
-      if (res.success) {
-        setFeedbackBanner({
-          type: 'success',
-          text: '✓ Добавени са 3 реалистични многоезични запитвания (BG, DE, EN).',
-        });
-        onRefreshRequested();
-      } else {
-        setFeedbackBanner({
-          type: 'error',
-          text: res.error || 'Неуспешно добавяне на примерни данни.',
-        });
-      }
-    } catch {
-      setFeedbackBanner({
-        type: 'error',
-        text: 'Системна грешка при зареждане на примерни запитвания.',
-      });
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!messageToDelete) return;
-    const targetId = messageToDelete.id;
-    setIsDeleting(true);
-
-    try {
-      const res = await deleteContactMessageAction(targetId);
-      if (res.success) {
-        setMessageToDelete(null);
-        if (onMessageDeleted) {
-          onMessageDeleted(targetId);
-        } else {
-          onRefreshRequested();
-        }
-        if (selectedContactId === targetId) {
-          onSelectContactId(null);
-        }
-        setFeedbackBanner({
-          type: 'success',
-          text: '✓ Запитването беше изтрито успешно.',
-        });
-      } else {
-        setFeedbackBanner({
-          type: 'error',
-          text: res.error || 'Неуспешно изтриване на запитването.',
-        });
-      }
-    } catch {
-      setFeedbackBanner({
-        type: 'error',
-        text: 'Системна грешка при изтриване на съобщението.',
-      });
-    } finally {
-      setIsDeleting(false);
-    }
+    setDraftsByMessageId((prev) => ({ ...prev, [activeMessage.id]: nextText }));
   };
 
   return (
@@ -252,34 +114,11 @@ export const AdminContactsView: React.FC<AdminContactsViewProps> = ({
         onSeedSamples={handleSeedSamples}
       />
 
-      {/* Feedback Banner */}
-      {feedbackBanner && (
-        <aside
-          role="status"
-          aria-live="polite"
-          className={`rounded-xl border p-3 flex items-center justify-between gap-3 text-xs font-semibold ${
-            feedbackBanner.type === 'success'
-              ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
-              : 'border-rose-500/40 bg-rose-950/40 text-rose-300'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedbackBanner.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-            )}
-            <span>{feedbackBanner.text}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setFeedbackBanner(null)}
-            className="text-zinc-400 hover:text-white cursor-pointer"
-          >
-            ✕
-          </button>
-        </aside>
-      )}
+      {/* Accessible Feedback Banner */}
+      <FeedbackBanner
+        banner={feedbackBanner}
+        onClose={() => setFeedbackBanner(null)}
+      />
 
       {/* Master-Detail Split Layout */}
       {filteredContacts.length === 0 ? (
@@ -316,23 +155,25 @@ export const AdminContactsView: React.FC<AdminContactsViewProps> = ({
               <ContactInquiryInspector
                 message={activeMessage}
                 isUpdatingStatus={isUpdatingStatus}
-                onStatusChange={handleStatusChange}
+                onStatusChange={(status, priority) =>
+                  handleStatusChange(activeMessage, status, priority)
+                }
                 onRequestDelete={(target) => setMessageToDelete(target)}
               />
 
               <ContactAiTriageCard
                 message={activeMessage}
                 isTriaging={isRunningTriage}
-                onRunTriage={handleRunTriage}
-                onApplySuggestedReply={(suggestedText) => setDraftReply(suggestedText)}
+                onRunTriage={() => handleRunTriage(activeMessage)}
+                onApplySuggestedReply={handleDraftChange}
               />
 
               <ContactReplyComposer
                 message={activeMessage}
-                draftReply={draftReply}
-                onDraftChange={setDraftReply}
+                draftReply={activeDraft}
+                onDraftChange={handleDraftChange}
                 isSending={isSendingReply}
-                onSendReply={handleSendReply}
+                onSendReply={() => handleSendReply(activeMessage, activeDraft)}
               />
             </div>
           ) : (

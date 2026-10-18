@@ -43,21 +43,40 @@ export function signAdminDevToken(email: string): string {
  */
 export function verifyAdminDevToken(token: string | undefined): string | null {
   if (!token) return null;
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
+  const lastDot = token.lastIndexOf('.');
+  if (lastDot === -1) return null;
 
-  const [email, issuedAtStr, providedSig] = parts;
+  const secondLastDot = token.lastIndexOf('.', lastDot - 1);
+  if (secondLastDot === -1) return null;
+
+  const email = token.slice(0, secondLastDot).trim().toLowerCase();
+  const issuedAtStr = token.slice(secondLastDot + 1, lastDot);
+  const providedSig = token.slice(lastDot + 1);
+
   if (!email || !issuedAtStr || !providedSig) return null;
+
+  // Validate signature format (64-character lowercase/uppercase hex)
+  if (!/^[0-9a-fA-F]{64}$/.test(providedSig)) return null;
+
+  // Validate timestamp format (digits only)
+  if (!/^\d+$/.test(issuedAtStr)) return null;
 
   const issuedAt = Number.parseInt(issuedAtStr, 10);
   if (Number.isNaN(issuedAt)) return null;
 
-  if (Date.now() - issuedAt > TOKEN_EXPIRY_MS) {
-    return null; // Expired token
+  const now = Date.now();
+  // Reject future tokens (allowing 60s max tolerance for clock skew)
+  if (issuedAt > now + 60_000) {
+    return null;
+  }
+
+  // Reject expired tokens
+  if (now - issuedAt > TOKEN_EXPIRY_MS) {
+    return null;
   }
 
   try {
-    const payload = `admin:${email.trim().toLowerCase()}:${issuedAtStr}`;
+    const payload = `admin:${email}:${issuedAtStr}`;
     const expectedSig = createHmac('sha256', getSigningSecret())
       .update(payload)
       .digest('hex');
@@ -65,7 +84,7 @@ export function verifyAdminDevToken(token: string | undefined): string | null {
     const a = Buffer.from(providedSig, 'hex');
     const b = Buffer.from(expectedSig, 'hex');
     if (a.length !== b.length) return null;
-    return timingSafeEqual(a, b) ? email.trim().toLowerCase() : null;
+    return timingSafeEqual(a, b) ? email : null;
   } catch {
     return null;
   }

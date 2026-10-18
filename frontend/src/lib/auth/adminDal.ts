@@ -57,8 +57,9 @@ const cachedGetAuthenticatedAdmin = cache(async (): Promise<AuthenticatedAdmin |
 
     // Signed session cookie check
     const isTestLoginAllowed =
-      process.env.NODE_ENV !== 'production' ||
-      process.env.ALLOW_TEST_ADMIN_LOGIN === 'true';
+      process.env.ALLOW_TEST_ADMIN_LOGIN !== undefined
+        ? process.env.ALLOW_TEST_ADMIN_LOGIN === 'true'
+        : process.env.NODE_ENV !== 'production';
 
     if (isTestLoginAllowed) {
       const cookieStore = await cookies();

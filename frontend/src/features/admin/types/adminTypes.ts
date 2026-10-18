@@ -68,6 +68,7 @@ export interface AdminActionResponse {
 
 export interface AiTriageActionResponse extends AdminActionResponse {
   updatedMessage?: ContactMessage;
+  source?: 'ai' | 'fallback';
 }
 
 export interface ContactFilterState {
