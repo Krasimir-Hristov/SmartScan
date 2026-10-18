@@ -9,21 +9,18 @@ import './globals.css';
 // ─── Design System Fonts ──────────────────────────────────────────────────────
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
   variable: '--font-display',
   display: 'swap',
 });
 
 const manrope = Manrope({
   subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-sans',
   display: 'swap',
 });
 
 const jetBrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
   variable: '--font-mono',
   display: 'swap',
 });
