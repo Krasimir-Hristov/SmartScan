@@ -14,6 +14,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.config import settings
 from app.core.rate_limit import limiter
+from app.features.admin_triage.router import router as admin_triage_router
 from app.features.billing.router import router as billing_router
 from app.features.concierge.router import router as concierge_router
 from app.features.knowledge.router import router as knowledge_router
@@ -200,6 +201,7 @@ app.include_router(knowledge_router, prefix="/api/py")
 app.include_router(voice_router, prefix="/api/py")
 app.include_router(billing_router, prefix="/api/py")
 app.include_router(spaces_router, prefix="/api/py")
+app.include_router(admin_triage_router, prefix="/api/py")
 
 
 @app.get("/", include_in_schema=False)

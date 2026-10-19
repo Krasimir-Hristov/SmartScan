@@ -4,7 +4,7 @@ import re
 from xml.sax.saxutils import escape as xml_escape
 
 TAG_SANITIZER_REGEX = re.compile(
-    r"</?(?:property_context|system|instruction|prompt|assistant|human)[^>]*>",
+    r"</?(?:property_context|contact_inquiry|system|instruction|prompt|assistant|human)[^>]*>",
     re.IGNORECASE,
 )
 
