@@ -31,7 +31,7 @@
 | **Стъпка 12**| [**Step 12: Footer & Legal Pages**](steps/step-12-legal-pages-and-footer.md) | 🟢 Завършена | Луксозен футър, Общи условия (/terms) и Поверителност (/privacy) на 10 езика. |
 | **Стъпка 13**| [**Step 13: Cookie Consent & Policy**](steps/step-13-cookie-consent.md) | 🟢 Завършена | Плаващ банер за съгласие (GDPR & ePrivacy), одит таблица на бисквитките и страница /cookies на 10 езика. |
 | **Стъпка 14**| [**Step 14: Contact Form & Security**](steps/step-14-contact-form.md) | 🟢 Завършена | Форма за обратна връзка (/contact), директен запис в Supabase, валидация на телефон, rate limiting с advisory lock, HMAC хеширане и 10 езика. |
-| **Стъпка 15**| *Step 15: Owner Admin Control Plane* | ⚪ Очаква | Административен панел за собственика: преглед на съобщения, AI триаж (Gemini), клиентска директория и аналитика. |
+| **Стъпка 15**| [**Step 15: Owner Admin Control Plane**](steps/step-15-admin-control-plane-and-triage.md) | 🟢 Завършена | Контролен панел за собственика (/admin): сигурен вход без middleware, входяща поща с Gemini 2.5 Flash триаж, клиентска директория с управление на trials и real-time аналитика. |
 
 ---
 
