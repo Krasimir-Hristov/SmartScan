@@ -219,6 +219,12 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
             <Trash2 className="w-4 h-4 text-red-400" />
             <span>{t('deleteAccountLabel')}</span>
           </button>
+
+          {/* Version indicator */}
+          <div className="pt-2 pb-1 px-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500 select-none">
+            <span>SmartScan Stay</span>
+            <span className="text-emerald-500/80 font-semibold">v1.0.0</span>
+          </div>
         </div>
       )}
 
