@@ -11,7 +11,7 @@ This skill defines the authoritative architecture, component paradigms, mobile e
 
 ## 1. Component vs Function Architecture Standards
 
-### A. React Components ➔ ЗАДЪЛЖИТЕЛНО Arrow Functions
+### A. React Components ➔ MANDATORY Arrow Functions
 All React components MUST be defined using typed arrow functions. The `function` keyword is strictly prohibited for components.
 ```typescript
 interface WifiCardProps {
@@ -19,7 +19,7 @@ interface WifiCardProps {
   password: string;
 }
 
-// ПРАВИЛНО:
+// CORRECT:
 export const WifiCard: React.FC<WifiCardProps> = ({ ssid, password }) => {
   return (
     <div className="rounded-2xl p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
@@ -30,10 +30,10 @@ export const WifiCard: React.FC<WifiCardProps> = ({ ssid, password }) => {
 };
 ```
 
-### B. Pure Logic, Helpers & Data Access (DAL) ➔ Нормални функции (`function`)
+### B. Pure Logic, Helpers & Data Access (DAL) ➔ Standard Functions (`function`)
 Pure utility functions, formatters, and server-side Data Access Layer (DAL) queries MUST be defined as regular named functions for clear stack traces and separation from UI components.
 ```typescript
-// Чисти помощни функции:
+// Pure utility functions:
 export function formatPhoneNumber(phone: string): string {
   return phone.replace(/[^\d+]/g, '');
 }
@@ -85,31 +85,31 @@ export default StayPage;
 
 ## 3. Tailwind CSS v4 Standards & Desktop `cursor-pointer` Rule
 
-### A. Желязно правило за интерактивни бутони (`cursor-pointer`)
+### A. Iron Rule for Interactive Buttons (`cursor-pointer`)
 > [!WARNING]
 > **CRITICAL UI STANDARD (NO MISSING CURSORS):**
-> Всички `<button>`, кликаеми карти, табове и интерактивни елементи ЗАДЪЛЖИТЕЛНО имат клас `cursor-pointer`. При деактивирано състояние се добавя `disabled:cursor-not-allowed`.
+> All `<button>`, clickable cards, tabs, and interactive elements MUST have the `cursor-pointer` class. In disabled state, add `disabled:cursor-not-allowed`.
 
 ```tsx
 <button
   type="button"
-  aria-label="Копирай паролата за Wi-Fi"
+  aria-label="Copy Wi-Fi password"
   onClick={handleCopy}
   className="inline-flex items-center justify-center cursor-pointer rounded-xl px-4 py-2.5 bg-zinc-900 text-white font-medium hover:bg-zinc-800 active:scale-[0.98] transition-all disabled:cursor-not-allowed disabled:opacity-50"
 >
-  Копирай парола
+  Copy Password
 </button>
 ```
 
 ### B. Tailwind v4 Gradients
 Use the new Tailwind v4 `bg-linear-to-*` and `bg-linear-<angle>` syntax instead of legacy `bg-gradient-to-*`.
 ```html
-<!-- ПРАВИЛНО (Tailwind v4): -->
+<!-- CORRECT (Tailwind v4): -->
 <div class="bg-linear-to-b from-zinc-900 to-zinc-950"></div>
 <div class="bg-linear-to-r from-emerald-500 to-teal-600"></div>
 <div class="bg-linear-45 from-indigo-500 via-purple-500 to-pink-500"></div>
 
-<!-- ГРЕШНО (v3): bg-gradient-to-b, bg-gradient-to-r -->
+<!-- INCORRECT (v3): bg-gradient-to-b, bg-gradient-to-r -->
 ```
 
 ### C. Tailwind v4 Fractional Scale Syntax (No Arbitrary Pixels for Multiples of 4)
@@ -127,20 +127,20 @@ Arbitrary bracket notation (`[...]`) must be strictly reserved for complex CSS e
 
 Since 95%+ of guests scan QR codes on mobile smartphones, mobile ergonomics take absolute priority:
 
-1. **Динамичен Viewport (`100dvh`) & Safe Areas:**
+1. **Dynamic Viewport (`100dvh`) & Safe Areas:**
    - Always use `min-h-dvh` / `h-dvh` instead of `h-screen` / `100vh` to prevent jumping when browser URL bars expand/collapse.
    - Use `pt-[env(safe-area-inset-top)]` and `pb-[env(safe-area-inset-bottom)]` for edge-to-edge screens.
-2. **Зона за докосване (Touch Targets):**
+2. **Touch Targets:**
    - Minimum tap target: `44x44px` (`min-h-[44px] min-w-[44px]`).
    - Mobile inputs must have `text-base` (16px) minimum to prevent automatic iOS Safari zoom.
-3. **Елегантен десктоп контейнер:**
+3. **Sleek Desktop Container:**
    - When opened on large desktop screens, wrap the mobile guest experience in a sleek phone container:
      ```html
      <div class="w-full max-w-md mx-auto min-h-dvh bg-white dark:bg-zinc-900 shadow-2xl">
        ...
      </div>
      ```
-4. **Хаптична обратна връзка (Haptic Feedback):**
+4. **Haptic Feedback:**
    - Provide tactile confirmation on critical actions (copying Wi-Fi, starting navigation):
      ```typescript
      export function triggerHaptic(durationMs = 50): void {
@@ -223,7 +223,7 @@ export const FadeInCard: React.FC<{ children: React.ReactNode; index?: number }>
 ---
 
 ## 7. State & Data Fetching (TanStack Query)
-- **Пълна забрана за `fetch` вътре в `useEffect`**.
+- **Strict prohibition against using `fetch` inside `useEffect`**.
 - All client-side queries use `useQuery` with structured query keys: `['space', slug]`.
 - Mutations use `useMutation` with optimistic UI updates for instant feedback.
 
